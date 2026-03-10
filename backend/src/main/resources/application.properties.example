@@ -1,24 +1,43 @@
 # Server Configuration
-server.port=${PORT:8081}
+#server.port=${PORT:8081}
 
 # Database Connection
-spring.datasource.url=${jdbc:postgresql://localhost:5432/postgres?currentSchema=scott}
-spring.datasource.username=${scott}
-spring.datasource.password=${tiger}
+#spring.datasource.url=${jdbc:postgresql://localhost:5432/postgres?currentSchema=scott}
+#spring.datasource.username=${scott}
+#spring.datasource.password=${tiger}
+#spring.datasource.driver-class-name=org.postgresql.Driver
+
+# JPA / Hibernate
+#spring.jpa.hibernate.ddl-auto=${DDL_AUTO:none}
+#spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
+#spring.jpa.show-sql=false
+#spring.jpa.properties.hibernate.format_sql=false
+
+# Default schema
+#spring.jpa.properties.hibernate.default_schema=${DB_SCHEMA:scott}
+
+# Jackson Date Format
+#spring.jackson.date-format=yyyy-MM-dd'T'HH:mm:ss
+#spring.jackson.time-zone=UTC
+
+# JWT Secret (VERY IMPORTANT - use a strong secret)
+#jwt.secret=${JWT_SECRET:mySuperSecretKeyForDevelopment123}
+
+server.port=${PORT:8081}
+
+# Database connection - uses environment variables
+spring.datasource.url=${jdbc:postgresql://ep-noisy-fog-a1chnaai-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require}
+spring.datasource.username=${neondb_owner}
+spring.datasource.password=${npg_63RoatjmPysn}
 spring.datasource.driver-class-name=org.postgresql.Driver
 
 # JPA / Hibernate
-spring.jpa.hibernate.ddl-auto=${DDL_AUTO:none}
+spring.jpa.hibernate.ddl-auto=none
 spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
 spring.jpa.show-sql=false
 spring.jpa.properties.hibernate.format_sql=false
-
-# Default schema
-spring.jpa.properties.hibernate.default_schema=${DB_SCHEMA:scott}
+spring.jpa.properties.hibernate.default_schema=scott
 
 # Jackson Date Format
 spring.jackson.date-format=yyyy-MM-dd'T'HH:mm:ss
 spring.jackson.time-zone=UTC
-
-# JWT Secret (VERY IMPORTANT - use a strong secret)
-jwt.secret=${JWT_SECRET:mySuperSecretKeyForDevelopment123}
