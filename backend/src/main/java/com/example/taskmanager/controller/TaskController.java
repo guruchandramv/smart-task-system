@@ -1,5 +1,6 @@
 package com.example.taskmanager.controller;
-
+import java.sql.Connection;
+import java.sql.DriverManager;
 import com.example.taskmanager.model.Task;
 import com.example.taskmanager.model.User;
 import com.example.taskmanager.repository.TaskRepository;
@@ -43,6 +44,21 @@ public class TaskController {
             e.printStackTrace();
             return ResponseEntity.status(500)
                 .body(Map.of("error", "Error fetching tasks: " + e.getMessage()));
+        }
+    }
+    @GetMapping("/test-db")
+    public String testDatabase() {
+        try {
+            Class.forName("org.postgresql.Driver");
+            String url = System.getenv("DB_URL");
+            String user = System.getenv("DB_USERNAME");
+            String pass = System.getenv("DB_PASSWORD");
+            
+            Connection conn = DriverManager.getConnection(url, user, pass);
+            conn.close();
+            return "✅ Database connection successful!";
+        } catch (Exception e) {
+            return "❌ Database connection failed: " + e.getMessage();
         }
     }
 
