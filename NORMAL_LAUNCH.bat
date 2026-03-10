@@ -1,0 +1,1 @@
+python NORMAL_LAUNCHER.py

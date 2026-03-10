@@ -1,0 +1,78 @@
+# Ignore actual properties files with real passwords
+src/main/resources/application.properties
+src/main/resources/application-*.properties
+!src/main/resources/application.properties.example
+
+# Ignore environment files
+.env
+.env.local
+
+# Ignore build files
+target/
+*.jar
+*.war
+*.log
+
+# Ignore IDE files
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+### Maven ###
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+### Java ###
+*.log
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+hs_err_pid*
+replay_pid*
+
+### Environment & Secrets ###
+application.properties
+application-*.properties
+!application.properties.example
+.env
+.env.local
+.env.*.local
