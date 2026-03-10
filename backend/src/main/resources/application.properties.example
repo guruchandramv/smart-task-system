@@ -22,13 +22,12 @@
 
 # JWT Secret (VERY IMPORTANT - use a strong secret)
 #jwt.secret=${JWT_SECRET:mySuperSecretKeyForDevelopment123}
-
 server.port=${PORT:8081}
 
 # Database connection - uses environment variables
-spring.datasource.url=${jdbc:postgresql://ep-noisy-fog-a1chnaai-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require}
-spring.datasource.username=${neondb_owner}
-spring.datasource.password=${npg_63RoatjmPysn}
+spring.datasource.url=${DB_URL}
+spring.datasource.username=${DB_USERNAME}
+spring.datasource.password=${DB_PASSWORD}
 spring.datasource.driver-class-name=org.postgresql.Driver
 
 # JPA / Hibernate
