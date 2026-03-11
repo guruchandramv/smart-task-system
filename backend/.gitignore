@@ -1,4 +1,5 @@
 # Ignore actual properties files with real passwords
+!application-*.properties.example
 src/main/resources/application.properties
 src/main/resources/application-*.properties
 !src/main/resources/application.properties.example
