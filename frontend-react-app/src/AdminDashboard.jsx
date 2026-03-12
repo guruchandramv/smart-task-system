@@ -841,6 +841,7 @@ function AdminDashboard() {
     if (userId) {
       try {
         await axios.post(`/api/activity/logout?userId=${userId}`);
+        console.log("✅ Logout successful"); // Add this to check
       } catch (error) {
         console.error("Logout failed:", error);
       }
@@ -852,26 +853,22 @@ function AdminDashboard() {
     if (!timestamp) return 'Never';
     
     const date = new Date(timestamp);
+    console.log('Raw timestamp:', timestamp);
+    console.log('Parsed date:', date.toString());
+    console.log('Local time:', date.toLocaleString());
+    
     const now = new Date();
     const diffMs = now - date;
     const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
+    
+    console.log('Difference in minutes:', diffMins);
     
     if (diffMins < 1) return 'Just now';
     if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
-    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    if (diffMins < 1440) return `${Math.floor(diffMins / 60)} hour${Math.floor(diffMins / 60) > 1 ? 's' : ''} ago`;
     
-    // For older dates, show the actual date
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    return date.toLocaleDateString();
   };
-
   const getUserName = (userId) => {
     if (!userId) return 'Unassigned';
     const user = users.find(u => u.id === userId);

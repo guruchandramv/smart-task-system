@@ -189,7 +189,8 @@ public class ActivityController {
         try {
             User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
-            
+            LocalDateTime now = LocalDateTime.now();
+            System.out.println("🔴 Logout at: " + now);
             user.setOnline(false);
             user.setLastActivity(LocalDateTime.now());
             userRepository.save(user);
@@ -197,6 +198,9 @@ public class ActivityController {
             System.out.println("🚪 User '" + user.getUsername() + "' logged out explicitly at " + 
                 LocalDateTime.now().toLocalTime());
             
+            User savedUser = userRepository.findById(userId).get();
+            System.out.println("✅ Saved lastActivity: " + savedUser.getLastActivity());
+
             return ResponseEntity.ok(Map.of(
                 "status", "logged out",
                 "userId", userId,
