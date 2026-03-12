@@ -32,7 +32,7 @@ public class AuthController {
         user.setRole("USER");
         user.setLastLogin(LocalDateTime.now());
         user.setLastActivity(LocalDateTime.now());
-        user.isOnline(true);
+        user.setOnline(true);
         userRepository.save(user);
         return ResponseEntity.ok("User registered successfully");
     }
@@ -49,7 +49,7 @@ public class AuthController {
         // Update last login and online status
         user.setLastLogin(LocalDateTime.now());
         user.setLastActivity(LocalDateTime.now());
-        user.isOnline(true);
+        user.setOnline(true);
         userRepository.save(user);
         
         String token = JwtUtil.generateToken(user.getEmail(), user.getRole());
