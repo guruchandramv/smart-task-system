@@ -1,5 +1,5 @@
 // heartbeatService.js
-import axios from 'axios';
+import axios from './axiosConfig.js';
 
 let heartbeatInterval = null;
 let beforeUnloadHandler = null;
@@ -26,14 +26,14 @@ export const startHeartbeat = (userId) => {
         // Use synchronous XHR for guaranteed delivery during unload
         try {
             const xhr = new XMLHttpRequest();
-            xhr.open('POST', `http://localhost:8081/api/activity/logout?userId=${userId}`, false);
+            xhr.open('POST', `/api/activity/logout?userId=${userId}`, false);
             xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.send(JSON.stringify({}));
             console.log('🔴 Logout sent via sync XHR on browser close');
         } catch (e) {
             // Fallback to sendBeacon
             const blob = new Blob([JSON.stringify({})], { type: 'application/json' });
-            navigator.sendBeacon(`http://localhost:8081/api/activity/logout?userId=${userId}`, blob);
+            navigator.sendBeacon(`/api/activity/logout?userId=${userId}`, blob);
         }
     };
     
@@ -61,7 +61,7 @@ const sendHeartbeat = async (userId) => {
         const timeoutId = setTimeout(() => controller.abort(), HEARTBEAT_TIMEOUT);
         
         const response = await axios.post(
-            `http://localhost:8081/api/activity/heartbeat?userId=${userId}`,
+            `/api/activity/heartbeat?userId=${userId}`,
             {},
             { signal: controller.signal }
         );
@@ -78,14 +78,14 @@ const sendHeartbeat = async (userId) => {
 
 export const logoutUser = async (userId) => {
     try {
-        await axios.post(`http://localhost:8081/api/activity/logout?userId=${userId}`);
+        await axios.post(`/api/activity/logout?userId=${userId}`);
         console.log('✅ User logged out successfully');
     } catch (error) {
         console.error('Logout failed:', error);
         // Fallback to synchronous XHR
         try {
             const xhr = new XMLHttpRequest();
-            xhr.open('POST', `http://localhost:8081/api/activity/logout?userId=${userId}`, false);
+            xhr.open('POST', `/api/activity/logout?userId=${userId}`, false);
             xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.send(JSON.stringify({}));
             console.log('✅ Logout completed via sync XHR');
@@ -100,7 +100,7 @@ export const logoutUser = async (userId) => {
 // For debugging - check current status
 export const checkStatus = async (userId) => {
     try {
-        const response = await axios.get(`http://localhost:8081/api/activity/user-status/${userId}`);
+        const response = await axios.get(`/api/activity/user-status/${userId}`);
         console.log('User status:', response.data);
         return response.data;
     } catch (error) {

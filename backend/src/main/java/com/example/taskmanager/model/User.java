@@ -88,5 +88,5 @@ public class User {
 
     public Boolean getIsOnline() { return isOnline; }
 
-    public void isOnline(Boolean online) { isOnline = online; }
+    public void setOnline(Boolean online) { isOnline = online; }
 }

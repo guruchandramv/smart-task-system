@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from './axiosConfig.js'; 
 import "./AdminDashboard.css";
 
 // Configure axios defaults
-axios.defaults.baseURL = 'http://localhost:8081';
 axios.defaults.headers.common['Content-Type'] = 'application/json';
 axios.defaults.withCredentials = true;
 
@@ -202,30 +201,29 @@ function AdminDashboard() {
   // Start heartbeat for admin user
   useEffect(() => {
     if (!adminUserId) return;
-    
+
     console.log(`🟢 Starting heartbeat for admin user ${adminUserId}`);
-    
+
     // Send heartbeat immediately
     sendAdminHeartbeat();
-    
+
     // Set up interval to send heartbeat every 2 seconds
     const heartbeatInterval = setInterval(() => {
       sendAdminHeartbeat();
     }, 2000);
-    
+
     // Cleanup on unmount
     return () => {
       clearInterval(heartbeatInterval);
       // Send logout on unmount
       if (adminUserId) {
-        navigator.sendBeacon(`http://localhost:8081/api/activity/logout?userId=${adminUserId}`);
+        navigator.sendBeacon(`/api/activity/logout?userId=${adminUserId}`);
       }
     };
   }, [adminUserId]);
 
   const sendAdminHeartbeat = async () => {
     if (!adminUserId) return;
-    
     try {
       await axios.post(`/api/activity/heartbeat?userId=${adminUserId}`);
       console.log(`💓 Admin heartbeat sent at ${new Date().toLocaleTimeString()}`);
@@ -246,7 +244,7 @@ function AdminDashboard() {
     } catch (error) {
       setBackendStatus("offline");
       setError("Cannot connect to backend server");
-      setErrorDetails(`Make sure backend is running on http://localhost:8081`);
+      setErrorDetails(`Make sure backend is running on -[0p]`);
       setLoading(false);
     }
   };
@@ -363,23 +361,6 @@ function AdminDashboard() {
         setShowUserPopup(false);
         setHoveredUser(null);
     }, 300);
-  };
-
-  const formatLastLogin = (lastLogin) => {
-    if (!lastLogin) return 'Never logged in';
-    
-    const loginDate = new Date(lastLogin);
-    const now = new Date();
-    const diffMs = now - loginDate;
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-    
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
-    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
-    return loginDate.toLocaleDateString();
   };
 
   const calculateStatistics = () => {
@@ -867,6 +848,29 @@ function AdminDashboard() {
     localStorage.clear();
     navigate("/login", { replace: true });
   };
+  const getTimeAgo = (timestamp) => {
+    if (!timestamp) return 'Never';
+    
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    
+    // For older dates, show the actual date
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
 
   const getUserName = (userId) => {
     if (!userId) return 'Unassigned';
@@ -981,7 +985,7 @@ function AdminDashboard() {
       {backendStatus === "offline" && (
         <div className="error-banner">
           <strong>⚠️ Backend Server Offline</strong>
-          <p>Please start the backend server on http://localhost:8081</p>
+          <p>Please start the backend server on http://localhost:8080</p>
           <button onClick={checkBackendStatus} className="retry-btn">Retry Connection</button>
         </div>
       )}
@@ -1120,28 +1124,28 @@ function AdminDashboard() {
                     </td>
                     <td>{user.email}</td>
                     <td className="text-center">
-                      {user.lastActivity ? (
-                        <span className={user.isOnline ? 'text-success' : 'text-muted'}>
-                          {user.isOnline ? (
-                            <span title={`Last activity: ${new Date(user.lastActivity).toLocaleTimeString()}`}>
-                              Active now
-                              {user.inactiveSeconds !== undefined && (
-                                <span className="inactive-badge"> ({user.inactiveSeconds}s)</span>
-                              )}
-                            </span>
-                          ) : (
-                            <span title={`Last active: ${new Date(user.lastActivity).toLocaleString()}`}>
-                              {formatLastLogin(user.lastActivity)}
-                              {user.inactiveSeconds !== undefined && (
-                                <span className="inactive-badge"> ({user.inactiveSeconds}s ago)</span>
-                              )}
-                            </span>
-                          )}
-                        </span>
-                      ) : (
-                        <span className="text-muted">Never</span>
-                      )}
-                    </td>
+  {user.lastActivity ? (
+    <span className={user.isOnline ? 'text-success' : 'text-muted'}>
+      {user.isOnline ? (
+        <span title={`Last activity: ${new Date(user.lastActivity).toLocaleString()}`}>
+          Active now
+          {user.inactiveSeconds !== undefined && (
+            <span className="inactive-badge"> ({user.inactiveSeconds}s)</span>
+          )}
+        </span>
+      ) : (
+        <span title={`Last active: ${new Date(user.lastActivity).toLocaleString()}`}>
+          {getTimeAgo(user.lastActivity)}
+          {user.inactiveSeconds !== undefined && (
+            <span className="inactive-badge"> ({user.inactiveSeconds}s ago)</span>
+          )}
+        </span>
+      )}
+    </span>
+  ) : (
+    <span className="text-muted">Never</span>
+  )}
+</td>
                     <td className="text-center">{user.totalTasks}</td>
                     <td className="text-center">{user.inProgress}</td>
                     <td className="text-center">{user.onHold}</td>
@@ -1187,11 +1191,11 @@ function AdminDashboard() {
           </div>
           <div className="popup-content">
             <p><strong>Email:</strong> {hoveredUser.email}</p>
-            <p><strong>Last Login:</strong> {formatLastLogin(hoveredUser.lastLogin)}</p>
-            <p><strong>Last Activity:</strong> {hoveredUser.lastActivity ? formatLastLogin(hoveredUser.lastActivity) : 'No activity'}</p>
+            <p><strong>Last Login:</strong> {getTimeAgo(hoveredUser.lastLogin)}</p>
+            <p><strong>Last Activity:</strong> {hoveredUser.lastActivity ? getTimeAgo(hoveredUser.lastActivity) : 'No activity'}</p>
             <p><strong>Status:</strong> {hoveredUser.isOnline ? '🟢 Online' : '⚫ Offline'}</p>
             {hoveredUser.isOnline && hoveredUser.lastActivity && (
-              <p><strong>Active:</strong> {formatLastLogin(hoveredUser.lastActivity)}</p>
+              <p><strong>Active:</strong> {getTimeAgo(hoveredUser.lastActivity)}</p>
             )}
           </div>
           <div className="popup-arrow"></div>

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
+import axios from './axiosConfig.js';
 
 function Login() {
   const navigate = useNavigate();
@@ -19,9 +19,9 @@ function Login() {
     setLoading(true);
     
     try {
-      const res = await axios.post("http://localhost:8081/api/auth/login", formData);
+      const res = await axios.post('/api/auth/login', formData);
       const { token, role, id, username, email } = res.data;
-      
+
       // Store all user data in localStorage
       localStorage.setItem("token", token);
       localStorage.setItem("role", role);

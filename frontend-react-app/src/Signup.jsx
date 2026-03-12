@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import axios from './axiosConfig.js';
 import { useNavigate, Link } from "react-router-dom";
 import "./Signup.css";
 
@@ -54,8 +54,7 @@ function Signup() {
     e.preventDefault();
     setLoading(true);
     setMessage("");
-
-    axios.post("http://localhost:8081/api/auth/signup", formData)
+    axios.post(`/api/auth/signup`, formData)
       .then(() => {
         setMessage("Signup successful! Redirecting to login...");
         setTimeout(() => navigate("/login"), 2000);

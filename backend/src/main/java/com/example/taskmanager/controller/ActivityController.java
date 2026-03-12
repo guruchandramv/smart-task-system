@@ -34,7 +34,7 @@ public class ActivityController {
             
             LocalDateTime now = LocalDateTime.now();
             user.setLastActivity(now);
-            user.isOnline(true);
+            user.setOnline(true);
             userRepository.save(user);
             
             // Log heartbeat for debugging (optional - remove in production)
@@ -116,7 +116,7 @@ public class ActivityController {
                         // Mark offline immediately if inactive > 2 seconds
                         if (user.getIsOnline()) {
                             markedOffline.incrementAndGet();
-                            user.isOnline(false);
+                            user.setOnline(false);
                             System.out.println("🔴 User " + user.getUsername() + " went offline - inactive for " + secondsInactive + " seconds");
                         }
                     }
@@ -166,7 +166,7 @@ public class ActivityController {
             
             if (!inactiveUsers.isEmpty()) {
                 for (User user : inactiveUsers) {
-                    user.isOnline(false);
+                    user.setOnline(false);
                     System.out.println("🔴 SCHEDULED CLEANUP: User '" + user.getUsername() + 
                         "' (ID: " + user.getId() + ") marked offline - last activity: " + 
                         user.getLastActivity() + " (>2s ago)");
@@ -190,7 +190,7 @@ public class ActivityController {
             User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
             
-            user.isOnline(false);
+            user.setOnline(false);
             user.setLastActivity(LocalDateTime.now());
             userRepository.save(user);
             
@@ -221,7 +221,7 @@ public class ActivityController {
             int markedOffline = inactiveUsers.size();
             
             for (User user : inactiveUsers) {
-                user.isOnline(false);
+                user.setOnline(false);
                 System.out.println("🔴 FORCE CLEANUP: User '" + user.getUsername() + 
                     "' marked offline (inactive since " + user.getLastActivity() + ")");
             }
