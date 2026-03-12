@@ -37,7 +37,8 @@ public class SecurityConfig {
         org.springframework.web.cors.CorsConfiguration configuration =
                 new org.springframework.web.cors.CorsConfiguration();
 
-        configuration.setAllowedOrigins(java.util.Arrays.asList("http://localhost:3000"));  // Frontend domain
+        configuration.setAllowedOrigins(java.util.Arrays.asList("http://localhost:3000","https://smart-task-system-frontend.netlify.app" ));  // Frontend domain
+        
         configuration.setAllowedMethods(java.util.Arrays.asList("GET", "POST", "PUT", "DELETE"));  // Allowed methods
         configuration.setAllowedHeaders(java.util.Arrays.asList("*"));  // Allow all headers
         configuration.setAllowCredentials(true);  // Allow credentials (cookies)
