@@ -57,7 +57,7 @@ function AdminDashboard() {
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const [lastUpdate, setLastUpdate] = useState(Date.now());
 
-  // Use refs for timeouts to avoid re-renders
+  // Use refs for timeouts
   const hoverTimeout = React.useRef(null);
   const leaveTimeout = React.useRef(null);
   
@@ -128,9 +128,70 @@ function AdminDashboard() {
 
   // Get current admin user ID
   const adminUserId = localStorage.getItem("userId");
+  // ===== HELPER FUNCTIONS =====
+  // ===== HELPER FUNCTIONS =====
 
-  // ============== ALL HOOKS MUST BE AT THE TOP LEVEL ==============
+// Format UTC timestamp string to IST
+const formatISTTime = (utcTimestamp) => {
+  if (!utcTimestamp) return '';
 
+  console.log("DEBUG: UTC timestamp from backend:", utcTimestamp);
+
+  const date = new Date(utcTimestamp);
+  console.log("DEBUG: Parsed Date object:", date.toISOString());
+
+  const istDate = new Date(date.getTime() + 5.5 * 60 * 60 * 1000);
+  console.log("DEBUG: IST Date object after +5:30:", istDate.toISOString());
+
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const year = istDate.getFullYear();
+  const month = months[istDate.getMonth()];
+  const day = istDate.getDate().toString().padStart(2, '0');
+
+  let hours = istDate.getHours();
+  const minutes = istDate.getMinutes().toString().padStart(2, '0');
+  const seconds = istDate.getSeconds().toString().padStart(2, '0');
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12;
+
+  const formatted = `${month} ${day}, ${year} ${hours}:${minutes}:${seconds} ${ampm} IST`;
+  console.log("DEBUG: Formatted IST string:", formatted);
+
+  return formatted;
+};
+
+// Calculate time ago based on IST-adjusted timestamp
+// Compute time ago correctly in IST
+const getTimeAgo = (utcTimestamp) => {
+  if (!utcTimestamp) return 'Never';
+
+  // 1️⃣ Parse UTC timestamp
+  const dateUTC = new Date(utcTimestamp);
+
+  // 2️⃣ Convert UTC timestamp to IST
+  const dateIST = new Date(dateUTC.getTime() + 5.5 * 60 * 60 * 1000);
+
+  // 3️⃣ Current time in IST
+  const nowUTC = new Date();
+  const nowIST = new Date(nowUTC.getTime() + 5.5 * 60 * 60 * 1000);
+
+  // 4️⃣ Compute difference in milliseconds
+  const diffMs = nowIST.getTime() - dateIST.getTime();
+
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  // 5️⃣ Return human-readable string
+  if (diffMins < 1) return 'Just now';
+  if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+  if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+
+  // 6️⃣ Older timestamps: display full IST
+  return formatISTTime(utcTimestamp);
+};
   // Main initialization effect
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -161,92 +222,79 @@ function AdminDashboard() {
 
   // Status polling effect
   useEffect(() => {
-    // Initial fetch
     fetchAllUserStatuses();
-    
-    // Set up polling every 2 seconds for ULTRA-FAST updates
-    const statusInterval = setInterval(() => {
-        fetchAllUserStatuses();
-    }, 2000); // 2 seconds
-    
+    const statusInterval = setInterval(fetchAllUserStatuses, 2000);
     return () => clearInterval(statusInterval);
-}, []);
+  }, []);
 
   // Fetch statuses when assigned tasks change
   useEffect(() => {
     if (assignedTasks.length > 0) {
-        fetchAllUserStatuses();
+      fetchAllUserStatuses();
     }
   }, [assignedTasks]);
 
-  // Apply filters and sorting whenever tasks or filters change
+  // Apply filters and sorting
   useEffect(() => {
     applyFiltersAndSorting();
   }, [unassignedTasks, assignedTasks, filters, sortConfig]);
 
-  // Calculate statistics whenever tasks change
+  // Calculate statistics
   useEffect(() => {
     calculateStatistics();
   }, [unassignedTasks, assignedTasks, users, userStatuses]);
 
-  // Click outside handler for context menu
+  // Click outside handler
   useEffect(() => {
     const handleClickOutside = () => closeContextMenu();
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
-  // ============== HEARTBEAT FOR ADMIN USER ==============
-  
-  // Start heartbeat for admin user
+  // Admin heartbeat
   useEffect(() => {
     if (!adminUserId) return;
-
+    
     console.log(`🟢 Starting heartbeat for admin user ${adminUserId}`);
-
-    // Send heartbeat immediately
     sendAdminHeartbeat();
-
-    // Set up interval to send heartbeat every 2 seconds
-    const heartbeatInterval = setInterval(() => {
-      sendAdminHeartbeat();
-    }, 2000);
-
-    // Cleanup on unmount
+    
+    const heartbeatInterval = setInterval(sendAdminHeartbeat, 2000);
+    
     return () => {
       clearInterval(heartbeatInterval);
-      // Send logout on unmount
       if (adminUserId) {
         navigator.sendBeacon(`/api/activity/logout?userId=${adminUserId}`);
       }
     };
   }, [adminUserId]);
-  // Add this useEffect near your other useEffects
-useEffect(() => {
-  // Force refresh all data when component mounts
-  const refreshData = async () => {
-    console.log("🔄 Admin Dashboard mounted - refreshing all data");
-    await fetchAllUserStatuses();
-    await fetchAllData();
-  };
-  
-  refreshData();
-  
-  // Also refresh when page becomes visible (user returns to tab)
-  const handleVisibilityChange = () => {
-    if (document.visibilityState === 'visible') {
-      console.log("📱 Page became visible - refreshing data");
-      fetchAllUserStatuses();
-      fetchAllData();
-    }
-  };
-  
-  document.addEventListener('visibilitychange', handleVisibilityChange);
-  
-  return () => {
-    document.removeEventListener('visibilitychange', handleVisibilityChange);
-  };
-}, []); // Empty dependency array = runs once on mount
+
+  // Mount refresh effect
+  useEffect(() => {
+    const refreshData = async () => {
+      console.log("🔄 Admin Dashboard mounted - refreshing all data");
+      await fetchAllUserStatuses();
+      await fetchAllData();
+    };
+    
+    refreshData();
+    
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log("📱 Page became visible - refreshing data");
+        fetchAllUserStatuses();
+        fetchAllData();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
+  // ============== HEARTBEAT FUNCTION ==============
+
   const sendAdminHeartbeat = async () => {
     if (!adminUserId) return;
     try {
@@ -257,7 +305,7 @@ useEffect(() => {
     }
   };
 
-  // ============== HELPER FUNCTIONS ==============
+  // ============== API FUNCTIONS ==============
 
   const checkBackendStatus = async () => {
     try {
@@ -269,7 +317,7 @@ useEffect(() => {
     } catch (error) {
       setBackendStatus("offline");
       setError("Cannot connect to backend server");
-      setErrorDetails(`Make sure backend is running on -[0p]`);
+      setErrorDetails(`Make sure backend is running`);
       setLoading(false);
     }
   };
@@ -296,39 +344,25 @@ useEffect(() => {
     }
   };
 
-  // Fetch all users' online status
-  // Fetch all users' online status
-const fetchAllUserStatuses = async () => {
-  try {
-    const response = await axios.get("/api/activity/all-status");
-    console.log("📥 Raw response from server:", response.data);
-    
-    const statusMap = {};
-    let onlineCount = 0;
-    
-    response.data.forEach(status => {
-      statusMap[status.userId] = status;
-      if (status.isOnline) onlineCount++;
+  const fetchAllUserStatuses = async () => {
+    try {
+      const response = await axios.get("/api/activity/all-status");
       
-      // Log each user's data
-      console.log(`User ${status.username}:`, {
-        lastActivity: status.lastActivity,
-        inactiveSeconds: status.inactiveSeconds,
-        isOnline: status.isOnline
+      const statusMap = {};
+      let onlineCount = 0;
+      
+      response.data.forEach(status => {
+        statusMap[status.userId] = status;
+        if (status.isOnline) onlineCount++;
       });
-    });
-    
-    console.log(`📊 Status: ${onlineCount} online, ${response.data.length - onlineCount} offline at ${new Date().toLocaleTimeString()}`);
-    
-    // Force a new object to ensure React detects the change
-    setUserStatuses({ ...statusMap });
-    setLastUpdate(Date.now());
-    
-  } catch (error) {
-    console.error("Error fetching user statuses:", error);
-  }
-};
-  // Fetch single user status
+      
+      setUserStatuses({ ...statusMap });
+      setLastUpdate(Date.now());
+    } catch (error) {
+      console.error("Error fetching user statuses:", error);
+    }
+  };
+
   const fetchUserStatus = async (userId) => {
     try {
       const response = await axios.get(`/api/activity/user-status/${userId}`);
@@ -343,56 +377,59 @@ const fetchAllUserStatuses = async () => {
     }
   };
 
-  // Handle user hover for popup
+  // ============== UI HANDLERS ==============
+
   const handleUserHover = (event, user) => {
     if (leaveTimeout.current) {
-        clearTimeout(leaveTimeout.current);
-        leaveTimeout.current = null;
+      clearTimeout(leaveTimeout.current);
+      leaveTimeout.current = null;
     }
     
     if (hoverTimeout.current) {
-        clearTimeout(hoverTimeout.current);
+      clearTimeout(hoverTimeout.current);
     }
     
     hoverTimeout.current = setTimeout(async () => {
-        const rect = event.target.getBoundingClientRect();
-        
-        setPopupPosition({
-            x: rect.left,
-            y: rect.top - 10
-        });
-        
-        const status = await fetchUserStatus(user.userId);
-        setHoveredUser({ ...user, ...status });
-        setShowUserPopup(true);
+      const rect = event.target.getBoundingClientRect();
+      
+      setPopupPosition({
+        x: rect.left,
+        y: rect.top - 10
+      });
+      
+      const status = await fetchUserStatus(user.userId);
+      setHoveredUser({ ...user, ...status });
+      setShowUserPopup(true);
     }, 1000);
   };
 
   const handleUserLeave = () => {
     if (hoverTimeout.current) {
-        clearTimeout(hoverTimeout.current);
-        hoverTimeout.current = null;
+      clearTimeout(hoverTimeout.current);
+      hoverTimeout.current = null;
     }
     
     leaveTimeout.current = setTimeout(() => {
-        setShowUserPopup(false);
-        setHoveredUser(null);
+      setShowUserPopup(false);
+      setHoveredUser(null);
     }, 500);
   };
 
   const handlePopupMouseEnter = () => {
     if (leaveTimeout.current) {
-        clearTimeout(leaveTimeout.current);
-        leaveTimeout.current = null;
+      clearTimeout(leaveTimeout.current);
+      leaveTimeout.current = null;
     }
   };
 
   const handlePopupMouseLeave = () => {
     leaveTimeout.current = setTimeout(() => {
-        setShowUserPopup(false);
-        setHoveredUser(null);
+      setShowUserPopup(false);
+      setHoveredUser(null);
     }, 300);
   };
+
+  // ============== STATISTICS ==============
 
   const calculateStatistics = () => {
     const allTasks = [...unassignedTasks, ...assignedTasks];
@@ -402,60 +439,64 @@ const fetchAllUserStatuses = async () => {
     const totalTasks = allTasks.length;
     const completedTasks = allTasks.filter(task => task.status === 'COMPLETED').length;
     const pendingTasks = allTasks.filter(task => 
-        task.status === 'NEW' || task.status === 'IN_PROGRESS' || task.status === 'ON_HOLD'
+      task.status === 'NEW' || task.status === 'IN_PROGRESS' || task.status === 'ON_HOLD'
     ).length;
     
     const overdueTasks = allTasks.filter(task => {
-        if (task.status === 'COMPLETED') return false;
-        if (!task.deadline) return false;
-        const deadline = new Date(task.deadline);
-        deadline.setHours(0, 0, 0, 0);
-        return deadline < today;
+      if (task.status === 'COMPLETED') return false;
+      if (!task.deadline) return false;
+      const deadline = new Date(task.deadline);
+      deadline.setHours(0, 0, 0, 0);
+      return deadline < today;
     }).length;
     
     const tasksByPriority = {
-        LOW: allTasks.filter(task => task.priority === 'LOW').length,
-        MEDIUM: allTasks.filter(task => task.priority === 'MEDIUM').length,
-        HIGH: allTasks.filter(task => task.priority === 'HIGH').length,
-        CRITICAL: allTasks.filter(task => task.priority === 'CRITICAL').length
+      LOW: allTasks.filter(task => task.priority === 'LOW').length,
+      MEDIUM: allTasks.filter(task => task.priority === 'MEDIUM').length,
+      HIGH: allTasks.filter(task => task.priority === 'HIGH').length,
+      CRITICAL: allTasks.filter(task => task.priority === 'CRITICAL').length
     };
     
     const tasksByStatus = {
-        NEW: unassignedTasks.length,
-        IN_PROGRESS: assignedTasks.filter(task => task.status === 'IN_PROGRESS').length,
-        ON_HOLD: assignedTasks.filter(task => task.status === 'ON_HOLD').length,
-        COMPLETED: assignedTasks.filter(task => task.status === 'COMPLETED').length
+      NEW: unassignedTasks.length,
+      IN_PROGRESS: assignedTasks.filter(task => task.status === 'IN_PROGRESS').length,
+      ON_HOLD: assignedTasks.filter(task => task.status === 'ON_HOLD').length,
+      COMPLETED: assignedTasks.filter(task => task.status === 'COMPLETED').length
     };
     
     const tasksPerUser = users.map(user => {
-        const userAssignedTasks = assignedTasks.filter(task => 
-            task.assignedUser && task.assignedUser.id === user.id
-        );
-        const userStatus = userStatuses[user.id] || { isOnline: false, lastLogin: null, lastActivity: null };
-        
-        return {
-            userId: user.id,
-            username: user.username,
-            email: user.email,
-            totalTasks: userAssignedTasks.length,
-            inProgress: userAssignedTasks.filter(t => t.status === 'IN_PROGRESS').length,
-            onHold: userAssignedTasks.filter(t => t.status === 'ON_HOLD').length,
-            completed: userAssignedTasks.filter(t => t.status === 'COMPLETED').length,
-            tasks: userAssignedTasks,
-            isOnline: userStatus.isOnline || false,
-            lastLogin: userStatus.lastLogin,
-            lastActivity: userStatus.lastActivity
-        };
+      const userAssignedTasks = assignedTasks.filter(task => 
+        task.assignedUser && task.assignedUser.id === user.id
+      );
+      const userStatus = userStatuses[user.id] || { 
+        isOnline: false, 
+        lastLogin: null, 
+        lastActivity: null 
+      };
+      
+      return {
+        userId: user.id,
+        username: user.username,
+        email: user.email,
+        totalTasks: userAssignedTasks.length,
+        inProgress: userAssignedTasks.filter(t => t.status === 'IN_PROGRESS').length,
+        onHold: userAssignedTasks.filter(t => t.status === 'ON_HOLD').length,
+        completed: userAssignedTasks.filter(t => t.status === 'COMPLETED').length,
+        tasks: userAssignedTasks,
+        isOnline: userStatus.isOnline || false,
+        lastLogin: userStatus.lastLogin,
+        lastActivity: userStatus.lastActivity
+      };
     }).sort((a, b) => b.totalTasks - a.totalTasks);
     
     setStatistics({
-        totalTasks,
-        completedTasks,
-        pendingTasks,
-        overdueTasks,
-        tasksPerUser,
-        tasksByPriority,
-        tasksByStatus
+      totalTasks,
+      completedTasks,
+      pendingTasks,
+      overdueTasks,
+      tasksPerUser,
+      tasksByPriority,
+      tasksByStatus
     });
   };
 
@@ -464,6 +505,8 @@ const fetchAllUserStatuses = async () => {
     setUserTasks(user.tasks || []);
     setShowUserTasksModal(true);
   };
+
+  // ============== FILTERS & SORTING ==============
 
   const applyFiltersAndSorting = () => {
     let filteredUnassigned = [...unassignedTasks];
@@ -482,21 +525,13 @@ const fetchAllUserStatuses = async () => {
     }
     
     if (filters.status) {
-      filteredUnassigned = filteredUnassigned.filter(task => 
-        task.status === filters.status
-      );
-      filteredAssigned = filteredAssigned.filter(task => 
-        task.status === filters.status
-      );
+      filteredUnassigned = filteredUnassigned.filter(task => task.status === filters.status);
+      filteredAssigned = filteredAssigned.filter(task => task.status === filters.status);
     }
     
     if (filters.priority) {
-      filteredUnassigned = filteredUnassigned.filter(task => 
-        task.priority === filters.priority
-      );
-      filteredAssigned = filteredAssigned.filter(task => 
-        task.priority === filters.priority
-      );
+      filteredUnassigned = filteredUnassigned.filter(task => task.priority === filters.priority);
+      filteredAssigned = filteredAssigned.filter(task => task.priority === filters.priority);
     }
     
     if (filters.deadline) {
@@ -565,6 +600,8 @@ const fetchAllUserStatuses = async () => {
     }));
   };
 
+  // ============== NOTIFICATIONS ==============
+
   const fetchNotifications = async () => {
     setNotificationsLoading(true);
     try {
@@ -627,6 +664,8 @@ const fetchAllUserStatuses = async () => {
     if (diffMins < 1440) return `${Math.floor(diffMins / 60)} hour${Math.floor(diffMins / 60) > 1 ? 's' : ''} ago`;
     return date.toLocaleDateString();
   };
+
+  // ============== TASK ACTIONS ==============
 
   const handleApiError = (error, defaultMessage) => {
     if (error.response) {
@@ -874,7 +913,6 @@ const fetchAllUserStatuses = async () => {
         await axios.post(`/api/activity/logout?userId=${userId}`);
         console.log("✅ Logout successful");
         
-        // Force a refresh of user statuses immediately after logout
         setTimeout(() => {
           fetchAllUserStatuses();
         }, 500);
@@ -883,51 +921,18 @@ const fetchAllUserStatuses = async () => {
         console.error("Logout failed:", error);
       }
     }
-    // Clear all state
+    
     setUserStatuses({});
     setUsers([]);
     setUnassignedTasks([]);
     setAssignedTasks([]);
-  
+    
     localStorage.clear();
     navigate("/login", { replace: true });
   };
-  const getTimeAgo = (timestamp) => {
-    if (!timestamp) return 'Never';
-    
-    // Parse the timestamp correctly
-    const date = new Date(timestamp);
-    
-    // Check if the date is valid
-    if (isNaN(date.getTime())) {
-      console.error('Invalid date:', timestamp);
-      return 'Invalid date';
-    }
-    
-    const now = new Date();
-    const diffMs = now - date;
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-    
-    // Debug logs
-    //console.log('Timestamp:', timestamp);
-    //console.log('Parsed date:', date.toISOString());
-    //console.log('Current time:', now.toISOString());
-    //console.log('Diff mins:', diffMins);
-    
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
-    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
-    
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
+
+  // ============== HELPER FUNCTIONS ==============
+
   const getUserName = (userId) => {
     if (!userId) return 'Unassigned';
     const user = users.find(u => u.id === userId);
@@ -959,6 +964,8 @@ const fetchAllUserStatuses = async () => {
     return sortConfig.direction === 'asc' ? '↑' : '↓';
   };
 
+  // ============== RENDER ==============
+
   if (loading && backendStatus === "checking") {
     return (
       <div className="admin-dashboard">
@@ -974,7 +981,6 @@ const fetchAllUserStatuses = async () => {
     );
   }
 
-  // ============== RENDER ==============
   return (
     <div className="admin-dashboard">
       <header className="dashboard-header">
@@ -1041,7 +1047,7 @@ const fetchAllUserStatuses = async () => {
       {backendStatus === "offline" && (
         <div className="error-banner">
           <strong>⚠️ Backend Server Offline</strong>
-          <p>Please start the backend server on http://localhost:8080</p>
+          <p>Please start the backend server</p>
           <button onClick={checkBackendStatus} className="retry-btn">Retry Connection</button>
         </div>
       )}
@@ -1062,12 +1068,10 @@ const fetchAllUserStatuses = async () => {
         </div>
       )}
 
-      {/* Statistics Dashboard */}
       {showStatistics && (
         <div className="statistics-dashboard">
           <h2>Dashboard Overview</h2>
           
-          {/* Summary Cards */}
           <div className="stats-grid">
             <div className="stat-card total">
               <div className="stat-icon">📊</div>
@@ -1076,7 +1080,6 @@ const fetchAllUserStatuses = async () => {
                 <span className="stat-value">{statistics.totalTasks}</span>
               </div>
             </div>
-            
             <div className="stat-card completed">
               <div className="stat-icon">✅</div>
               <div className="stat-content">
@@ -1084,7 +1087,6 @@ const fetchAllUserStatuses = async () => {
                 <span className="stat-value">{statistics.completedTasks}</span>
               </div>
             </div>
-            
             <div className="stat-card pending">
               <div className="stat-icon">⏳</div>
               <div className="stat-content">
@@ -1092,7 +1094,6 @@ const fetchAllUserStatuses = async () => {
                 <span className="stat-value">{statistics.pendingTasks}</span>
               </div>
             </div>
-            
             <div className="stat-card overdue">
               <div className="stat-icon">⚠️</div>
               <div className="stat-content">
@@ -1102,7 +1103,6 @@ const fetchAllUserStatuses = async () => {
             </div>
           </div>
 
-          {/* Charts Row */}
           <div className="stats-charts-row">
             <div className="chart-card">
               <h3>Tasks by Priority</h3>
@@ -1137,31 +1137,13 @@ const fetchAllUserStatuses = async () => {
             </div>
           </div>
 
-          {/* Status Update Indicator */}
           <div className="status-update-indicator">
             <span className={`update-dot ${Object.values(userStatuses).some(s => s.isOnline) ? 'has-online' : ''}`}></span>
             <span>Last updated: {new Date(lastUpdate).toLocaleTimeString()}</span>
             <span className="badge">⏱️ 2s polling</span>
             <button onClick={fetchAllUserStatuses} className="refresh-status-btn">🔄 Refresh Now</button>
           </div>
-          {/* Add this near your status update indicator */}
-<div className="mb-4">
-  <button 
-    onClick={() => {
-      console.log("🔄 Manual refresh triggered");
-      fetchAllUserStatuses();
-      fetchAllData();
-    }}
-    className="bg-blue-500 text-white px-4 py-2 rounded mr-2"
-  >
-    🔄 Manual Refresh
-  </button>
-  <span className="text-sm text-gray-600">
-    Last update: {new Date(lastUpdate).toLocaleTimeString()}
-  </span>
-</div>
 
-          {/* Tasks Per User Table */}
           <div className="user-tasks-table">
             <h3>Tasks Per User</h3>
             <table>
@@ -1198,21 +1180,12 @@ const fetchAllUserStatuses = async () => {
                     <td className="text-center">
   {user.lastActivity ? (
     <span className={user.isOnline ? 'text-success' : 'text-muted'}>
-      {user.isOnline ? (
-        <span title={`Last activity: ${new Date(user.lastActivity).toLocaleString()}`}>
-          Active now
-          {user.inactiveSeconds !== undefined && (
-            <span className="inactive-badge"> ({user.inactiveSeconds}s)</span>
-          )}
-        </span>
-      ) : (
-        <span title={`Last active: ${new Date(user.lastActivity).toLocaleString()}`}>
-          {getTimeAgo(user.lastActivity)}
-          {user.inactiveSeconds !== undefined && (
-            <span className="inactive-badge"> ({user.inactiveSeconds}s ago)</span>
-          )}
-        </span>
-      )}
+      <span
+        className="cursor-help"
+        title={`Last active: ${formatISTTime(user.lastActivity)}`}
+      >
+        {user.isOnline ? 'Active now' : getTimeAgo(user.lastActivity)}
+      </span>
     </span>
   ) : (
     <span className="text-muted">Never</span>
@@ -1263,18 +1236,15 @@ const fetchAllUserStatuses = async () => {
           </div>
           <div className="popup-content">
             <p><strong>Email:</strong> {hoveredUser.email}</p>
-            <p><strong>Last Login:</strong> {getTimeAgo(hoveredUser.lastLogin)}</p>
-            <p><strong>Last Activity:</strong> {hoveredUser.lastActivity ? getTimeAgo(hoveredUser.lastActivity) : 'No activity'}</p>
+            <p><strong>Last Login:</strong> {hoveredUser.lastLogin ? formatISTTime(hoveredUser.lastLogin) : 'Never'}</p>
+            <p><strong>Last Activity:</strong> {hoveredUser.lastActivity ? formatISTTime(hoveredUser.lastActivity) : 'No activity'}</p>
             <p><strong>Status:</strong> {hoveredUser.isOnline ? '🟢 Online' : '⚫ Offline'}</p>
-            {hoveredUser.isOnline && hoveredUser.lastActivity && (
-              <p><strong>Active:</strong> {getTimeAgo(hoveredUser.lastActivity)}</p>
-            )}
           </div>
           <div className="popup-arrow"></div>
         </div>
       )}
 
-      {/* Rest of your JSX remains the same... */}
+      {/* Rest of the JSX remains the same... */}
       <div className="dashboard-content">
         {/* Left Panel - Create Task Form */}
         <div className="create-task-panel">
@@ -1335,7 +1305,6 @@ const fetchAllUserStatuses = async () => {
 
         {/* Right Panel - Tasks View with Filters */}
         <div className="tasks-view-panel">
-          {/* Filters Section */}
           <div className="filters-section">
             <h3>Filters & Sorting</h3>
             <div className="filters-grid">
@@ -1390,7 +1359,6 @@ const fetchAllUserStatuses = async () => {
               </div>
             </div>
             
-            {/* Sorting Controls */}
             <div className="sorting-controls">
               <span className="sort-label">Sort by:</span>
               <button 
@@ -1420,7 +1388,6 @@ const fetchAllUserStatuses = async () => {
             </div>
           </div>
 
-          {/* Tabs */}
           <div className="tabs">
             <button 
               className={`tab ${activeTab === 'unassigned' ? 'active' : ''}`}
@@ -1436,7 +1403,6 @@ const fetchAllUserStatuses = async () => {
             </button>
           </div>
 
-          {/* Unassigned Tasks */}
           {activeTab === 'unassigned' && (
             <div className="tasks-grid-container">
               {filteredUnassignedTasks.length === 0 ? (
@@ -1478,7 +1444,6 @@ const fetchAllUserStatuses = async () => {
             </div>
           )}
 
-          {/* Assigned Tasks */}
           {activeTab === 'assigned' && (
             <div className="tasks-grid-container">
               {filteredAssignedTasks.length === 0 ? (
