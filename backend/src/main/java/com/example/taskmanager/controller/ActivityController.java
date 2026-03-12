@@ -86,71 +86,71 @@ public class ActivityController {
      * Users are considered offline if no heartbeat in last 5 seconds
      */
     @GetMapping("/all-status")
-    public ResponseEntity<?> getAllUsersStatus() {
-        try {
-            List<User> users = userRepository.findAll();
-            LocalDateTime now = LocalDateTime.now();
+public ResponseEntity<?> getAllUsersStatus() {
+    try {
+        List<User> users = userRepository.findAll();
+        LocalDateTime now = LocalDateTime.now();
+        
+        AtomicInteger markedOffline = new AtomicInteger(0);
+        AtomicInteger onlineCount = new AtomicInteger(0);
+        
+        List<Map<String, Object>> userStatuses = users.stream().map(user -> {
+            Map<String, Object> status = new HashMap<>();
+            status.put("userId", user.getId());
+            status.put("username", user.getUsername());
+            status.put("email", user.getEmail());
+            status.put("lastLogin", user.getLastLogin());
+            status.put("lastActivity", user.getLastActivity());
             
-            AtomicInteger markedOffline = new AtomicInteger(0);
-            AtomicInteger onlineCount = new AtomicInteger(0);
+            // DEBUG LOG - Print each user's lastActivity
+            System.out.println("📋 User " + user.getUsername() + 
+                " lastActivity: " + user.getLastActivity());
             
-            List<Map<String, Object>> userStatuses = users.stream().map(user -> {
-                Map<String, Object> status = new HashMap<>();
-                status.put("userId", user.getId());
-                status.put("username", user.getUsername());
-                status.put("email", user.getEmail());
-                status.put("lastLogin", user.getLastLogin());
-                status.put("lastActivity", user.getLastActivity());
+            boolean isOnline = false;
+            if (user.getLastActivity() != null) {
+                long secondsInactive = ChronoUnit.SECONDS.between(user.getLastActivity(), now);
+                status.put("inactiveSeconds", secondsInactive);
                 
-                // ULTRA-FAST RULE: User is online ONLY if heartbeat received in last 5 seconds
-                boolean isOnline = false;
-                if (user.getLastActivity() != null) {
-                    long secondsInactive = ChronoUnit.SECONDS.between(user.getLastActivity(), now);
-                    status.put("inactiveSeconds", secondsInactive);
-                    
-                    // FAST: 5 seconds max inactivity
-                    if (secondsInactive <= 2) {
-                        isOnline = true;
-                        onlineCount.incrementAndGet();
-                    } else {
-                        // Mark offline immediately if inactive > 2 seconds
-                        if (user.getIsOnline()) {
-                            markedOffline.incrementAndGet();
-                            user.setOnline(false);
-                            System.out.println("🔴 User " + user.getUsername() + " went offline - inactive for " + secondsInactive + " seconds");
-                        }
-                    }
+                if (secondsInactive <= 2) {
+                    isOnline = true;
+                    onlineCount.incrementAndGet();
                 } else {
-                    status.put("inactiveSeconds", null);
+                    if (user.getIsOnline()) {
+                        markedOffline.incrementAndGet();
+                        user.setOnline(false);
+                        System.out.println("🔴 User " + user.getUsername() + " went offline - inactive for " + secondsInactive + " seconds");
+                    }
                 }
-                
-                status.put("isOnline", isOnline);
-                
-                return status;
-            }).collect(Collectors.toList());
-            
-            // Batch save all updated users (those marked offline)
-            if (markedOffline.get() > 0) {
-                userRepository.saveAll(users.stream()
-                    .filter(user -> !user.getIsOnline() && user.getLastActivity() != null)
-                    .collect(Collectors.toList()));
-                
-                System.out.println("🔴 FAST TIMEOUT: " + markedOffline.get() + 
-                    " users marked offline at " + now.toLocalTime() + 
-                    " (inactive > 5s)");
+            } else {
+                status.put("inactiveSeconds", null);
             }
             
-            System.out.println("📊 Status check: " + onlineCount.get() + " online, " + 
-                (users.size() - onlineCount.get()) + " offline at " + now.toLocalTime());
+            status.put("isOnline", isOnline);
             
-            return ResponseEntity.ok(userStatuses);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.badRequest()
-                .body(Map.of("error", "Failed to fetch user statuses: " + e.getMessage()));
+            return status;
+        }).collect(Collectors.toList());
+        
+        // Batch save all updated users (those marked offline)
+        if (markedOffline.get() > 0) {
+            userRepository.saveAll(users.stream()
+                .filter(user -> !user.getIsOnline() && user.getLastActivity() != null)
+                .collect(Collectors.toList()));
+            
+            System.out.println("🔴 FAST TIMEOUT: " + markedOffline.get() + 
+                " users marked offline at " + now.toLocalTime() + 
+                " (inactive > 5s)");
         }
+        
+        System.out.println("📊 Status check: " + onlineCount.get() + " online, " + 
+            (users.size() - onlineCount.get()) + " offline at " + now.toLocalTime());
+        
+        return ResponseEntity.ok(userStatuses);
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.badRequest()
+            .body(Map.of("error", "Failed to fetch user statuses: " + e.getMessage()));
     }
-
+}
     /**
      * Scheduled task to aggressively mark inactive users offline every 3 seconds
      * This ensures users are marked offline even if they don't call all-status

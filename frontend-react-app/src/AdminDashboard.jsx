@@ -221,7 +221,32 @@ function AdminDashboard() {
       }
     };
   }, [adminUserId]);
-
+  // Add this useEffect near your other useEffects
+useEffect(() => {
+  // Force refresh all data when component mounts
+  const refreshData = async () => {
+    console.log("🔄 Admin Dashboard mounted - refreshing all data");
+    await fetchAllUserStatuses();
+    await fetchAllData();
+  };
+  
+  refreshData();
+  
+  // Also refresh when page becomes visible (user returns to tab)
+  const handleVisibilityChange = () => {
+    if (document.visibilityState === 'visible') {
+      console.log("📱 Page became visible - refreshing data");
+      fetchAllUserStatuses();
+      fetchAllData();
+    }
+  };
+  
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+  
+  return () => {
+    document.removeEventListener('visibilitychange', handleVisibilityChange);
+  };
+}, []); // Empty dependency array = runs once on mount
   const sendAdminHeartbeat = async () => {
     if (!adminUserId) return;
     try {
@@ -272,31 +297,37 @@ function AdminDashboard() {
   };
 
   // Fetch all users' online status
-  const fetchAllUserStatuses = async () => {
-    try {
-        const response = await axios.get("/api/activity/all-status");
-        const statusMap = {};
-        let onlineCount = 0;
-        
-        response.data.forEach(status => {
-            statusMap[status.userId] = status;
-            if (status.isOnline) onlineCount++;
-            
-            // Log if any user is close to going offline
-            if (status.inactiveSeconds > 3 && status.inactiveSeconds < 5) {
-                console.log(`⚠️ User ${status.username} will be offline in ${5 - status.inactiveSeconds}s`);
-            }
-        });
-        
-        console.log(`📊 Status: ${onlineCount} online, ${response.data.length - onlineCount} offline at ${new Date().toLocaleTimeString()}`);
-        
-        setUserStatuses(statusMap);
-        setLastUpdate(Date.now());
-    } catch (error) {
-        console.error("Error fetching user statuses:", error);
-    }
+  // Fetch all users' online status
+const fetchAllUserStatuses = async () => {
+  try {
+    const response = await axios.get("/api/activity/all-status");
+    console.log("📥 Raw response from server:", response.data);
+    
+    const statusMap = {};
+    let onlineCount = 0;
+    
+    response.data.forEach(status => {
+      statusMap[status.userId] = status;
+      if (status.isOnline) onlineCount++;
+      
+      // Log each user's data
+      console.log(`User ${status.username}:`, {
+        lastActivity: status.lastActivity,
+        inactiveSeconds: status.inactiveSeconds,
+        isOnline: status.isOnline
+      });
+    });
+    
+    console.log(`📊 Status: ${onlineCount} online, ${response.data.length - onlineCount} offline at ${new Date().toLocaleTimeString()}`);
+    
+    // Force a new object to ensure React detects the change
+    setUserStatuses({ ...statusMap });
+    setLastUpdate(Date.now());
+    
+  } catch (error) {
+    console.error("Error fetching user statuses:", error);
+  }
 };
-
   // Fetch single user status
   const fetchUserStatus = async (userId) => {
     try {
@@ -841,33 +872,61 @@ function AdminDashboard() {
     if (userId) {
       try {
         await axios.post(`/api/activity/logout?userId=${userId}`);
-        console.log("✅ Logout successful"); // Add this to check
+        console.log("✅ Logout successful");
+        
+        // Force a refresh of user statuses immediately after logout
+        setTimeout(() => {
+          fetchAllUserStatuses();
+        }, 500);
+        
       } catch (error) {
         console.error("Logout failed:", error);
       }
     }
+    // Clear all state
+    setUserStatuses({});
+    setUsers([]);
+    setUnassignedTasks([]);
+    setAssignedTasks([]);
+  
     localStorage.clear();
     navigate("/login", { replace: true });
   };
   const getTimeAgo = (timestamp) => {
     if (!timestamp) return 'Never';
     
+    // Parse the timestamp correctly
     const date = new Date(timestamp);
-    console.log('Raw timestamp:', timestamp);
-    console.log('Parsed date:', date.toString());
-    console.log('Local time:', date.toLocaleString());
+    
+    // Check if the date is valid
+    if (isNaN(date.getTime())) {
+      console.error('Invalid date:', timestamp);
+      return 'Invalid date';
+    }
     
     const now = new Date();
     const diffMs = now - date;
     const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
     
-    console.log('Difference in minutes:', diffMins);
+    // Debug logs
+    //console.log('Timestamp:', timestamp);
+    //console.log('Parsed date:', date.toISOString());
+    //console.log('Current time:', now.toISOString());
+    //console.log('Diff mins:', diffMins);
     
     if (diffMins < 1) return 'Just now';
     if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
-    if (diffMins < 1440) return `${Math.floor(diffMins / 60)} hour${Math.floor(diffMins / 60) > 1 ? 's' : ''} ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
     
-    return date.toLocaleDateString();
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
   const getUserName = (userId) => {
     if (!userId) return 'Unassigned';
@@ -1085,6 +1144,22 @@ function AdminDashboard() {
             <span className="badge">⏱️ 2s polling</span>
             <button onClick={fetchAllUserStatuses} className="refresh-status-btn">🔄 Refresh Now</button>
           </div>
+          {/* Add this near your status update indicator */}
+<div className="mb-4">
+  <button 
+    onClick={() => {
+      console.log("🔄 Manual refresh triggered");
+      fetchAllUserStatuses();
+      fetchAllData();
+    }}
+    className="bg-blue-500 text-white px-4 py-2 rounded mr-2"
+  >
+    🔄 Manual Refresh
+  </button>
+  <span className="text-sm text-gray-600">
+    Last update: {new Date(lastUpdate).toLocaleTimeString()}
+  </span>
+</div>
 
           {/* Tasks Per User Table */}
           <div className="user-tasks-table">
