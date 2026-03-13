@@ -129,36 +129,36 @@ function AdminDashboard() {
   // Get current admin user ID
   const adminUserId = localStorage.getItem("userId");
   // ===== HELPER FUNCTIONS =====
-  // ===== HELPER FUNCTIONS =====
+// Function to calculate time ago (difference between lastActivity and current local time)
+const calculateTimeAgo = (lastActivity) => {
+  if (!lastActivity) return "Never";  // If there's no last activity, return "Never"
 
-// Format UTC timestamp string to IST
-const formatISTTime = (utcTimestamp) => {
-  if (!utcTimestamp) return '';
+  const now = new Date(); // Current time in local timezone
+  const lastActivityDate = new Date(lastActivity); // Last activity time (UTC)
 
-  console.log("DEBUG: UTC timestamp from backend:", utcTimestamp);
+  // Subtract the lastActivity from the current time (local time)
+  const diffInMs = now.getTime() - lastActivityDate.getTime();
 
-  const date = new Date(utcTimestamp);
-  console.log("DEBUG: Parsed Date object:", date.toISOString());
+  // Calculate the difference in minutes, hours, and days
+  const diffInSecs = Math.floor(diffInMs / 1000); // Convert to seconds
+  const diffInMins = Math.floor(diffInSecs / 60); // Convert to minutes
+  const diffInHours = Math.floor(diffInMins / 60); // Convert to hours
+  const diffInDays = Math.floor(diffInHours / 24); // Convert to days
 
-  const istDate = new Date(date.getTime() + 5.5 * 60 * 60 * 1000);
-  console.log("DEBUG: IST Date object after +5:30:", istDate.toISOString());
+  let timeAgo = '';
+  if (diffInSecs < 60) {
+    timeAgo = "Just now"; // Less than a minute ago
+  } else if (diffInMins < 60) {
+    timeAgo = `${diffInMins} minute${diffInMins > 1 ? 's' : ''} ago`; // In minutes
+  } else if (diffInHours < 24) {
+    timeAgo = `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`; // In hours
+  } else if (diffInDays < 7) {
+    timeAgo = `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`; // In days
+  } else {
+    timeAgo = lastActivityDate.toLocaleString(); // If it's more than a week ago, return the exact date
+  }
 
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const year = istDate.getFullYear();
-  const month = months[istDate.getMonth()];
-  const day = istDate.getDate().toString().padStart(2, '0');
-
-  let hours = istDate.getHours();
-  const minutes = istDate.getMinutes().toString().padStart(2, '0');
-  const seconds = istDate.getSeconds().toString().padStart(2, '0');
-  const ampm = hours >= 12 ? 'PM' : 'AM';
-  hours = hours % 12;
-  hours = hours ? hours : 12;
-
-  const formatted = `${month} ${day}, ${year} ${hours}:${minutes}:${seconds} ${ampm} IST`;
-  console.log("DEBUG: Formatted IST string:", formatted);
-
-  return formatted;
+  return timeAgo;
 };
 
 // Calculate time ago based on IST-adjusted timestamp
@@ -192,6 +192,45 @@ const getTimeAgo = (utcTimestamp) => {
   // 6️⃣ Older timestamps: display full IST
   return formatISTTime(utcTimestamp);
 };
+
+// Function to format the last activity time in a readable format (IST)
+const getLastActivityTime = (lastActivity) => {
+  if (!lastActivity) return 'Never'; // If there's no last activity, return "Never"
+
+  // Get current local time (IST)
+  const now = new Date();  // Current time (local time)
+
+  // Convert lastActivity (UTC time) to a Date object
+  const lastActivityDate = new Date(lastActivity);
+
+  // Get the difference between current time and last activity time
+  const diffInMs = now.getTime() - lastActivityDate.getTime();  // Difference in milliseconds
+
+  // Subtract the time difference from the current local time (to get the exact time of last activity)
+  const lastActivityLocalTime = new Date(now.getTime() - diffInMs); // Subtract the difference
+
+  // Format the time (IST) including day, date, and time
+  const formattedLastActivityTime = formatLocalTime(lastActivityLocalTime);
+
+  return formattedLastActivityTime;
+};
+
+// Function to format the last activity time in a readable format (IST) with day and date
+const formatLocalTime = (date) => {
+  const options = {
+    weekday: 'long', // Day of the week (e.g., Monday)
+    year: 'numeric', // Full year (e.g., 2026)
+    month: 'long', // Full month name (e.g., March)
+    day: 'numeric', // Day of the month (e.g., 13)
+    hour: '2-digit', // 2-digit hour
+    minute: '2-digit', // 2-digit minute
+    hour12: true, // 12-hour format (AM/PM)
+    timeZone: 'Asia/Kolkata' // Ensure it's in IST
+  };
+  
+  return date.toLocaleString('en-IN', options); // Use India Standard Time (IST)
+};
+
   // Main initialization effect
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -378,31 +417,41 @@ const getTimeAgo = (utcTimestamp) => {
   };
 
   // ============== UI HANDLERS ==============
-
   const handleUserHover = (event, user) => {
-    if (leaveTimeout.current) {
-      clearTimeout(leaveTimeout.current);
-      leaveTimeout.current = null;
+    console.log("handleUserHover triggered");
+  
+    if (!user || !user.username || !user.lastActivity) {
+      console.error("User or required fields (username, lastActivity) are missing!");
+      return; // Exit if user or necessary fields are missing
     }
-    
-    if (hoverTimeout.current) {
-      clearTimeout(hoverTimeout.current);
-    }
-    
-    hoverTimeout.current = setTimeout(async () => {
-      const rect = event.target.getBoundingClientRect();
-      
-      setPopupPosition({
-        x: rect.left,
-        y: rect.top - 10
-      });
-      
-      const status = await fetchUserStatus(user.userId);
-      setHoveredUser({ ...user, ...status });
-      setShowUserPopup(true);
-    }, 1000);
+  
+    // Get current local time (IST)
+    const now = new Date();  // Current time (local time)
+  
+    // Convert lastActivity (UTC time) to a Date object
+    const lastActivityDate = new Date(user.lastActivity);
+  
+    // Get the difference between current time and last activity time
+    const diffInMs = now.getTime() - lastActivityDate.getTime();  // Difference in milliseconds
+  
+    // Subtract the time difference from the current local time (to get the exact time of last activity)
+    const lastActivityLocalTime = new Date(now.getTime() - diffInMs); // Subtract the difference
+  
+    // Format the time (IST)
+    const formattedLastActivityTime = formatLocalTime(lastActivityLocalTime);
+  
+    // Set the formatted time in state to be displayed in the hover box
+    setHoveredUser({ ...user, formattedLastActivityTime });
+  
+    const rect = event.target.getBoundingClientRect(); // Get the bounding rect of the element
+    setPopupPosition({
+      x: rect.left,
+      y: rect.top - 10, // Slightly adjust the position
+    });
+  
+    setShowUserPopup(true); // Show the user popup
   };
-
+  
   const handleUserLeave = () => {
     if (hoverTimeout.current) {
       clearTimeout(hoverTimeout.current);
@@ -1178,18 +1227,18 @@ const getTimeAgo = (utcTimestamp) => {
                     </td>
                     <td>{user.email}</td>
                     <td className="text-center">
-  {user.lastActivity ? (
-    <span className={user.isOnline ? 'text-success' : 'text-muted'}>
-      <span
-        className="cursor-help"
-        title={`Last active: ${formatISTTime(user.lastActivity)}`}
-      >
-        {user.isOnline ? 'Active now' : getTimeAgo(user.lastActivity)}
-      </span>
+                    {user.lastActivity ? (
+  <span className={user.isOnline ? 'text-success' : 'text-muted'}>
+    <span
+      className="cursor-help"
+      title={user.isOnline ? 'Active now' : `Last active: ${getLastActivityTime(user.lastActivity)}`}
+    >
+      {user.isOnline ? 'Active now' : getTimeAgo(user.lastActivity)}
     </span>
-  ) : (
-    <span className="text-muted">Never</span>
-  )}
+  </span>
+) : (
+  <span className="text-muted">Never</span>
+)}
 </td>
                     <td className="text-center">{user.totalTasks}</td>
                     <td className="text-center">{user.inProgress}</td>
@@ -1219,30 +1268,30 @@ const getTimeAgo = (utcTimestamp) => {
 
       {/* User Status Popup */}
       {showUserPopup && hoveredUser && (
-        <div 
-          className="user-status-popup"
-          style={{
-            position: 'fixed',
-            top: popupPosition.y,
-            left: popupPosition.x,
-            transform: 'translateY(-100%)'
-          }}
-          onMouseEnter={handlePopupMouseEnter}
-          onMouseLeave={handlePopupMouseLeave}
-        >
-          <div className="popup-header">
-            <span className={`status-dot ${hoveredUser.isOnline ? 'online' : 'offline'}`}></span>
-            <h4>{hoveredUser.username}</h4>
-          </div>
-          <div className="popup-content">
-            <p><strong>Email:</strong> {hoveredUser.email}</p>
-            <p><strong>Last Login:</strong> {hoveredUser.lastLogin ? formatISTTime(hoveredUser.lastLogin) : 'Never'}</p>
-            <p><strong>Last Activity:</strong> {hoveredUser.lastActivity ? formatISTTime(hoveredUser.lastActivity) : 'No activity'}</p>
-            <p><strong>Status:</strong> {hoveredUser.isOnline ? '🟢 Online' : '⚫ Offline'}</p>
-          </div>
-          <div className="popup-arrow"></div>
-        </div>
-      )}
+  <div 
+    className="user-status-popup"
+    style={{
+      position: 'fixed',
+      top: popupPosition.y,
+      left: popupPosition.x,
+      transform: 'translateY(-100%)'
+    }}
+    onMouseEnter={handlePopupMouseEnter}
+    onMouseLeave={handlePopupMouseLeave}
+  >
+    <div className="popup-header">
+      <span className={`status-dot ${hoveredUser.isOnline ? 'online' : 'offline'}`}></span>
+      <h4>{hoveredUser.username}</h4>
+    </div>
+    <div className="popup-content">
+      <p><strong>Email:</strong> {hoveredUser.email}</p>
+      <p><strong>Last Login:</strong> {hoveredUser.lastLogin ? calculateTimeAgo(hoveredUser.lastLogin) : 'Never'}</p>
+      <p><strong>Last Activity:</strong> {hoveredUser.formattedLastActivity || 'No activity'}</p> {/* Display the time ago */}
+      <p><strong>Status:</strong> {hoveredUser.isOnline ? '🟢 Online' : '⚫ Offline'}</p>
+    </div>
+    <div className="popup-arrow"></div>
+  </div>
+)}
 
       {/* Rest of the JSX remains the same... */}
       <div className="dashboard-content">
