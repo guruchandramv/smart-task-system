@@ -13,11 +13,12 @@ function AdminDashboard() {
   const navigate = useNavigate();
   const canvasRef = useRef(null);
   const getProfileImage = (profilePicture) => {
-    const cleanPath = profilePicture
-      ? profilePicture.replace(/^\/+/, "")
+    const base = BASE_URL.replace(/\/+$/, ""); // remove trailing slash
+    const path = profilePicture
+      ? profilePicture.replace(/^\/+/, "") // remove leading slash
       : "uploads/profile_pictures/default.png";
 
-    return `${BASE_URL}/${cleanPath}?t=${Date.now()}`;
+    return `${base}/${path}`;
   };
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
@@ -1185,10 +1186,6 @@ useEffect(() => {
   <img
   src={getProfileImage(user.profilePicture)}
   alt="User"
-  className="user-avatar"
-  onError={(e) => {
-    e.target.src = `${BASE_URL}/uploads/profile_pictures/default.png?t=${Date.now()}`;
-  }}
 />
     <span>{user.username}</span>
   </div>
