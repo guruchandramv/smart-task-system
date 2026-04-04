@@ -14,10 +14,12 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedHeaders("*")
                 .allowCredentials(true);
     }
-
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:/app/uploads/");
-    }
+    registry.addResourceHandler("/uploads/**")
+            .addResourceLocations(
+                "file:uploads/",        // ✅ LOCAL
+                "file:/app/uploads/"    // ✅ RENDER
+            );
+}
 }
