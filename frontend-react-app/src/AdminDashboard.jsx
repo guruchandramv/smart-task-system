@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import axios from './axiosConfig.js';
 import "./AdminDashboard.css";
 
+const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8080";
+
 // Configure axios defaults
 axios.defaults.headers.common['Content-Type'] = 'application/json';
 axios.defaults.withCredentials = true;
@@ -10,6 +12,12 @@ axios.defaults.withCredentials = true;
 function AdminDashboard() {
   const navigate = useNavigate();
   const canvasRef = useRef(null);
+  const getProfileImage = (profilePicture) => {
+    return profilePicture
+      ? `${BASE_URL}${profilePicture}`
+      : `${BASE_URL}/uploads/profile_pictures/default.png`;
+  };
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
 
   // ============== PARTICLE BACKGROUND ANIMATION ==============
   useEffect(() => {
@@ -180,7 +188,7 @@ function AdminDashboard() {
   const adminUserId = localStorage.getItem("userId");
   const adminUsername = localStorage.getItem("username");
   const adminProfilePicture = localStorage.getItem("profilePicture");
-  
+
   // ============== TIME FORMATTING FUNCTIONS ==============
   const formatLocalTime = (date) => {
     const options = {
@@ -1166,9 +1174,23 @@ useEffect(() => {
                     <td className="status-cell">
                       <span className={`online-indicator ${user.isOnline ? 'online' : 'offline'}`} title={user.isOnline ? 'Online' : 'Offline'}></span>
                     </td>
-                    <td className="username-cell" onMouseEnter={(e) => handleUserHover(e, user)} onMouseLeave={handleUserLeave}>
-                      {user.username}
-                    </td>
+                    <td
+  className="username-cell"
+  onMouseEnter={(e) => handleUserHover(e, user)}
+  onMouseLeave={handleUserLeave}
+>
+  <div className="user-info">
+    <img
+      src={getProfileImage(user.profilePicture)}
+      alt="User"
+      className="user-avatar"
+      onError={(e) => {
+        e.target.src = `${BASE_URL}/uploads/profile_pictures/default.png`;
+      }}
+    />
+    <span>{user.username}</span>
+  </div>
+</td>
                     <td>{user.email}</td>
                     <td className="text-center">
                       {user.lastActivity ? (
