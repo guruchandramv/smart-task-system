@@ -13,9 +13,11 @@ function AdminDashboard() {
   const navigate = useNavigate();
   const canvasRef = useRef(null);
   const getProfileImage = (profilePicture) => {
-    return profilePicture
-      ? `${BASE_URL}${profilePicture}`
-      : `${BASE_URL}/uploads/profile_pictures/default.png`;
+    const cleanPath = profilePicture
+      ? profilePicture.replace(/^\/+/, "")
+      : "uploads/profile_pictures/default.png";
+
+    return `${BASE_URL}/${cleanPath}?t=${Date.now()}`;
   };
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
@@ -1180,14 +1182,14 @@ useEffect(() => {
   onMouseLeave={handleUserLeave}
 >
   <div className="user-info">
-    <img
-      src={getProfileImage(user.profilePicture)}
-      alt="User"
-      className="user-avatar"
-      onError={(e) => {
-        e.target.src = `${BASE_URL}/uploads/profile_pictures/default.png`;
-      }}
-    />
+  <img
+  src={getProfileImage(user.profilePicture)}
+  alt="User"
+  className="user-avatar"
+  onError={(e) => {
+    e.target.src = `${BASE_URL}/uploads/profile_pictures/default.png?t=${Date.now()}`;
+  }}
+/>
     <span>{user.username}</span>
   </div>
 </td>
