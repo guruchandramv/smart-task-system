@@ -213,7 +213,7 @@ public class TaskController {
      * PUT update task
      * Endpoint: PUT /api/tasks/{taskId}
      */
-    @PutMapping("/{taskId}")
+    @PutMapping("/api/tasks/{taskId}")
     public ResponseEntity<?> updateTask(@PathVariable Long taskId, @RequestBody Map<String, Object> taskPayload) {
         try {
             System.out.println("Updating task: " + taskId);

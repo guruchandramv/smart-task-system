@@ -978,10 +978,35 @@ useEffect(() => {
       </button>
 
       {showNotifications && (
-        <div className="notification-panel">
-          {/* Your existing notification panel code remains here */}
+  <div className="notification-panel">
+    <h3>Notifications</h3>
+    {/* Check if there are any notifications */}
+    {notifications.length > 0 ? (
+      notifications.map((notification) => (
+        <div key={notification.id} className="notification-item">
+          <div className="notification-header">
+            <strong>{notification.type}</strong>
+            <span className="notification-time">
+              {new Date(notification.createdAt).toLocaleTimeString()}
+            </span>
+          </div>
+          <p>{notification.message}</p>
+          {/* Optional: Add an action to mark as read */}
+          {notification.status === 'UNREAD' && (
+            <button
+              onClick={() => markAsRead(notification.id)}
+              className="mark-as-read-btn"
+            >
+              Mark as Read
+            </button>
+          )}
         </div>
-      )}
+      ))
+    ) : (
+      <p>No new notifications.</p>
+    )}
+  </div>
+)}
     </div>
 
     {/* User Avatar Dropdown - ADD THIS */}
@@ -1023,7 +1048,7 @@ useEffect(() => {
       <header className="dashboard-header">
   <h1>Admin Dashboard</h1>
   <div className="header-controls">
-    <div className="notification-container">
+  <div className="notification-container">
       <button
         className={`notification-bell ${unreadCount > 0 ? 'has-unread' : ''}`}
         onClick={toggleNotifications}
@@ -1033,12 +1058,36 @@ useEffect(() => {
       </button>
 
       {showNotifications && (
-        <div className="notification-panel">
-          {/* Your existing notification panel code remains here */}
+  <div className="notification-panel">
+    <h3>Notifications</h3>
+    {/* Check if there are any notifications */}
+    {notifications.length > 0 ? (
+      notifications.map((notification) => (
+        <div key={notification.id} className="notification-item">
+          <div className="notification-header">
+            <strong>{notification.type}</strong>
+            <span className="notification-time">
+              {new Date(notification.createdAt).toLocaleTimeString()}
+            </span>
+          </div>
+          <p>{notification.message}</p>
+          {/* Optional: Add an action to mark as read */}
+          {notification.status === 'UNREAD' && (
+            <button
+              onClick={() => markAsRead(notification.id)}
+              className="mark-as-read-btn"
+            >
+              Mark as Read
+            </button>
+          )}
         </div>
-      )}
+      ))
+    ) : (
+      <p>No new notifications.</p>
+    )}
+  </div>
+)}
     </div>
-
     {/* User Avatar Dropdown - ADD THIS */}
     <div className="user-avatar-wrapper" ref={menuRef}>
       <div className="user-avatar" onClick={toggleUserMenu}>
