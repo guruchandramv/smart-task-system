@@ -3,8 +3,6 @@ import { useNavigate } from "react-router-dom";
 import axios from './axiosConfig.js';
 import "./AdminDashboard.css";
 
-const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8080";
-
 // Configure axios defaults
 axios.defaults.headers.common['Content-Type'] = 'application/json';
 axios.defaults.withCredentials = true;
@@ -13,7 +11,7 @@ function AdminDashboard() {
   const navigate = useNavigate();
   const canvasRef = useRef(null);
   const getProfileImage = (profilePicture) => {
-    const base = BASE_URL.replace(/\/+$/, ""); // remove trailing slash
+    const base = axios.defaults.baseURL.replace(/\/+$/, ""); // remove trailing slash
     const path = profilePicture
       ? profilePicture.replace(/^\/+/, "") // remove leading slash
       : "uploads/profile_pictures/default.png";

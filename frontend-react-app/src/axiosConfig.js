@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8080";
+const API_URL = "https://smart-task-system-production-8b1e.up.railway.app";
 
 const axiosInstance = axios.create({
   baseURL: API_URL,
