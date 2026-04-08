@@ -854,6 +854,19 @@ const handleProfileClick = () => {
   };
 
   // ============== USE EFFECTS ==============
+  useEffect(() => {
+    const fetchNotifications = async () => {
+        try {
+            // Fetch unread notifications
+            const response = await axios.get("/api/notifications/unread");
+            setNotifications(response.data); // Set the unread notifications in state
+        } catch (error) {
+            console.error("Error fetching notifications:", error);
+        }
+    };
+
+    fetchNotifications();
+}, []);
   // Close dropdown when clicking outside
 useEffect(() => {
   const handleClickOutside = (event) => {

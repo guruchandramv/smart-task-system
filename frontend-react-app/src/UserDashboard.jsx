@@ -146,16 +146,7 @@ function UserDashboard() {
     // Notify the admin about the updated task completion
     notifyAdmin(selectedTask, newPercentage);
   };
-  const handleSliderChange = (event) => {
-    const newPercentage = event.target.value;
-    setCompletionPercentage(newPercentage);
-
-    // Send the updated task completion percentage to the backend
-    updateTaskCompletion(selectedTask.id, newPercentage);
-
-    // Notify the admin about the updated task completion
-    notifyAdmin(selectedTask, newPercentage);
-  };
+  
   // Function to update task completion in the backend
   const updateTaskCompletion = async (taskId, percentage) => {
     try {

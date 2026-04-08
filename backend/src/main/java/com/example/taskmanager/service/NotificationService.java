@@ -42,12 +42,11 @@ public class NotificationService {
     public void notifyTaskAssigned(Task task, User assignedBy, User assignedTo) {
         Notification notification = new Notification();
         notification.setType("TASK_ASSIGNED");
-        String message = String.format("Task '%s' assigned to %s by %s",
-            task.getTitle(), assignedTo.getUsername(), assignedBy.getUsername());
+        String message = String.format("Task '%s' assigned to %s by %s", task.getTitle(), assignedTo.getUsername(), assignedBy.getUsername());
         notification.setMessage(cleanMessage(message));
         notification.setUser(assignedBy);
         notification.setTask(task);
-        notification.setStatus("UNREAD");
+        notification.setStatus("UNREAD"); // Ensure this is UNREAD
         notification.setCreatedAt(LocalDateTime.now());
 
         notificationRepository.save(notification);
