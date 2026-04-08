@@ -17,11 +17,11 @@ function UserDashboard() {
   const [selectedTask, setSelectedTask] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [userInfo, setUserInfo] = useState({ id: null, username: "", email: "", role: "" });
-  
+
   // State for user dropdown menu
   const [showUserMenu, setShowUserMenu] = useState(false);
   const menuRef = useRef(null);
-  
+
   // State for user statistics
   const [userStats, setUserStats] = useState({
     totalTasks: 0,
@@ -37,10 +37,10 @@ function UserDashboard() {
       CRITICAL: 0
     }
   });
-  
+
   // State for showing statistics (always true, no toggle needed)
   const [showStatistics] = useState(true);
-  
+
   // State for filters
   const [filters, setFilters] = useState({
     status: "",
@@ -49,7 +49,7 @@ function UserDashboard() {
     search: "",
     showOverdueOnly: false
   });
-  
+
   // State for sorting
   const [sortConfig, setSortConfig] = useState({
     field: "deadline",
@@ -63,7 +63,7 @@ function UserDashboard() {
         setShowUserMenu(false);
       }
     };
-    
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
@@ -99,11 +99,11 @@ function UserDashboard() {
     startHeartbeat(userId);
 
     fetchAssignedTasks(userId);
-    
+
     const overdueCheckInterval = setInterval(() => {
       checkOverdueTasks();
     }, 1000);
-    
+
     return () => {
       clearInterval(overdueCheckInterval);
       stopHeartbeat();
@@ -139,7 +139,7 @@ function UserDashboard() {
   const fetchAssignedTasks = async (userId) => {
     setLoading(true);
     setError("");
-    
+
     try {
       const response = await axios.get(`/api/tasks/assigned/${userId}`);
       const filtered = response.data.filter(task => task.status !== 'NEW');
@@ -151,7 +151,7 @@ function UserDashboard() {
         setErrorDetails(error.response.data?.error || JSON.stringify(error.response.data));
       } else if (error.request) {
         setError("Cannot connect to server");
-        setErrorDetails("Please check if backend is running on http://localhost:8081");
+        setErrorDetails("Please check if backend is running on http://localhost:8080");
       } else {
         setError(`Error: ${error.message}`);
       }
@@ -164,7 +164,7 @@ function UserDashboard() {
   const checkOverdueTasks = () => {
     const now = new Date();
     now.setHours(0, 0, 0, 0);
-    
+
     const hasOverdueChanges = assignedTasks.some(task => {
       if (task.status === 'COMPLETED') return false;
       if (!task.deadline) return false;
@@ -172,7 +172,7 @@ function UserDashboard() {
       deadline.setHours(0, 0, 0, 0);
       return deadline < now;
     });
-    
+
     if (hasOverdueChanges) {
       setAssignedTasks([...assignedTasks]);
     }
@@ -182,13 +182,13 @@ function UserDashboard() {
   const calculateUserStatistics = () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     const totalTasks = assignedTasks.length;
     const completedTasks = assignedTasks.filter(task => task.status === 'COMPLETED').length;
     const inProgressTasks = assignedTasks.filter(task => task.status === 'IN_PROGRESS').length;
     const onHoldTasks = assignedTasks.filter(task => task.status === 'ON_HOLD').length;
     const pendingTasks = inProgressTasks + onHoldTasks;
-    
+
     const overdueTasks = assignedTasks.filter(task => {
       if (task.status === 'COMPLETED') return false;
       if (!task.deadline) return false;
@@ -196,14 +196,14 @@ function UserDashboard() {
       deadline.setHours(0, 0, 0, 0);
       return deadline < today;
     }).length;
-    
+
     const tasksByPriority = {
       LOW: assignedTasks.filter(task => task.priority === 'LOW').length,
       MEDIUM: assignedTasks.filter(task => task.priority === 'MEDIUM').length,
       HIGH: assignedTasks.filter(task => task.priority === 'HIGH').length,
       CRITICAL: assignedTasks.filter(task => task.priority === 'CRITICAL').length
     };
-    
+
     setUserStats({
       totalTasks,
       completedTasks,
@@ -219,51 +219,51 @@ function UserDashboard() {
   const isTaskOverdue = (task) => {
     if (task.status === 'COMPLETED') return false;
     if (!task.deadline) return false;
-    
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     const deadline = new Date(task.deadline);
     deadline.setHours(0, 0, 0, 0);
-    
+
     return deadline < today;
   };
 
   // Get days overdue
   const getDaysOverdue = (task) => {
     if (!isTaskOverdue(task)) return 0;
-    
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     const deadline = new Date(task.deadline);
     deadline.setHours(0, 0, 0, 0);
-    
+
     const diffTime = today - deadline;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     return diffDays;
   };
 
   const applyFiltersAndSorting = () => {
     let filtered = [...assignedTasks];
-    
+
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
-      filtered = filtered.filter(task => 
+      filtered = filtered.filter(task =>
         task.title.toLowerCase().includes(searchLower) ||
         task.description.toLowerCase().includes(searchLower)
       );
     }
-    
+
     if (filters.status) {
       filtered = filtered.filter(task => task.status === filters.status);
     }
-    
+
     if (filters.priority) {
       filtered = filtered.filter(task => task.priority === filters.priority);
     }
-    
+
     if (filters.deadline) {
       const filterDate = new Date(filters.deadline).toDateString();
       filtered = filtered.filter(task => {
@@ -271,32 +271,32 @@ function UserDashboard() {
         return taskDate === filterDate;
       });
     }
-    
+
     if (filters.showOverdueOnly) {
       filtered = filtered.filter(task => isTaskOverdue(task));
     }
-    
+
     const sorted = [...filtered].sort((a, b) => {
       let aValue = a[sortConfig.field];
       let bValue = b[sortConfig.field];
-      
+
       if (sortConfig.field === 'deadline') {
         aValue = a.deadline ? new Date(a.deadline).getTime() : 0;
         bValue = b.deadline ? new Date(b.deadline).getTime() : 0;
       }
-      
+
       if (sortConfig.field === 'priority') {
         const priorityOrder = { 'LOW': 1, 'MEDIUM': 2, 'HIGH': 3, 'CRITICAL': 4 };
         aValue = priorityOrder[a.priority] || 0;
         bValue = priorityOrder[b.priority] || 0;
       }
-      
+
       if (sortConfig.field === 'status') {
         const statusOrder = { 'IN_PROGRESS': 1, 'ON_HOLD': 2, 'COMPLETED': 3 };
         aValue = statusOrder[a.status] || 0;
         bValue = statusOrder[b.status] || 0;
       }
-      
+
       if (sortConfig.field === 'overdue') {
         const aOverdue = isTaskOverdue(a);
         const bOverdue = isTaskOverdue(b);
@@ -307,20 +307,20 @@ function UserDashboard() {
         }
         return 0;
       }
-      
+
       if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
       if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
       return 0;
     });
-    
+
     setFilteredTasks(sorted);
   };
 
   const handleFilterChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFilters(prev => ({ 
-      ...prev, 
-      [name]: type === 'checkbox' ? checked : value 
+    setFilters(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
     }));
   };
 
@@ -355,7 +355,7 @@ function UserDashboard() {
   const updateTaskStatus = async (taskId, newStatus) => {
     try {
       await axios.put(`/api/tasks/${taskId}`, { status: newStatus });
-      setAssignedTasks(assignedTasks.map(task => 
+      setAssignedTasks(assignedTasks.map(task =>
         task.id === taskId ? { ...task, status: newStatus } : task
       ));
     } catch (error) {
@@ -469,7 +469,7 @@ function UserDashboard() {
       {showStatistics && (
         <div className="user-statistics-dashboard">
           <h2>My Dashboard Overview</h2>
-          
+
           <div className="user-stats-grid">
             <div className="user-stat-card total">
               <div className="stat-icon">📊</div>
@@ -478,7 +478,7 @@ function UserDashboard() {
                 <span className="stat-value">{userStats.totalTasks}</span>
               </div>
             </div>
-            
+
             <div className="user-stat-card completed">
               <div className="stat-icon">✅</div>
               <div className="stat-content">
@@ -486,7 +486,7 @@ function UserDashboard() {
                 <span className="stat-value">{userStats.completedTasks}</span>
               </div>
             </div>
-            
+
             <div className="user-stat-card pending">
               <div className="stat-icon">⏳</div>
               <div className="stat-content">
@@ -494,7 +494,7 @@ function UserDashboard() {
                 <span className="stat-value">{userStats.pendingTasks}</span>
               </div>
             </div>
-            
+
             <div className="user-stat-card overdue">
               <div className="stat-icon">⚠️</div>
               <div className="stat-content">
@@ -544,7 +544,7 @@ function UserDashboard() {
                   <span>{Math.round((userStats.completedTasks / (userStats.totalTasks || 1)) * 100)}%</span>
                 </div>
                 <div className="progress-bar">
-                  <div 
+                  <div
                     className="progress-fill"
                     style={{ width: `${(userStats.completedTasks / (userStats.totalTasks || 1)) * 100}%` }}
                   ></div>
@@ -573,7 +573,7 @@ function UserDashboard() {
                 className="search-input"
               />
             </div>
-            
+
             <div className="filter-group">
               <label>Status:</label>
               <select name="status" value={filters.status} onChange={handleFilterChange}>
@@ -583,7 +583,7 @@ function UserDashboard() {
                 <option value="COMPLETED">Completed</option>
               </select>
             </div>
-            
+
             <div className="filter-group">
               <label>Priority:</label>
               <select name="priority" value={filters.priority} onChange={handleFilterChange}>
@@ -594,7 +594,7 @@ function UserDashboard() {
                 <option value="CRITICAL">Critical</option>
               </select>
             </div>
-            
+
             <div className="filter-group">
               <label>Deadline:</label>
               <input
@@ -604,7 +604,7 @@ function UserDashboard() {
                 onChange={handleFilterChange}
               />
             </div>
-            
+
             <div className="filter-group checkbox-group">
               <label className="checkbox-label">
                 <input
@@ -616,41 +616,41 @@ function UserDashboard() {
                 Show overdue only
               </label>
             </div>
-            
+
             <div className="filter-actions">
               <button onClick={clearFilters} className="clear-filters-btn">
                 Clear Filters
               </button>
             </div>
           </div>
-          
+
           <div className="sorting-controls">
             <span className="sort-label">Sort by:</span>
-            <button 
+            <button
               className={`sort-btn ${sortConfig.field === 'title' ? 'active' : ''}`}
               onClick={() => handleSort('title')}
             >
               Title {getSortIcon('title')}
             </button>
-            <button 
+            <button
               className={`sort-btn ${sortConfig.field === 'status' ? 'active' : ''}`}
               onClick={() => handleSort('status')}
             >
               Status {getSortIcon('status')}
             </button>
-            <button 
+            <button
               className={`sort-btn ${sortConfig.field === 'priority' ? 'active' : ''}`}
               onClick={() => handleSort('priority')}
             >
               Priority {getSortIcon('priority')}
             </button>
-            <button 
+            <button
               className={`sort-btn ${sortConfig.field === 'deadline' ? 'active' : ''}`}
               onClick={() => handleSort('deadline')}
             >
               Deadline {getSortIcon('deadline')}
             </button>
-            <button 
+            <button
               className={`sort-btn ${sortConfig.field === 'overdue' ? 'active' : ''}`}
               onClick={() => handleSort('overdue')}
             >
@@ -673,7 +673,7 @@ function UserDashboard() {
             {filteredTasks.map(task => {
               const isOverdue = isTaskOverdue(task);
               const daysOverdue = getDaysOverdue(task);
-              
+
               return (
                 <div
                   key={task.id}
@@ -713,33 +713,33 @@ function UserDashboard() {
         <div className="modal-overlay" onClick={() => setShowDetails(false)}>
           <div className="modal task-details-modal" onClick={e => e.stopPropagation()}>
             <h2>{selectedTask.title}</h2>
-            
+
             <div className="detail-row">
               <label>Description:</label>
               <p>{selectedTask.description || 'No description'}</p>
             </div>
-            
+
             <div className="detail-row">
               <label>Priority:</label>
               <span className={`priority-badge ${selectedTask.priority?.toLowerCase()}`}>
                 {selectedTask.priority}
               </span>
             </div>
-            
+
             <div className="detail-row">
               <label>Deadline:</label>
               <span className={isTaskOverdue(selectedTask) ? 'overdue-text' : ''}>
-                {selectedTask.deadline 
-                  ? new Date(selectedTask.deadline).toLocaleDateString() 
+                {selectedTask.deadline
+                  ? new Date(selectedTask.deadline).toLocaleDateString()
                   : 'No deadline'}
-                {isTaskOverdue(selectedTask) && 
+                {isTaskOverdue(selectedTask) &&
                   <span className="overdue-warning">
                     {' '}({getDaysOverdue(selectedTask)} days overdue)
                   </span>
                 }
               </span>
             </div>
-            
+
             <div className="detail-row">
               <label>Status:</label>
               <select
@@ -755,14 +755,14 @@ function UserDashboard() {
                 <option value="COMPLETED">Completed</option>
               </select>
             </div>
-            
+
             {isTaskOverdue(selectedTask) && selectedTask.status !== 'COMPLETED' && (
               <div className="overdue-notice">
                 <strong>⚠️ This task is overdue!</strong>
                 <p>Please complete it as soon as possible.</p>
               </div>
             )}
-            
+
             <button className="close-btn" onClick={() => setShowDetails(false)}>
               Close
             </button>
