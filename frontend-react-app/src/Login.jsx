@@ -16,7 +16,6 @@ function Login() {
     { icon: "⚡", title: "Live Updates", description: "Instant status changes and real-time notifications" },
     { icon: "🔔", title: "Smart Alerts", description: "Never miss important deadlines and updates" }
   ];
-
   // Particle Animation
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -95,27 +94,41 @@ function Login() {
 
     try {
       const res = await axios.post('/api/auth/login', formData);
-      const { token, role, id, username, email, profilePicture } = res.data;
 
-      localStorage.setItem("token", token);
-      localStorage.setItem("role", role);
-      localStorage.setItem("userId", id);
-      localStorage.setItem("username", username);
-      localStorage.setItem("userEmail", email);
-      localStorage.setItem("profilePicture", profilePicture || "/uploads/profile_pictures/default.png");
+      // Log the backend response
+      console.log("Backend response:", res);
 
-      setMessage("Login successful! Redirecting...");
+      // Ensure that the response is as expected
+      if (res.data && res.data.token && res.data.role) {
+        const { token, role, id, username, email, profilePicture } = res.data;
+        localStorage.setItem("token", token);
+        localStorage.setItem("role", role);
+        localStorage.setItem("userId", id);
+        localStorage.setItem("username", username);
+        localStorage.setItem("userEmail", email);
+        localStorage.setItem("profilePicture", profilePicture || "/uploads/profile_pictures/default.png");
 
-      setTimeout(() => {
-        if (role === "ADMIN") {
-          navigate("/admin");
-        } else {
-          navigate("/dashboard");
-        }
-      }, 1000);
+        setMessage("Login successful! Redirecting...");
+
+        setTimeout(() => {
+          if (role === "ADMIN") {
+            navigate("/admin");
+          } else {
+            navigate("/dashboard");
+          }
+        }, 1000);
+      } else {
+        setMessage("Unexpected response format.");
+        setLoading(false);
+      }
 
     } catch (err) {
-      setMessage("Invalid email or password");
+      console.error("Error during login:", err); // Log the full error
+      if (err.response && err.response.data && err.response.data.error) {
+        setMessage(err.response.data.error); // Show the backend error message
+      } else {
+        setMessage("Error during login. Please try again.");
+      }
       setLoading(false);
     }
   };
