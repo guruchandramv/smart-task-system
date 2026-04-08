@@ -1,12 +1,12 @@
-# Ignore actual properties files with real passwords
-# !application-*.properties.example
-# src/main/resources/application.properties
-# src/main/resources/application-*.properties
-# !src/main/resources/application.properties.example
+# Environment & Secrets ###
+application.properties
+application-*.properties
+!application.properties.example
 
 # Ignore environment files
-# .env
-# .env.local
+.env
+.env.local
+.env.*.local
 
 # Ignore build files
 target/
@@ -58,7 +58,7 @@ buildNumber.properties
 .mvn/timing.properties
 .mvn/wrapper/maven-wrapper.jar
 
-### Java ###
+# Java ###
 *.log
 *.jar
 *.war
@@ -69,11 +69,3 @@ buildNumber.properties
 *.rar
 hs_err_pid*
 replay_pid*
-
-### Environment & Secrets ###
-# application.properties
-# application-*.properties
-# !application.properties.example
-.env
-.env.local
-.env.*.local
