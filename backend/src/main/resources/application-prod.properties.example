@@ -1,12 +1,10 @@
-# Production configuration for Railway - Copy to application-prod.properties locally
-# This is a TEMPLATE - actual values come from environment variables
-
+# Production configuration for Railway
 server.port=${PORT:8080}
 
-# Database connection - uses environment variables
-spring.datasource.url=${DB_URL}
-spring.datasource.username=${DB_USERNAME}
-spring.datasource.password=${DB_PASSWORD}
+# Database connection - using environment variables
+spring.datasource.url=${SPRING_DATASOURCE_URL}
+spring.datasource.username=${SPRING_DATASOURCE_USERNAME}
+spring.datasource.password=${SPRING_DATASOURCE_PASSWORD}
 spring.datasource.driver-class-name=org.postgresql.Driver
 
 # JPA / Hibernate

@@ -9,7 +9,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:3000", "https://your-frontend.onrender.com")
+                .allowedOrigins("http://localhost:3000", "https://smart-task-system-frontend.netlify.app")
                 .allowedMethods("*")
                 .allowedHeaders("*")
                 .allowCredentials(true);

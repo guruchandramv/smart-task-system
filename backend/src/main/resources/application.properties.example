@@ -1,6 +1,6 @@
-server.port=${PORT:8081}
+server.port=${PORT:8080}
 
-# Database connection - uses environment variables
+# Database - values come from Railway environment variables
 spring.datasource.url=${DB_URL}
 spring.datasource.username=${DB_USERNAME}
 spring.datasource.password=${DB_PASSWORD}

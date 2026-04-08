@@ -94,7 +94,7 @@ function AdminDashboard() {
   const [filteredAssignedTasks, setFilteredAssignedTasks] = useState([]);
   const [users, setUsers] = useState([]);
   const [lastHeartbeatTime, setLastHeartbeatTime] = useState({});
-
+  const [showCreateTask, setShowCreateTask] = useState(false);
   const [userStatuses, setUserStatuses] = useState({});
 
   const [statistics, setStatistics] = useState({
@@ -191,7 +191,6 @@ function AdminDashboard() {
   const adminUserId = localStorage.getItem("userId");
   const adminUsername = localStorage.getItem("username");
   const adminProfilePicture = localStorage.getItem("profilePicture");
-
   // ============== TIME FORMATTING FUNCTIONS ==============
   const formatLocalTime = (date) => {
     const options = {
@@ -852,11 +851,11 @@ const handleProfileClick = () => {
 
   const getStatusBadge = (status) => {
     switch(status) {
-      case 'IN_PROGRESS': return <span className="status-badge in-progress">In Progress</span>;
-      case 'COMPLETED': return <span className="status-badge completed">Completed</span>;
-      case 'ON_HOLD': return <span className="status-badge on-hold">On Hold</span>;
-      case 'NEW': return <span className="status-badge new">New</span>;
-      default: return <span className="status-badge">{status}</span>;
+      case 'IN_PROGRESS': return 'In Progress';
+      case 'COMPLETED': return 'Completed';
+      case 'ON_HOLD': return 'On Hold';
+      case 'NEW': return New;
+      default: return {status};
     }
   };
 
@@ -1081,7 +1080,11 @@ useEffect(() => {
       )}
 
       {successMessage && <div className="success-message">✅ {successMessage}</div>}
-
+      <div className="create-task-toggle">
+  <button onClick={() => setShowCreateTask(true)} className="open-task-btn">
+    ➕ Create Task
+  </button>
+</div>
       {showStatistics && (
         <div className="statistics-dashboard">
           <h2>Dashboard Overview</h2>
@@ -1151,8 +1154,8 @@ useEffect(() => {
           <div className="status-update-indicator">
             <span className={`update-dot ${Object.values(userStatuses).some(s => s.isOnline) ? 'has-online' : ''}`}></span>
             <span>Last updated: {new Date(lastUpdate).toLocaleTimeString()}</span>
-            <span className="badge">⏱️ 2s polling</span>
-            <button onClick={fetchAllUserStatuses} className="refresh-status-btn">🔄 Refresh Now</button>
+            <button class="sort-btn ">⏱️ 2s polling</button>
+            <button onClick={fetchAllUserStatuses} className="refresh-status-btn">🔄 REFRESH</button>
           </div>
 
           <div className="user-tasks-table">
@@ -1192,14 +1195,21 @@ useEffect(() => {
 </td>
                     <td>{user.email}</td>
                     <td className="text-center">
-                      {user.lastActivity ? (
-                        <span className={user.isOnline ? 'text-success' : 'text-muted'}>
-                          <span className="cursor-help" title={user.isOnline ? 'Active now' : `Last active: ${getLastActivityTime(user.lastActivity)}`}>
-                            {user.isOnline ? 'Active now' : getTimeAgo(user.lastActivity)}
-                          </span>
-                        </span>
-                      ) : <span className="text-muted">Never</span>}
-                    </td>
+  {user.lastActivity ? (
+    <span
+      className={user.isOnline ? 'text-success' : 'text-muted'}
+    >
+      <span
+        className="cursor-help"
+        title={user.isOnline ? 'Active now' : `Last active: ${getLastActivityTime(user.lastActivity)}`}
+      >
+        {user.isOnline ? <div className="text-success">ONLINE</div> : getTimeAgo(user.lastActivity)}
+      </span>
+    </span>
+  ) : (
+    <span className="text-muted">Never</span>
+  )}
+</td>
                     <td className="text-center">{user.totalTasks}</td>
                     <td className="text-center">{user.inProgress}</td>
                     <td className="text-center">{user.onHold}</td>
@@ -1237,37 +1247,10 @@ useEffect(() => {
       )}
 
       <div className="dashboard-content">
-        <div className="create-task-panel">
-          <h2>Create New Task</h2>
-          <form onSubmit={handleCreateTask} className="task-form">
-            <div className="form-group">
-              <label>Title:</label>
-              <input type="text" value={newTask.title} onChange={(e) => setNewTask({...newTask, title: e.target.value})} required placeholder="Enter task title" />
-            </div>
-            <div className="form-group">
-              <label>Description:</label>
-              <textarea value={newTask.description} onChange={(e) => setNewTask({...newTask, description: e.target.value})} required rows="4" placeholder="Enter task description" />
-            </div>
-            <div className="form-row">
-              <div className="form-group">
-                <label>Priority:</label>
-                <select value={newTask.priority} onChange={(e) => setNewTask({...newTask, priority: e.target.value})}>
-                  <option value="LOW">Low</option>
-                  <option value="MEDIUM">Medium</option>
-                  <option value="HIGH">High</option>
-                  <option value="CRITICAL">Critical</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label>Deadline:</label>
-                <input type="date" value={newTask.deadline} onChange={(e) => setNewTask({...newTask, deadline: e.target.value})} required />
-              </div>
-            </div>
-            <button type="submit" className="create-btn" disabled={loading}>{loading ? "Creating..." : "Create Task"}</button>
-          </form>
-        </div>
-
-        <div className="tasks-view-panel">
+      <div className="tasks-view-wrapper">
+  <div className="tasks-view-panel">
+    {
+		<div className="tasks-view-panel">
           <div className="filters-section">
             <h3>Filters & Sorting</h3>
             <div className="filters-grid">
@@ -1332,12 +1315,12 @@ useEffect(() => {
                     <div key={task.id} className={`task-card ${getPriorityClass(task.priority)}`} onContextMenu={(e) => handleContextMenu(e, task)} onClick={() => handleTaskClick(task)}>
                       <div className="task-header">
                         <h3 title={task.title}>{task.title}</h3>
-                        {getStatusBadge(task.status)}
+                        <h4>{getStatusBadge(task.status)}</h4>
                       </div>
                       <p className="task-description" title={task.description}>{task.description}</p>
                       <div className="task-footer">
-                        <span className="task-priority">Priority: {task.priority}</span>
-                        <span className="task-deadline">Due: {task.deadline ? new Date(task.deadline).toLocaleDateString() : 'No deadline'}</span>
+                        <span className="task-priority">Priority: <span class="priority-badge critical">{task.priority}</span></span>
+                        <span className="task-deadline">  Due: <button class="view-tasks-btn">{task.deadline ? new Date(task.deadline).toLocaleDateString() : 'No deadline'}</button></span>
                       </div>
                       <div className="task-hint">Right-click for options</div>
                     </div>
@@ -1362,13 +1345,13 @@ useEffect(() => {
                     <div key={task.id} className={`task-card ${getPriorityClass(task.priority)}`} onContextMenu={(e) => handleContextMenu(e, task)} onClick={() => handleTaskClick(task)}>
                       <div className="task-header">
                         <h3 title={task.title}>{task.title}</h3>
-                        {getStatusBadge(task.status)}
+                        <h4>{getStatusBadge(task.status)}</h4>
                       </div>
                       <p className="task-description" title={task.description}>{task.description}</p>
-                      <div className="task-assignee">Assigned to: <strong>{task.assignedUser?.username || 'Unknown'}</strong></div>
+                      <div className="task-assignee">Assigned to: <button class="view-tasks-btn">{task.assignedUser?.username || 'Unknown'}</button></div>
                       <div className="task-footer">
-                        <span className="task-priority">Priority: {task.priority}</span>
-                        <span className="task-deadline">Due: {task.deadline ? new Date(task.deadline).toLocaleDateString() : 'No deadline'}</span>
+                        <span className="task-priority">Priority: <span class="priority-badge critical">{task.priority}</span></span>
+                        <span className="task-deadline">  Due: <button class="view-tasks-btn">{task.deadline ? new Date(task.deadline).toLocaleDateString() : 'No deadline'}</button></span>
                       </div>
                       <div className="task-hint">Right-click for options</div>
                     </div>
@@ -1378,13 +1361,72 @@ useEffect(() => {
             </div>
           )}
         </div>
+	}
+  </div>
+</div>
       </div>
-
+      {showCreateTask && (
+  <div
+    onClick={() => setShowCreateTask(false)}
+    style={{
+      position: "fixed",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
+      zIndex: 9999
+    }}
+  >
+    <div
+      onClick={(e) => e.stopPropagation()}
+      style={{
+        position: "absolute",
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)"
+      }}
+    >
+      <div className="create-task-panel">
+        {
+			<div className="create-task-panel">
+          <h2>Create New Task</h2>
+          <form onSubmit={handleCreateTask} className="task-form">
+            <div className="form-group">
+              <label>Title:</label>
+              <input type="text" value={newTask.title} onChange={(e) => setNewTask({...newTask, title: e.target.value})} required placeholder="Enter task title" />
+            </div>
+            <div className="form-group">
+              <label>Description:</label>
+              <textarea value={newTask.description} onChange={(e) => setNewTask({...newTask, description: e.target.value})} required rows="4" placeholder="Enter task description" />
+            </div>
+            <div className="form-row">
+              <div className="form-group">
+                <label>Priority:</label>
+                <select value={newTask.priority} onChange={(e) => setNewTask({...newTask, priority: e.target.value})}>
+                  <option value="LOW">Low</option>
+                  <option value="MEDIUM">Medium</option>
+                  <option value="HIGH">High</option>
+                  <option value="CRITICAL">Critical</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Deadline:</label>
+                <input type="date" value={newTask.deadline} onChange={(e) => setNewTask({...newTask, deadline: e.target.value})} required />
+              </div>
+            </div>
+            <button type="submit" className="create-btn" disabled={loading}>{loading ? "Creating..." : "Create Task"}</button>
+          </form>
+        </div>
+		}
+      </div>
+    </div>
+  </div>
+)}
       {showUserTasksModal && selectedUser && (
         <div className="modal-overlay" onClick={() => setShowUserTasksModal(false)}>
           <div className="modal user-tasks-modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>Tasks for {selectedUser.username}</h3>
+              <h3>Tasks for <button class="view-tasks-btn">{selectedUser.username}</button></h3>
               <button onClick={() => setShowUserTasksModal(false)} className="close-btn">✕</button>
             </div>
             <div className="user-tasks-list">
@@ -1396,8 +1438,8 @@ useEffect(() => {
                   </div>
                   <p className="user-task-description">{task.description}</p>
                   <div className="user-task-footer">
-                    <span className="task-priority">Priority: {task.priority}</span>
-                    <span className="task-deadline">Due: {task.deadline ? new Date(task.deadline).toLocaleDateString() : 'No deadline'}</span>
+                    <span className="task-priority">Priority: <span class="priority-badge critical">{task.priority}</span></span>
+                    <span className="task-deadline">  Due: <button class="view-tasks-btn">{task.deadline ? new Date(task.deadline).toLocaleDateString() : 'No deadline'}</button></span>
                   </div>
                 </div>
               ))}
@@ -1523,12 +1565,12 @@ useEffect(() => {
         <div className="modal-overlay" onClick={() => setShowTaskDetails(false)}>
           <div className="modal task-details-modal" onClick={e => e.stopPropagation()}>
             <h2>{selectedTaskDetails.title}</h2>
-            <div className="detail-row"><label>Description:</label><p>{selectedTaskDetails.description || 'No description'}</p></div>
+            <div className="detail-row"><label>Description:</label><h4>{selectedTaskDetails.description || 'No description'}</h4></div>
             <div className="detail-row"><label>Priority:</label><span className={`priority-badge ${selectedTaskDetails.priority?.toLowerCase()}`}>{selectedTaskDetails.priority}</span></div>
-            <div className="detail-row"><label>Deadline:</label><span>{selectedTaskDetails.deadline ? new Date(selectedTaskDetails.deadline).toLocaleDateString() : 'No deadline'}</span></div>
-            <div className="detail-row"><label>Status:</label>{getStatusBadge(selectedTaskDetails.status)}</div>
-            {selectedTaskDetails.status !== 'NEW' && <div className="detail-row"><label>Assigned to:</label><span>{selectedTaskDetails.assignedUser?.username || 'Unknown'}</span></div>}
-            <button className="close-btn" onClick={() => setShowTaskDetails(false)}>Close</button>
+            <div className="detail-row"><label>Deadline:</label><span><button class="view-tasks-btn">{selectedTaskDetails.deadline ? new Date(selectedTaskDetails.deadline).toLocaleDateString() : 'No deadline'}</button></span></div>
+            <div className="detail-row"><label>Status:</label><button class="view-tasks-btn">{getStatusBadge(selectedTaskDetails.status)}</button></div>
+            {selectedTaskDetails.status !== 'NEW' && <div className="detail-row"><label>Assigned to:</label><button class="view-tasks-btn">{selectedTaskDetails.assignedUser?.username || 'Unknown'}</button></div>}
+            <button className="close-btn" onClick={() => setShowTaskDetails(false)}>x</button>
           </div>
         </div>
       )}

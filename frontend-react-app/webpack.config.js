@@ -33,9 +33,9 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: './public/index.html',
     }),
-    // THIS IS THE CRITICAL FIX - Define process.env for browser
+    // Define process.env for browser
     new webpack.DefinePlugin({
-      'process.env.REACT_APP_API_URL': JSON.stringify(process.env.REACT_APP_API_URL || 'https://smart-task-system-production.up.railway.app/')
+      'process.env.REACT_APP_API_URL': JSON.stringify(process.env.REACT_APP_API_URL)
     })
   ],
   devServer: {
