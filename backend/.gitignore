@@ -71,9 +71,9 @@ hs_err_pid*
 replay_pid*
 
 ### Environment & Secrets ###
-application.properties
-application-*.properties
-!application.properties.example
+# application.properties
+# application-*.properties
+# !application.properties.example
 .env
 .env.local
 .env.*.local
