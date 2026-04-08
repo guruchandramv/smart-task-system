@@ -222,15 +222,6 @@ function AdminDashboard() {
     return formatLocalTime(dateIST);
   };
 
-  const getLastActivityTime = (lastActivity) => {
-    if (!lastActivity) return 'Never';
-    const now = new Date();
-    const lastActivityDate = new Date(lastActivity);
-    const diffInMs = now.getTime() - lastActivityDate.getTime();
-    const lastActivityLocalTime = new Date(now.getTime() - diffInMs);
-    return formatLocalTime(lastActivityLocalTime);
-  };
-
   // ============== API FUNCTIONS ==============
   const sendAdminHeartbeat = async () => {
     if (!adminUserId) return;
@@ -1199,7 +1190,7 @@ useEffect(() => {
     >
       <span
         className="cursor-help"
-        title={user.isOnline ? 'Active now' : `Last active: ${getLastActivityTime(user.lastActivity)}`}
+        title={user.isOnline ? 'Active now' : `Last active: ${getTimeAgo(user.lastActivity)}`}
       >
         {user.isOnline ? <div className="text-success">ONLINE</div> : getTimeAgo(user.lastActivity)}
       </span>

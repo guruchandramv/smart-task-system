@@ -14,15 +14,16 @@
   .tasks-container {
     padding: 2rem;
   }
-
+/* Tasks Grid */
   .tasks-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 1.5rem;
+    background: #262350 !important;
   }
 
   .task-card {
-    background: white;
+    background: #262350 !important;
     border-radius: 10px;
     padding: 1.5rem;
     cursor: pointer;
@@ -50,6 +51,25 @@
   .task-card.priority-critical {
     border-left-color: #9c27b0;
   }
+
+/* Overdue Task Styling */
+.task-card.overdue-task {
+  border-left-color: #f44336;
+  position: relative;
+  background: #fff3f3;
+}
+
+.task-card.overdue-task::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(244, 67, 54, 0.05);
+  pointer-events: none;
+  border-radius: 8px;
+}
 
   .task-header {
     display: flex;
@@ -349,16 +369,6 @@
   color: #999;
   font-size: 0.9rem;
   margin-top: 0.5rem;
-}
-
-/* Task card hover effect */
-.task-card {
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.task-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 6px 12px rgba(0,0,0,0.1);
 }
 
 .task-header h3 {
@@ -694,7 +704,7 @@
 
 .priority-item .priority-value {
   font-weight: bold;
-  color: #333;
+  color: white;
 }
 
 /* Progress Bar */
@@ -732,25 +742,6 @@
   color: #666;
   font-size: 0.9rem;
   font-weight: 500;
-}
-
-/* Overdue Task Styling */
-.task-card.overdue-task {
-  border-left-color: #f44336;
-  position: relative;
-  background: #fff3f3;
-}
-
-.task-card.overdue-task::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(244, 67, 54, 0.05);
-  pointer-events: none;
-  border-radius: 8px;
 }
 
 .overdue-badge {
@@ -823,15 +814,6 @@
       grid-template-columns: 1fr;
   }
 }
-/* Overdue Task Styling */
-.task-card.overdue-task {
-  border-left-color: #f44336 !important;
-  border-left-width: 6px;
-  position: relative;
-  background: linear-gradient(to right, #fff3f3, #ffffff);
-  box-shadow: 0 2px 8px rgba(244, 67, 54, 0.2);
-  animation: pulse-overdue 2s infinite;
-}
 
 @keyframes pulse-overdue {
   0% {
@@ -843,24 +825,6 @@
   100% {
       box-shadow: 0 2px 8px rgba(244, 67, 54, 0.2);
   }
-}
-
-.task-card.overdue-task::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: repeating-linear-gradient(
-      45deg,
-      rgba(244, 67, 54, 0.03) 0px,
-      rgba(244, 67, 54, 0.03) 10px,
-      transparent 10px,
-      transparent 20px
-  );
-  pointer-events: none;
-  border-radius: 8px;
 }
 
 .overdue-badge {
@@ -1020,28 +984,6 @@
   margin-top: 5px;
   z-index: 10;
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-/* Priority-specific overdue styling */
-.task-card.overdue-task.priority-low {
-  border-left-color: #f44336;
-  background: linear-gradient(to right, #fff3f3, #e3f2fd);
-}
-
-.task-card.overdue-task.priority-medium {
-  border-left-color: #f44336;
-  background: linear-gradient(to right, #fff3f3, #fff3e0);
-}
-
-.task-card.overdue-task.priority-high {
-  border-left-color: #f44336;
-  background: linear-gradient(to right, #fff3f3, #ffebee);
-}
-
-.task-card.overdue-task.priority-critical {
-  border-left-color: #f44336;
-  background: linear-gradient(to right, #fff3f3, #f3e5f5);
-  animation: pulse-critical-overdue 2s infinite;
 }
 
 @keyframes pulse-critical-overdue {
@@ -1498,7 +1440,7 @@
 }
 
 .priority-value {
-  color: white;
+  color: white !important;
   font-weight: 600;
 }
 
@@ -1660,60 +1602,6 @@
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-color: transparent;
   color: white;
-}
-
-/* Tasks Grid */
-.tasks-grid {
-  background: #262350;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.5rem;
-}
-
-.task-card {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border-radius: 20px;
-  padding: 1.2rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  position: relative;
-  overflow: hidden;
-}
-
-.task-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #667eea, #764ba2);
-  transform: translateX(-100%);
-  transition: transform 0.3s ease;
-}
-
-.task-card:hover::before {
-  transform: translateX(0);
-}
-
-.task-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(102, 126, 234, 0.5);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-}
-
-.task-card.priority-low { border-left: 3px solid #3b82f6; }
-.task-card.priority-medium { border-left: 3px solid #f59e0b; }
-.task-card.priority-high { border-left: 3px solid #ef4444; }
-.task-card.priority-critical { border-left: 3px solid #a855f7; }
-
-/* Overdue Task Styling */
-.task-card.overdue-task {
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.1));
-  border-left: 3px solid #ef4444;
-  animation: pulseOverdue 2s ease-in-out infinite;
 }
 
 @keyframes pulseOverdue {
@@ -2001,9 +1889,6 @@
     grid-template-columns: 1fr;
   }
 
-  .tasks-grid {
-    grid-template-columns: 1fr;
-  }
 
   .user-stat-card {
     padding: 1rem;

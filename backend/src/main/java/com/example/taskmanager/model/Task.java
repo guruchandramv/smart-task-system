@@ -14,6 +14,9 @@ public class Task {
     @SequenceGenerator(name = "task_seq_gen", sequenceName = "TASK_SEQ", allocationSize = 1)
     private Long id;
 
+    @Column(name = "completion_percentage")
+    private Integer completionPercentage = 0;
+
     @Column(nullable = false)
     private String title;
 
@@ -23,9 +26,9 @@ public class Task {
     @Column(nullable = false)
     private String status;
 
-    @ManyToOne(fetch = FetchType.EAGER)  // Changed to EAGER to load user data immediately
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ASSIGNED_USER_ID")
-    @JsonIgnoreProperties({"password", "tasks"})  // Ignore sensitive data to prevent recursion
+    @JsonIgnoreProperties({"password", "tasks"}) 
     private User assignedUser;
 
     @Column(nullable = false)
@@ -56,6 +59,9 @@ public class Task {
         updatedAt = LocalDateTime.now();
         if (status == null) {
             status = "NEW";
+        }
+        if (completionPercentage == 0) {
+            completionPercentage = 0; // Default to 0% if not set
         }
     }
 
@@ -100,4 +106,8 @@ public class Task {
 
     public LocalDateTime getCompletedAt() { return completedAt; }
     public void setCompletedAt(LocalDateTime completedAt) { this.completedAt = completedAt; }
+
+    public int getCompletionPercentage() { return completionPercentage; }
+
+    public void setCompletionPercentage(int completionPercentage) { this.completionPercentage = completionPercentage; }
 }

@@ -5,7 +5,7 @@ import com.example.taskmanager.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.time.LocalDateTime; 
+import java.time.LocalDateTime;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -44,7 +44,7 @@ public class ActivityController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
-
+    
     // ----------------- Single User Status -----------------
     @GetMapping("/user-status/{userId}")
     public ResponseEntity<?> getUserStatus(@PathVariable Long userId) {
@@ -153,10 +153,10 @@ public class ActivityController {
             user.setOnline(false);
             user.setLastActivity(LocalDateTime.now());
             userRepository.save(user);
-            
-            System.out.println("🚪 User '" + user.getUsername() + "' logged out explicitly at " + 
+
+            System.out.println("🚪 User '" + user.getUsername() + "' logged out explicitly at " +
                 LocalDateTime.now().toLocalTime());
-            
+
             User savedUser = userRepository.findById(userId).get();
             System.out.println("✅ Saved lastActivity: " + savedUser.getLastActivity());
 
@@ -179,24 +179,24 @@ public class ActivityController {
         try {
             LocalDateTime now = LocalDateTime.now();
             LocalDateTime cutoff = now.minusSeconds(2);
-            
+
             List<User> inactiveUsers = userRepository.findInactiveOnlineUsers(cutoff);
             int markedOffline = inactiveUsers.size();
-            
+
             for (User user : inactiveUsers) {
                 user.setOnline(false);
-                System.out.println("🔴 FORCE CLEANUP: User '" + user.getUsername() + 
+                System.out.println("🔴 FORCE CLEANUP: User '" + user.getUsername() +
                     "' marked offline (inactive since " + user.getLastActivity() + ")");
             }
-            
+
             if (!inactiveUsers.isEmpty()) {
                 userRepository.saveAll(inactiveUsers);
             }
-            
+
             // Get counts for response
             long totalUsers = userRepository.count();
             long onlineUsers = userRepository.countByIsOnlineTrue();
-            
+
             return ResponseEntity.ok(Map.of(
                 "status", "cleanup completed",
                 "usersMarkedOffline", markedOffline,
@@ -219,7 +219,7 @@ public class ActivityController {
         try {
             long totalUsers = userRepository.count();
             long onlineUsers = userRepository.countByIsOnlineTrue();
-            
+
             return ResponseEntity.ok(Map.of(
                 "totalUsers", totalUsers,
                 "onlineUsers", onlineUsers,

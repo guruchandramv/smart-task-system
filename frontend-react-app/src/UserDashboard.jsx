@@ -17,6 +17,7 @@ function UserDashboard() {
   const [selectedTask, setSelectedTask] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [userInfo, setUserInfo] = useState({ id: null, username: "", email: "", role: "" });
+  const [completionPercentage, setCompletionPercentage] = useState(0);
 
   // State for user dropdown menu
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -135,7 +136,49 @@ function UserDashboard() {
     navigate("/profile");
     setShowUserMenu(false);
   };
+  const handleSliderChange = (event) => {
+    const newPercentage = event.target.value;
+    setCompletionPercentage(newPercentage);
 
+    // Send the updated task completion percentage to the backend
+    updateTaskCompletion(selectedTask.id, newPercentage);
+
+    // Notify the admin about the updated task completion
+    notifyAdmin(selectedTask, newPercentage);
+  };
+  const handleSliderChange = (event) => {
+    const newPercentage = event.target.value;
+    setCompletionPercentage(newPercentage);
+
+    // Send the updated task completion percentage to the backend
+    updateTaskCompletion(selectedTask.id, newPercentage);
+
+    // Notify the admin about the updated task completion
+    notifyAdmin(selectedTask, newPercentage);
+  };
+  // Function to update task completion in the backend
+  const updateTaskCompletion = async (taskId, percentage) => {
+    try {
+      await axios.put(`/api/tasks/${taskId}/update-completion`, { completionPercentage: percentage });
+      console.log("Task completion updated successfully");
+    } catch (error) {
+      console.error("Error updating task completion", error);
+    }
+  };
+  // Function to update task completion in the backend
+  // Function to notify the admin about the updated task completion
+const notifyAdmin = async (task, percentage) => {
+  try {
+    await axios.post("/api/admin/notify-task-completion", {
+      taskId: task.id,
+      taskTitle: task.title,
+      completionPercentage: percentage
+    });
+    console.log("Admin notified about task completion update");
+  } catch (error) {
+    console.error("Error notifying admin", error);
+  }
+};
   const fetchAssignedTasks = async (userId) => {
     setLoading(true);
     setError("");
@@ -391,7 +434,7 @@ function UserDashboard() {
     return (
       <div className="user-dashboard">
         <header className="dashboard-header">
-          <h1>My Tasks</h1>
+          <h1>MY TASKS</h1>
           <div className="user-info">
             <div className="user-avatar-wrapper" ref={menuRef}>
               <div className="user-avatar" onClick={toggleUserMenu}>
@@ -468,7 +511,7 @@ function UserDashboard() {
       {/* User Statistics Dashboard */}
       {showStatistics && (
         <div className="user-statistics-dashboard">
-          <h2>My Dashboard Overview</h2>
+          <h2>Tasks Overview</h2>
 
           <div className="user-stats-grid">
             <div className="user-stat-card total">
@@ -529,7 +572,7 @@ function UserDashboard() {
                 {Object.entries(userStats.tasksByPriority).map(([priority, count]) => (
                   <div key={priority} className="priority-item">
                     <span className={`priority-dot ${priority.toLowerCase()}`}></span>
-                    <span className="priority-label">{priority}</span>
+                    <span className="status-label">{priority}</span>
                     <span className="priority-value">{count}</span>
                   </div>
                 ))}
@@ -739,7 +782,18 @@ function UserDashboard() {
                 }
               </span>
             </div>
-
+            <div className="detail-row">
+        <label>Completion Percentage:</label>
+        <input
+          type="range"
+          min="0"
+          max="100"
+          value={completionPercentage}
+          onChange={handleSliderChange}
+          className="completion-slider"
+        />
+        <span>{completionPercentage}%</span>
+      </div>
             <div className="detail-row">
               <label>Status:</label>
               <select
@@ -764,7 +818,7 @@ function UserDashboard() {
             )}
 
             <button className="close-btn" onClick={() => setShowDetails(false)}>
-              Close
+              X
             </button>
           </div>
         </div>
