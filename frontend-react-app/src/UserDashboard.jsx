@@ -146,7 +146,7 @@ function UserDashboard() {
     // Notify the admin about the updated task completion
     notifyAdmin(selectedTask, newPercentage);
   };
-  
+
   // Function to update task completion in the backend
   const updateTaskCompletion = async (taskId, percentage) => {
     try {
@@ -388,12 +388,13 @@ const notifyAdmin = async (task, percentage) => {
 
   const updateTaskStatus = async (taskId, newStatus) => {
     try {
-      await axios.put(`/api/tasks/${taskId}`, { status: newStatus });
+      const response = await axios.put(`/api/tasks/${taskId}`, { status: newStatus });
       setAssignedTasks(assignedTasks.map(task =>
         task.id === taskId ? { ...task, status: newStatus } : task
       ));
     } catch (error) {
-      setError("Failed to update task status");
+      console.error("Error updating task status:", error);
+      setError("❌ Failed to update task status");
     }
   };
 

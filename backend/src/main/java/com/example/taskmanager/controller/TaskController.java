@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.List;
 import com.example.taskmanager.service.NotificationService;
+import com.example.taskmanager.service.TaskService;
+
 import java.util.stream.Collectors;
 
 @RestController
@@ -22,7 +24,8 @@ import java.util.stream.Collectors;
 public class TaskController {
     @Autowired
     private NotificationService notificationService;
-
+    @Autowired
+    private TaskService taskService;
     @Autowired
     private TaskRepository taskRepository;
 
@@ -208,12 +211,22 @@ public class TaskController {
                 .body(Map.of("error", "Failed to create task: " + e.getMessage()));
         }
     }
-
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateTaskStatus(@PathVariable Long id, @RequestBody Task task) {
+        try {
+            Task updatedTask = taskService.updateTaskStatus(id, task);
+            return ResponseEntity.ok(updatedTask);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500)
+                .body("Error updating task status: " + e.getMessage());
+        }
+    }
     /**
      * PUT update task
      * Endpoint: PUT /api/tasks/{taskId}
      */
-    @PutMapping("/api/tasks/{taskId}")
+    @PutMapping("/{taskId}")
     public ResponseEntity<?> updateTask(@PathVariable Long taskId, @RequestBody Map<String, Object> taskPayload) {
         try {
             System.out.println("Updating task: " + taskId);
