@@ -211,17 +211,17 @@ public class TaskController {
                 .body(Map.of("error", "Failed to create task: " + e.getMessage()));
         }
     }
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateTaskStatus(@PathVariable Long id, @RequestBody Task task) {
-        try {
-            Task updatedTask = taskService.updateTaskStatus(id, task);
-            return ResponseEntity.ok(updatedTask);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500)
-                .body("Error updating task status: " + e.getMessage());
-        }
+    @PutMapping("/api/tasks/{id}")
+public ResponseEntity<?> updateTaskStatus(@PathVariable Long id, @RequestBody Task task) {
+    try {
+        Task existingTask = taskService.updateTaskStatus(id, task);
+        return ResponseEntity.ok(existingTask);
+    } catch (Exception e) {
+        // Log the error for debugging
+        e.printStackTrace();
+        return ResponseEntity.status(500).body(Map.of("error", "Error updating task status", "message", e.getMessage()));
     }
+}
     /**
      * PUT update task
      * Endpoint: PUT /api/tasks/{taskId}
