@@ -2,7 +2,6 @@ package com.example.taskmanager.model;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import com.fasterxml.jackson.annotation.JsonFormat;
 
 @Entity
 @Table(name = "NOTIFICATIONS", schema = "scott")
@@ -13,11 +12,8 @@ public class Notification {
     @SequenceGenerator(name = "notification_seq", sequenceName = "NOTIFICATION_SEQ", allocationSize = 1)
     private Long id;
 
-    @Column(name = "task_id")
-    private Long taskId;
-
     @Column(nullable = false)
-    private String type; // TASK_CREATED, TASK_ASSIGNED, TASK_UNASSIGNED, TASK_UPDATED, TASK_DELETED, TASK_COMPLETED
+    private String type;
 
     @Column(nullable = false)
     private String message;
@@ -27,14 +23,13 @@ public class Notification {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "USER_ID")
-    private User user; // The user who performed the action
+    private User user;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "TASK_ID")
-    private Task task; // The related task
+    private Task task;
 
     @Column(nullable = false)
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
 
     @Column
@@ -43,25 +38,21 @@ public class Notification {
     @Column
     private String newValue;
 
-    @Column(name = "is_read")  // rename the column
-    private boolean read = false;       // keep the field name as `read` if you want
+    @Column(name = "is_read")
+    private boolean read = false;
 
     private String title;
 
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
-        if (status == null) {
-            status = "UNREAD";
-        }
+        if (status == null) status = "UNREAD";
     }
 
-    // Getters and Setters
+    // Getters and setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-    public void setTaskId(Long taskId) {
-        this.taskId = taskId;
-    }
+
     public String getType() { return type; }
     public void setType(String type) { this.type = type; }
 

@@ -4,6 +4,8 @@ import com.example.taskmanager.model.Notification;
 import com.example.taskmanager.model.Task;
 import com.example.taskmanager.model.User;
 import com.example.taskmanager.repository.NotificationRepository;
+import com.example.taskmanager.repository.TaskRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,9 +18,11 @@ public class NotificationService {
     @Autowired
     private NotificationRepository notificationRepository;
 
-    // Helper method to clean any potential stray characters
+    @Autowired
+    private TaskRepository taskRepository; // ✅ Inject the instance
+
+    // Helper method to clean message
     private String cleanMessage(String message) {
-        // Remove any non-printable characters and stray box drawing chars
         return message.replaceAll("[^\\x20-\\x7E\\n\\r\\t]", "").trim();
     }
 
@@ -150,17 +154,20 @@ public class NotificationService {
     public long getUnreadCount() {
         return notificationRepository.countUnread();
     }
+    // Fixed method for task completion
     public void notifyTaskCompletion(Long taskId) {
-        Notification notification = new Notification();
-        notification.setTaskId(taskId);
-        notification.setMessage("Task ID " + taskId + " has been completed.");
-        notification.setTitle("Task Completed");
-        
-        // Fix here:
-        notification.setType("INFO");   // or "TASK" depending on your app design
-        notification.setStatus("UNREAD");
-        notification.setRead(false);
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new IllegalArgumentException("Task not found with ID: " + taskId));
 
-notificationRepository.save(notification);
+        Notification notification = new Notification();
+        notification.setType("TASK_COMPLETED");
+        notification.setMessage("Task ID " + taskId + " has been completed.");
+        notification.setStatus("UNREAD");
+        notification.setTitle("Task Completed");
+        notification.setTask(task);
+
+        notificationRepository.save(notification);
+
+        System.out.println("✅ Notification stored: " + notification.getMessage());
     }
 }
