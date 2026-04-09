@@ -26,7 +26,6 @@ public class Notification {
     @JoinColumn(name = "USER_ID")
     private User user; // The user who performed the action
 
-
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "TASK_ID")
     private Task task; // The related task

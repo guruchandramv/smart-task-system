@@ -42,24 +42,10 @@ public class NotificationService {
     public void notifyTaskAssigned(Task task, User assignedBy, User assignedTo) {
         Notification notification = new Notification();
         notification.setType("TASK_ASSIGNED");
-        String message = String.format("Task '%s' assigned to %s by %s", task.getTitle(), assignedTo.getUsername(), assignedBy.getUsername());
+        String message = String.format("Task '%s' assigned to %s by %s",
+            task.getTitle(), assignedTo.getUsername(), assignedBy.getUsername());
         notification.setMessage(cleanMessage(message));
         notification.setUser(assignedBy);
-        notification.setTask(task);
-        notification.setStatus("UNREAD"); // Ensure this is UNREAD
-        notification.setCreatedAt(LocalDateTime.now());
-
-        notificationRepository.save(notification);
-        System.out.println("✅ Notification stored: " + notification.getMessage());
-    }
-    // Notify Admin when Task Completion Percentage is updated
-    public void notifyTaskCompletionUpdated(Task task, User updatedBy, int oldPercentage, int newPercentage) {
-        Notification notification = new Notification();
-        notification.setType("TASK_COMPLETION_UPDATED");
-        String message = String.format("Task '%s' completion updated: %d%% to %d%% by %s",
-            task.getTitle(), oldPercentage, newPercentage, updatedBy.getUsername());
-        notification.setMessage(cleanMessage(message));
-        notification.setUser(updatedBy); // or a relevant user who updated the task
         notification.setTask(task);
         notification.setStatus("UNREAD");
         notification.setCreatedAt(LocalDateTime.now());
@@ -67,6 +53,7 @@ public class NotificationService {
         notificationRepository.save(notification);
         System.out.println("✅ Notification stored: " + notification.getMessage());
     }
+
     // Create notification for task unassignment
     public void notifyTaskUnassigned(Task task, User unassignedBy, User previousUser) {
         Notification notification = new Notification();
@@ -162,9 +149,5 @@ public class NotificationService {
     // Get unread count
     public long getUnreadCount() {
         return notificationRepository.countUnread();
-    }
-
-    public List<Notification> getNotificationsForUser(Long userId) {
-        return notificationRepository.findByUser_Id(userId);
     }
 }

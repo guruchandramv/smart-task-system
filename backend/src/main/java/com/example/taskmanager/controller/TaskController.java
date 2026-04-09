@@ -129,14 +129,14 @@ public class TaskController {
         }
 
         Task task = taskOptional.get();
-        int oldPercentage = task.getCompletionPercentage();
+        // int oldPercentage = task.getCompletionPercentage();
         task.setCompletionPercentage(completionPercentage);
 
         // Update task in DB
         taskRepository.save(task);
 
         // Notify admin about the completion percentage change
-        notificationService.notifyTaskCompletionUpdated(task, task.getAssignedUser(), oldPercentage, completionPercentage);
+        // notificationService.notifyTaskCompletionUpdated(task, task.getAssignedUser(), oldPercentage, completionPercentage);
 
         return ResponseEntity.ok(task);
     }

@@ -533,7 +533,7 @@ function AdminDashboard() {
 
       // ✅ Filter admin notifications correctly
       const adminNotifications = response.data.filter(
-        n => n.user?.id === adminUserId
+        n => n.user?.id === 1337
       );
 
       setNotifications(adminNotifications);
@@ -880,7 +880,7 @@ const handleProfileClick = () => {
 
         // ✅ Filter admin notifications correctly
         const adminNotifications = response.data.filter(
-          n => n.user?.id === adminUserId
+          n => n.user?.id === 1337
         );
 
         setNotifications(adminNotifications);
@@ -1017,7 +1017,7 @@ useEffect(() => {
       <h3>Notifications</h3>
       <div className="notification-actions">
         {notifications
-          .filter(n => n.user?.id === adminUserId && n.status === 'UNREAD')
+          .filter(n => n.user?.id === 1337 && n.status === 'UNREAD')
           .length > 0 && (
           <button onClick={markAllAsRead} className="mark-read-btn">
             Mark all as read
@@ -1030,11 +1030,11 @@ useEffect(() => {
     <div className="notification-list">
       {notificationsLoading ? (
         <div className="notification-loading">Loading...</div>
-      ) : notifications.filter(n => n.user?.id === adminUserId).length === 0 ? (
+      ) : notifications.filter(n => n.user?.id === 1337).length === 0 ? (
         <div className="no-notifications">No notifications yet</div>
       ) : (
         notifications
-          .filter(notification => notification.user?.id === adminUserId) // ✅ FIX HERE
+          .filter(notification => notification.user?.id === 1337) // ✅ FIX HERE
           .map(notification => (
             <div
               key={notification.id}
@@ -1108,7 +1108,7 @@ useEffect(() => {
       <h3>Notifications</h3>
       <div className="notification-actions">
         {notifications
-          .filter(n => n.user?.id === adminUserId && n.status === 'UNREAD')
+          .filter(n => n.user?.id === 1337 && n.status === 'UNREAD')
           .length > 0 && (
           <button onClick={markAllAsRead} className="mark-read-btn">
             Mark all as read
@@ -1121,11 +1121,11 @@ useEffect(() => {
     <div className="notification-list">
       {notificationsLoading ? (
         <div className="notification-loading">Loading...</div>
-      ) : notifications.filter(n => n.user?.id === adminUserId).length === 0 ? (
+      ) : notifications.filter(n => n.user?.id === 1337).length === 0 ? (
         <div className="no-notifications">No notifications yet</div>
       ) : (
         notifications
-          .filter(notification => notification.user?.id === adminUserId) // ✅ FIX HERE
+          .filter(notification => notification.user?.id === 1337) // ✅ FIX HERE
           .map(notification => (
             <div
               key={notification.id}

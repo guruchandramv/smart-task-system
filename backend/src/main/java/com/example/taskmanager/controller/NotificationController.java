@@ -42,11 +42,6 @@ public class NotificationController {
                 .body(Map.of("error", "Error fetching unread notifications: " + e.getMessage()));
         }
     }
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Notification>> getNotificationsByUserId(@PathVariable Long userId) {
-        List<Notification> notifications = notificationService.getNotificationsForUser(userId);
-        return ResponseEntity.ok(notifications);
-    }
 
     // Get unread count
     @GetMapping("/unread/count")
