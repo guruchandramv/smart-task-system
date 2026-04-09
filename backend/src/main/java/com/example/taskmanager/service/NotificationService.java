@@ -150,4 +150,10 @@ public class NotificationService {
     public long getUnreadCount() {
         return notificationRepository.countUnread();
     }
+    public void notifyTaskCompletion(Long taskId) {
+        Notification notification = new Notification();
+        notification.setMessage("Task ID " + taskId + " has been completed.");
+        notification.setRead(false); // marks it as unread
+        notificationRepository.save(notification);
+    }
 }

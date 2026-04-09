@@ -136,15 +136,18 @@ function UserDashboard() {
     navigate("/profile");
     setShowUserMenu(false);
   };
-  const handleSliderChange = (event) => {
-    const newPercentage = event.target.value;
-    setCompletionPercentage(newPercentage);
+  const handleSliderChange = async (taskId, newStatus) => {
+    try {
+      // Update task status
+      await updateTaskStatus(taskId, newStatus);
 
-    // Send the updated task completion percentage to the backend
-    updateTaskCompletion(selectedTask.id, newPercentage);
-
-    // Notify the admin about the updated task completion
-    notifyAdmin(selectedTask, newPercentage);
+      // Notify admin after task completion
+      if (newStatus === "Completed") {
+        await notifyAdminTaskCompletion(taskId);
+      }
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   // Function to update task completion in the backend
@@ -157,18 +160,14 @@ function UserDashboard() {
     }
   };
   // Function to notify the admin about the updated task completion
-const notifyAdmin = async (task, percentage) => {
-  try {
-    await axios.post("/api/admin/notify-task-completion", {
-      taskId: task.id,
-      taskTitle: task.title,
-      completionPercentage: percentage
-    });
-    console.log("Admin notified about task completion update");
-  } catch (error) {
-    console.error("Error notifying admin", error);
-  }
-};
+  const notifyAdminTaskCompletion = async (taskId) => {
+    try {
+      const response = await axios.post(`/api/notifications/task-completion`, { taskId });
+      console.log("Task completion updated successfully");
+    } catch (error) {
+      console.error("Error notifying admin", error);
+    }
+  };
   const fetchAssignedTasks = async (userId) => {
     setLoading(true);
     setError("");

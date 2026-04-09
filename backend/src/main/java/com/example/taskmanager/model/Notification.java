@@ -40,6 +40,9 @@ public class Notification {
     @Column
     private String newValue;
 
+    private boolean read;
+    private String title;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -75,4 +78,10 @@ public class Notification {
 
     public String getNewValue() { return newValue; }
     public void setNewValue(String newValue) { this.newValue = newValue; }
+
+    public boolean isRead() { return read; }
+    public void setRead(boolean read) { this.read = read; }
+
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
 }
