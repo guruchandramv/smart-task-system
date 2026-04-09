@@ -255,17 +255,14 @@ function AdminDashboard() {
 
     try {
       const unassignedRes = await axios.get("/api/tasks/unassigned");
-      console.log("FetchAllData(): unAssignedRes: ",unassignedRes);
       setUnassignedTasks(Array.isArray(unassignedRes.data) ? unassignedRes.data : []);
 
       const allTasksRes = await axios.get("/api/tasks");
-      console.log("FetchAllData(): allTasksRes: ",allTasksRes);
       const allTasks = Array.isArray(allTasksRes.data) ? allTasksRes.data : [];
       const assigned = allTasks.filter(task => task.status !== 'NEW');
       setAssignedTasks(assigned);
 
       const usersRes = await axios.get("/api/users/assignable");
-      console.log("FetchAllData(): usersRes: ",usersRes);
       setUsers(Array.isArray(usersRes.data) ? usersRes.data : []);
 
     } catch (error) {
@@ -535,7 +532,6 @@ function AdminDashboard() {
 
     try {
       const response = await axios.get("/api/notifications");
-      console.log(`Response From Notification AXIOS: `,response);
       // ✅ Filter admin notifications correctly
       const adminNotifications = response.data.filter(
         n => n.user?.id === 1337
