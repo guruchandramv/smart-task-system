@@ -56,7 +56,12 @@ function UserDashboard() {
     field: "deadline",
     direction: "asc"
   });
-
+  // USE EFFECTS
+  useEffect(() => {
+    if (selectedTask) {
+      setCompletionPercentage(selectedTask.completionPercentage);
+    }
+  }, [selectedTask]);
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -167,6 +172,7 @@ function UserDashboard() {
 
     try {
       const response = await axios.get(`/api/tasks/assigned/${userId}`);
+      console.log("fetchAssignedTasks() response: ",response);
       const filtered = response.data.filter(task => task.status !== 'NEW');
       setAssignedTasks(filtered);
     } catch (error) {
