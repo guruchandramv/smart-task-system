@@ -49,13 +49,17 @@ public class TaskController {
                 .body(Map.of("error", "Error fetching tasks: " + e.getMessage()));
         }
     }
+    /**
+     * GET test DB
+     * Endpoint: GET /api/tasks/test-db
+     */
     @GetMapping("/test-db")
     public String testDatabase() {
         try {
             Class.forName("org.postgresql.Driver");
-            String url = System.getenv("DB_URL");
-            String user = System.getenv("DB_USERNAME");
-            String pass = System.getenv("DB_PASSWORD");
+            String url = System.getenv("jdbc:postgresql://ep-noisy-fog-a1chnaai-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require");
+            String user = System.getenv("neondb_owner");
+            String pass = System.getenv("npg_63RoatjmPysn");
 
             Connection conn = DriverManager.getConnection(url, user, pass);
             conn.close();
