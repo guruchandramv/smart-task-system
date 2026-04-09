@@ -44,7 +44,7 @@ public class ActivityController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
-    
+
     // ----------------- Single User Status -----------------
     @GetMapping("/user-status/{userId}")
     public ResponseEntity<?> getUserStatus(@PathVariable Long userId) {
@@ -185,8 +185,8 @@ public class ActivityController {
 
             for (User user : inactiveUsers) {
                 user.setOnline(false);
-                System.out.println("🔴 FORCE CLEANUP: User '" + user.getUsername() +
-                    "' marked offline (inactive since " + user.getLastActivity() + ")");
+                //System.out.println("🔴 FORCE CLEANUP: User '" + user.getUsername() +
+                //    "' marked offline (inactive since " + user.getLastActivity() + ")");
             }
 
             if (!inactiveUsers.isEmpty()) {

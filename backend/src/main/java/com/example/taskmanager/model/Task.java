@@ -4,6 +4,7 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
 @Table(name = "TASKS", schema = "scott")
@@ -27,7 +28,8 @@ public class Task {
     private String status;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "ASSIGNED_USER_ID")
+    @JoinColumn(name = "assigned_user_id")
+    @JsonManagedReference
     private User assignedUser;
 
     @Column(nullable = false)

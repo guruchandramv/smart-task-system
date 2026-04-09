@@ -1,6 +1,8 @@
 package com.example.taskmanager.controller;
 import java.sql.Connection;
 import java.sql.DriverManager;
+
+import com.example.taskmanager.dto.TaskDTO;
 import com.example.taskmanager.model.Task;
 import com.example.taskmanager.model.User;
 import com.example.taskmanager.repository.TaskRepository;
@@ -37,17 +39,9 @@ public class TaskController {
      * Endpoint: GET /api/tasks
      */
     @GetMapping
-    public ResponseEntity<?> getAllTasks() {
-        try {
-            System.out.println("Fetching all tasks...");
-            List<Task> tasks = taskRepository.findAll();
-            System.out.println("Found " + tasks.size() + " tasks");
-            return ResponseEntity.ok(tasks);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500)
-                .body(Map.of("error", "Error fetching tasks: " + e.getMessage()));
-        }
+    public ResponseEntity<List<TaskDTO>> getAllTasks() {
+        List<TaskDTO> taskDTOs = taskService.getAllTasks();
+        return ResponseEntity.ok(taskDTOs);
     }
     /**
      * GET test DB
@@ -76,9 +70,9 @@ public class TaskController {
     @GetMapping("/unassigned")
     public ResponseEntity<?> getUnassignedTasks() {
         try {
-            System.out.println("Fetching unassigned tasks...");
+            //System.out.println("Fetching unassigned tasks...");
             List<Task> unassignedTasks = taskRepository.findByStatus("NEW");
-            System.out.println("Found " + unassignedTasks.size() + " unassigned tasks");
+            //System.out.println("Found " + unassignedTasks.size() + " unassigned tasks");
             return ResponseEntity.ok(unassignedTasks);
         } catch (Exception e) {
             e.printStackTrace();
@@ -112,7 +106,7 @@ public class TaskController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getTaskById(@PathVariable Long id) {
         try {
-            System.out.println("Fetching task with ID: " + id);
+            //System.out.println("Fetching task with ID: " + id);
             Optional<Task> task = taskRepository.findById(id);
             if (task.isPresent()) {
                 return ResponseEntity.ok(task.get());
@@ -151,7 +145,7 @@ public class TaskController {
     @PostMapping
     public ResponseEntity<?> createTask(@RequestBody Map<String, Object> taskPayload) {
         try {
-            System.out.println("📝 Creating new unassigned task: " + taskPayload);
+            //System.out.println("📝 Creating new unassigned task: " + taskPayload);
 
             // Get admin user
             Optional<User> adminUser = userRepository.findById(1L);
@@ -202,9 +196,9 @@ public class TaskController {
             task.setCreatedBy(adminUser.get());
 
             Task savedTask = taskRepository.save(task);
-            System.out.println("✅ Task created with ID: " + savedTask.getId());
+            //System.out.println("✅ Task created with ID: " + savedTask.getId());
 
-            // 🔔 CREATE NOTIFICATION
+
             notificationService.notifyTaskCreated(savedTask, adminUser.get());
 
             return ResponseEntity.status(201).body(savedTask);
@@ -216,16 +210,16 @@ public class TaskController {
         }
     }
     @PutMapping("/api/tasks/{id}")
-public ResponseEntity<?> updateTaskStatus(@PathVariable Long id, @RequestBody Task task) {
-    try {
-        Task existingTask = taskService.updateTaskStatus(id, task);
-        return ResponseEntity.ok(existingTask);
-    } catch (Exception e) {
-        // Log the error for debugging
-        e.printStackTrace();
-        return ResponseEntity.status(500).body(Map.of("error", "Error updating task status", "message", e.getMessage()));
+    public ResponseEntity<?> updateTaskStatus(@PathVariable Long id, @RequestBody Task task) {
+        try {
+            TaskDTO updatedTask = taskService.updateTaskStatus(id, task); // ✅ use TaskDTO
+            return ResponseEntity.ok(updatedTask);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500)
+                .body(Map.of("error", "Error updating task status", "message", e.getMessage()));
+        }
     }
-}
     /**
      * PUT update task
      * Endpoint: PUT /api/tasks/{taskId}

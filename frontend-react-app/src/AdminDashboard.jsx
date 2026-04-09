@@ -249,7 +249,6 @@ function AdminDashboard() {
       setLoading(false);
     }
   };
-
   const fetchAllData = async () => {
     setLoading(true);
     setError("");
@@ -266,7 +265,6 @@ function AdminDashboard() {
       setAssignedTasks(assigned);
 
       const usersRes = await axios.get("/api/users/assignable");
-      console.log("FetchAllData(): usersRes: ",usersRes);
       console.log("FetchAllData(): usersRes: ",usersRes);
       setUsers(Array.isArray(usersRes.data) ? usersRes.data : []);
 

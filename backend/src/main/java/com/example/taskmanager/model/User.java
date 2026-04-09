@@ -2,7 +2,6 @@ package com.example.taskmanager.model;
 
 import javax.persistence.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import java.util.List;
 import java.time.LocalDateTime;
 
@@ -41,7 +40,7 @@ public class User {
     private Boolean isOnline = false;
 
     @OneToMany(mappedBy = "assignedUser", fetch = FetchType.EAGER)
-    @JsonManagedReference
+    @JsonIgnore
     private List<Task> tasks;
 
 	@Column(name = "profile_picture")
