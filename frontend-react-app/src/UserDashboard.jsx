@@ -156,7 +156,6 @@ function UserDashboard() {
       console.error("Error updating task completion", error);
     }
   };
-  // Function to update task completion in the backend
   // Function to notify the admin about the updated task completion
 const notifyAdmin = async (task, percentage) => {
   try {

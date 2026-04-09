@@ -119,22 +119,20 @@ public class TaskController {
                 .body(Map.of("error", "Error fetching task: " + e.getMessage()));
         }
     }
-    @PutMapping("/{id}/updateCompletion")
-    public ResponseEntity<Task> updateTaskCompletion(@PathVariable Long id, @RequestParam int completionPercentage) {
+    
+    @PutMapping("/{id}/update-completion")
+    public ResponseEntity<Task> updateTaskCompletion(@PathVariable Long id, @RequestBody Map<String, Integer> payload) {
         Optional<Task> taskOptional = taskRepository.findById(id);
         if (!taskOptional.isPresent()) {
             return ResponseEntity.notFound().build();
         }
 
         Task task = taskOptional.get();
-        // int oldPercentage = task.getCompletionPercentage();
-        task.setCompletionPercentage(completionPercentage);
-
-        // Update task in DB
-        taskRepository.save(task);
-
-        // Notify admin about the completion percentage change
-        // notificationService.notifyTaskCompletionUpdated(task, task.getAssignedUser(), oldPercentage, completionPercentage);
+        Integer completionPercentage = payload.get("completionPercentage");
+        if (completionPercentage != null) {
+            task.setCompletionPercentage(completionPercentage);
+            taskRepository.save(task);
+        }
 
         return ResponseEntity.ok(task);
     }

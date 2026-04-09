@@ -109,7 +109,7 @@ public class ActivityController {
                     long secondsInactive = java.time.Duration.between(user.getLastActivity().atOffset(ZoneOffset.UTC).toInstant(), nowUtc).getSeconds();
                     status.put("inactiveSeconds", secondsInactive);
 
-                    if (secondsInactive <= 2) {
+                    if (secondsInactive <= 30) {
                         isOnline = true;
                         onlineCount.incrementAndGet();
                     } else {
