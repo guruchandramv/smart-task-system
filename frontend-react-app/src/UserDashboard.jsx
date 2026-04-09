@@ -143,13 +143,9 @@ function UserDashboard() {
     if (!selectedTask?.id) return;
 
     try {
-      // Update task completion first
       await updateTaskCompletion(selectedTask.id, newPercentage);
 
-      // Notify admin
-      await notifyAdminTaskCompletion(selectedTask.id);
-
-      console.log("Task completion slider updated & admin notified");
+      console.log("Task completion slider updated");
     } catch (error) {
       console.error("Error updating task completion or notifying admin", error);
     }
@@ -164,15 +160,7 @@ function UserDashboard() {
       console.error("Error updating task completion", error);
     }
   };
-  // Function to notify the admin about the updated task completion
-  const notifyAdminTaskCompletion = async (taskId) => {
-    try {
-      const response = await axios.post(`/api/notifications/notify-task-completion`, { taskId });
-      console.log("Task completion updated successfully");
-    } catch (error) {
-      console.error("Error notifying admin", error);
-    }
-  };
+
   const fetchAssignedTasks = async (userId) => {
     setLoading(true);
     setError("");
