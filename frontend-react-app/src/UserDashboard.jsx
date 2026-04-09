@@ -136,17 +136,22 @@ function UserDashboard() {
     navigate("/profile");
     setShowUserMenu(false);
   };
-  const handleSliderChange = async (taskId, newStatus) => {
-    try {
-      // Update task status
-      await updateTaskStatus(taskId, newStatus);
+  const handleSliderChange = async (e) => {
+    const newPercentage = e.target.value;
+    setCompletionPercentage(newPercentage);
 
-      // Notify admin after task completion
-      if (newStatus === "Completed") {
-        await notifyAdminTaskCompletion(taskId);
-      }
+    if (!selectedTask?.id) return;
+
+    try {
+      // Update task completion first
+      await updateTaskCompletion(selectedTask.id, newPercentage);
+      console.log(`notifyAdminTaskCompletion(): selectedTask.id: `,selectedTask.id);
+      // Notify admin
+      await notifyAdminTaskCompletion(selectedTask.id);
+
+      console.log("Task completion updated & admin notified");
     } catch (error) {
-      console.error(error);
+      console.error("Error updating task completion or notifying admin", error);
     }
   };
 
@@ -162,7 +167,7 @@ function UserDashboard() {
   // Function to notify the admin about the updated task completion
   const notifyAdminTaskCompletion = async (taskId) => {
     try {
-      const response = await axios.post(`/api/notifications/task-completion`, { taskId });
+      const response = await axios.post(`/api/notifications/notify-task-completion`, { taskId });
       console.log("Task completion updated successfully");
     } catch (error) {
       console.error("Error notifying admin", error);
