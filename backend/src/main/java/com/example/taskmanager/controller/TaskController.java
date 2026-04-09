@@ -70,9 +70,9 @@ public class TaskController {
     @GetMapping("/unassigned")
     public ResponseEntity<?> getUnassignedTasks() {
         try {
-            //System.out.println("Fetching unassigned tasks...");
+            System.out.println("Fetching unassigned tasks...");
             List<Task> unassignedTasks = taskRepository.findByStatus("NEW");
-            //System.out.println("Found " + unassignedTasks.size() + " unassigned tasks");
+            System.out.println("Found " + unassignedTasks.size() + " unassigned tasks");
             return ResponseEntity.ok(unassignedTasks);
         } catch (Exception e) {
             e.printStackTrace();
@@ -106,7 +106,7 @@ public class TaskController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getTaskById(@PathVariable Long id) {
         try {
-            //System.out.println("Fetching task with ID: " + id);
+            System.out.println("Fetching task with ID: " + id);
             Optional<Task> task = taskRepository.findById(id);
             if (task.isPresent()) {
                 return ResponseEntity.ok(task.get());
@@ -145,7 +145,7 @@ public class TaskController {
     @PostMapping
     public ResponseEntity<?> createTask(@RequestBody Map<String, Object> taskPayload) {
         try {
-            //System.out.println("📝 Creating new unassigned task: " + taskPayload);
+            System.out.println("📝 Creating new unassigned task: " + taskPayload);
 
             // Get admin user
             Optional<User> adminUser = userRepository.findById(1L);
@@ -196,7 +196,7 @@ public class TaskController {
             task.setCreatedBy(adminUser.get());
 
             Task savedTask = taskRepository.save(task);
-            //System.out.println("✅ Task created with ID: " + savedTask.getId());
+            System.out.println("✅ Task created with ID: " + savedTask.getId());
 
 
             notificationService.notifyTaskCreated(savedTask, adminUser.get());

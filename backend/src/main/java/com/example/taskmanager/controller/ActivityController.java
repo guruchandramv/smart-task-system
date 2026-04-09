@@ -185,8 +185,8 @@ public class ActivityController {
 
             for (User user : inactiveUsers) {
                 user.setOnline(false);
-                //System.out.println("🔴 FORCE CLEANUP: User '" + user.getUsername() +
-                //    "' marked offline (inactive since " + user.getLastActivity() + ")");
+                System.out.println("🔴 FORCE CLEANUP: User '" + user.getUsername() +
+                    "' marked offline (inactive since " + user.getLastActivity() + ")");
             }
 
             if (!inactiveUsers.isEmpty()) {
