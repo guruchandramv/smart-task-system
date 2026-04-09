@@ -40,7 +40,9 @@ public class Notification {
     @Column
     private String newValue;
 
-    private boolean read;
+    @Column(name = "is_read")  // rename the column
+    private boolean read = false;       // keep the field name as `read` if you want
+
     private String title;
 
     @PrePersist
