@@ -207,7 +207,7 @@ public class TaskController {
                 .body(Map.of("error", "Failed to create task: " + e.getMessage()));
         }
     }
-    
+
     @PutMapping("/{id}/status")
     public ResponseEntity<?> updateTaskStatus(@PathVariable Long id, @RequestBody Map<String, String> payload) {
         try {
@@ -225,6 +225,7 @@ public class TaskController {
                 .body(Map.of("error", "Error updating task status", "message", e.getMessage()));
         }
     }
+
     /**
      * PUT update task
      * Endpoint: PUT /api/tasks/{taskId}

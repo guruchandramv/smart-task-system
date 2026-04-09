@@ -386,9 +386,11 @@ const notifyAdmin = async (task, percentage) => {
   };
   const updateTaskStatus = async (taskId, newStatus) => {
     try {
-      await axios.put(`/api/tasks/${taskId}/status`, { status: newStatus });
+      const response = await axios.put(`/api/tasks/${taskId}/status`, { status: newStatus });
+      const updatedTask = response.data; // get backend-confirmed task
+
       setAssignedTasks(assignedTasks.map(task =>
-        task.id === taskId ? { ...task, status: newStatus } : task
+        task.id === taskId ? updatedTask : task
       ));
     } catch (error) {
       console.error("Error updating task status:", error);

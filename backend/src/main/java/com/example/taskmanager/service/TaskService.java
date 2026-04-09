@@ -52,7 +52,7 @@ public class TaskService {
 
         Task updatedTask = taskRepository.save(task);
 
-        // Notify changes
+        // Notify admin or creator about status change
         notificationService.notifyTaskUpdated(task, task.getCreatedBy(), "status", oldStatus, newStatus);
 
         return new TaskDTO(updatedTask);
