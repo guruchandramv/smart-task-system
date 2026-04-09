@@ -5,7 +5,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import java.util.List;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+@JsonIgnoreProperties({"tasks"}) // ✅ prevent recursion
 @Entity
 @Table(name = "users", schema = "scott")
 public class User {
@@ -43,10 +45,10 @@ public class User {
     @OneToMany(mappedBy = "assignedUser", fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<Task> tasks;
-	
+
 	@Column(name = "profile_picture")
 	private String profilePicture = "/uploads/profile_pictures/default.png";
-	
+
     @PrePersist
     protected void onCreate() {
         if (lastLogin == null) {
@@ -92,7 +94,7 @@ public class User {
     public Boolean getIsOnline() { return isOnline; }
 
     public void setOnline(Boolean online) { isOnline = online; }
-	
+
 	public String getProfilePicture() { return profilePicture; }
 
 	public void setProfilePicture(String profilePicture) { this.profilePicture = profilePicture; }

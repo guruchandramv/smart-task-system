@@ -25,7 +25,7 @@ public class Notification {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USER_ID")
-    @JsonIgnoreProperties({"tasks"})
+    @JsonIgnoreProperties({"tasks", "password", "email"})
     private User user; // The user who performed the action
 
 
