@@ -528,7 +528,8 @@ function AdminDashboard() {
   const fetchNotifications = async () => {
     setNotificationsLoading(true);
     try {
-      const response = await axios.get("/api/notifications");
+      const user = JSON.parse(localStorage.getItem("user"));
+      const response = await axios.get(`/notifications/user/${user.id}`);
       setNotifications(response.data);
       const unread = response.data.filter(n => n.status === 'UNREAD').length;
       setUnreadCount(unread);
@@ -856,13 +857,13 @@ const handleProfileClick = () => {
   // ============== USE EFFECTS ==============
   useEffect(() => {
     const fetchNotifications = async () => {
-        try {
-            // Fetch unread notifications
-            const response = await axios.get("/api/notifications/unread");
-            setNotifications(response.data); // Set the unread notifications in state
-        } catch (error) {
-            console.error("Error fetching notifications:", error);
-        }
+      try {
+        const user = JSON.parse(localStorage.getItem("user"));
+        const response = await axios.get(`/notifications/user/${user.id}`);
+        setNotifications(response.data);
+      } catch (error) {
+        console.error("Error fetching notifications:", error);
+      }
     };
 
     fetchNotifications();
@@ -978,35 +979,43 @@ useEffect(() => {
       </button>
 
       {showNotifications && (
-  <div className="notification-panel">
-    <h3>Notifications</h3>
-    {/* Check if there are any notifications */}
-    {notifications.length > 0 ? (
-      notifications.map((notification) => (
-        <div key={notification.id} className="notification-item">
-          <div className="notification-header">
-            <strong>{notification.type}</strong>
-            <span className="notification-time">
-              {new Date(notification.createdAt).toLocaleTimeString()}
-            </span>
-          </div>
-          <p>{notification.message}</p>
-          {/* Optional: Add an action to mark as read */}
-          {notification.status === 'UNREAD' && (
-            <button
-              onClick={() => markAsRead(notification.id)}
-              className="mark-as-read-btn"
-            >
-              Mark as Read
-            </button>
-          )}
-        </div>
-      ))
-    ) : (
-      <p>No new notifications.</p>
-    )}
-  </div>
-)}
+              <div className="notification-panel">
+              <div className="notification-header">
+                <h3>Notifications</h3>
+                <div className="notification-actions">
+                  {unreadCount > 0 && (
+                    <button onClick={markAllAsRead} className="mark-read-btn">
+                      Mark all as read
+                    </button>
+                  )}
+                  <button onClick={() => setShowNotifications(false)} className="close-btn">X</button>
+                </div>
+              </div>
+
+              <div className="notification-list">
+                {notificationsLoading ? (
+                  <div className="notification-loading">Loading...</div>
+                ) : notifications.length === 0 ? (
+                  <div className="no-notifications">No notifications yet</div>
+                ) : (
+                  notifications.map(notification => (
+                    <div
+                      key={notification.id}
+                      className={`notification-item ${notification.status === 'UNREAD' ? 'unread' : ''}`}
+                      onClick={() => markAsRead(notification.id)}
+                    >
+                      <div className="notification-content">
+                        <p className="notification-message">{notification.message}</p>
+                        <span className="notification-time">
+                          {formatNotificationTime(notification.createdAt)}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+            )}
     </div>
 
     {/* User Avatar Dropdown - ADD THIS */}
@@ -1056,37 +1065,44 @@ useEffect(() => {
         🔔
         {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
       </button>
-
       {showNotifications && (
-  <div className="notification-panel">
-    <h3>Notifications</h3>
-    {/* Check if there are any notifications */}
-    {notifications.length > 0 ? (
-      notifications.map((notification) => (
-        <div key={notification.id} className="notification-item">
-          <div className="notification-header">
-            <strong>{notification.type}</strong>
-            <span className="notification-time">
-              {new Date(notification.createdAt).toLocaleTimeString()}
-            </span>
-          </div>
-          <p>{notification.message}</p>
-          {/* Optional: Add an action to mark as read */}
-          {notification.status === 'UNREAD' && (
-            <button
-              onClick={() => markAsRead(notification.id)}
-              className="mark-as-read-btn"
-            >
-              Mark as Read
-            </button>
-          )}
-        </div>
-      ))
-    ) : (
-      <p>No new notifications.</p>
-    )}
-  </div>
-)}
+              <div className="notification-panel">
+              <div className="notification-header">
+                <h3>Notifications</h3>
+                <div className="notification-actions">
+                  {unreadCount > 0 && (
+                    <button onClick={markAllAsRead} className="mark-read-btn">
+                      Mark all as read
+                    </button>
+                  )}
+                  <button onClick={() => setShowNotifications(false)} className="close-btn">✕</button>
+                </div>
+              </div>
+
+              <div className="notification-list">
+                {notificationsLoading ? (
+                  <div className="notification-loading">Loading...</div>
+                ) : notifications.length === 0 ? (
+                  <div className="no-notifications">No notifications yet</div>
+                ) : (
+                  notifications.map(notification => (
+                    <div
+                      key={notification.id}
+                      className={`notification-item ${notification.status === 'UNREAD' ? 'unread' : ''}`}
+                      onClick={() => markAsRead(notification.id)}
+                    >
+                      <div className="notification-content">
+                        <p className="notification-message">{notification.message}</p>
+                        <span className="notification-time">
+                          {formatNotificationTime(notification.createdAt)}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+            )}
     </div>
     {/* User Avatar Dropdown - ADD THIS */}
     <div className="user-avatar-wrapper" ref={menuRef}>

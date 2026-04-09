@@ -163,4 +163,8 @@ public class NotificationService {
     public long getUnreadCount() {
         return notificationRepository.countUnread();
     }
+
+    public List<Notification> getNotificationsForUser(Long userId) {
+        return notificationRepository.findByUserId(userId);
+    }
 }
