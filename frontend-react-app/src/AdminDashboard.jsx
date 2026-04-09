@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from './axiosConfig.js';
 import "./AdminDashboard.css";
+import { Axios } from "axios";
+import axiosInstance from "./axiosConfig.js";
 
 // Configure axios defaults
 axios.defaults.headers.common['Content-Type'] = 'application/json';
@@ -254,14 +256,15 @@ function AdminDashboard() {
 
     try {
       const unassignedRes = await axios.get("/api/tasks/unassigned");
-      setUnassignedTasks(unassignedRes.data);
+      setUnassignedTasks(Array.isArray(unassignedRes.data) ? unassignedRes.data : []);
 
       const allTasksRes = await axios.get("/api/tasks");
-      const assigned = allTasksRes.data.filter(task => task.status !== 'NEW');
+      const allTasks = Array.isArray(allTasksRes.data) ? allTasksRes.data : [];
+      const assigned = allTasks.filter(task => task.status !== 'NEW');
       setAssignedTasks(assigned);
 
       const usersRes = await axios.get("/api/users/assignable");
-      setUsers(usersRes.data);
+      setUsers(Array.isArray(usersRes.data) ? usersRes.data : []);
 
     } catch (error) {
       handleApiError(error, "Failed to load data");
@@ -530,7 +533,7 @@ function AdminDashboard() {
 
     try {
       const response = await axios.get("/api/notifications");
-
+      console.log(`Response From Notification AXIOS: `,response);
       // ✅ Filter admin notifications correctly
       const adminNotifications = response.data.filter(
         n => n.user?.id === 1337
@@ -874,16 +877,16 @@ const handleProfileClick = () => {
   useEffect(() => {
     const fetchNotifications = async () => {
       setNotificationsLoading(true);
-
       try {
         const response = await axios.get("/api/notifications");
+        const notifications = Array.isArray(response.data) ? response.data : [];
 
         // ✅ Filter admin notifications correctly
         const adminNotifications = response.data.filter(
           n => n.user?.id === 1337
         );
 
-        setNotifications(adminNotifications);
+        setNotifications(notifications);
 
         // ✅ Correct unread count
         const unread = adminNotifications.filter(
@@ -899,7 +902,7 @@ const handleProfileClick = () => {
       }
     };
 
-    fetchNotifications();
+    //fetchNotifications();
 }, []);
   // Close dropdown when clicking outside
 useEffect(() => {

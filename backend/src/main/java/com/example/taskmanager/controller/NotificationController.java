@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -19,15 +20,9 @@ public class NotificationController {
 
     // Get all notifications
     @GetMapping
-    public ResponseEntity<?> getAllNotifications() {
-        try {
-            List<Notification> notifications = notificationService.getAllNotifications();
-            return ResponseEntity.ok(notifications);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500)
-                .body(Map.of("error", "Error fetching notifications: " + e.getMessage()));
-        }
+    public ResponseEntity<List<Notification>> getAllNotifications() {
+        List<Notification> notifications = notificationService.getAllNotifications();
+        return ResponseEntity.ok(notifications != null ? notifications : new ArrayList<>());
     }
 
     // Get unread notifications only
