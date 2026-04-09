@@ -152,8 +152,15 @@ public class NotificationService {
     }
     public void notifyTaskCompletion(Long taskId) {
         Notification notification = new Notification();
+        notification.setTaskId(taskId);
         notification.setMessage("Task ID " + taskId + " has been completed.");
-        notification.setRead(false); // marks it as unread
-        notificationRepository.save(notification);
+        notification.setTitle("Task Completed");
+        
+        // Fix here:
+        notification.setType("INFO");   // or "TASK" depending on your app design
+        notification.setStatus("UNREAD");
+        notification.setRead(false);
+
+notificationRepository.save(notification);
     }
 }

@@ -13,6 +13,9 @@ public class Notification {
     @SequenceGenerator(name = "notification_seq", sequenceName = "NOTIFICATION_SEQ", allocationSize = 1)
     private Long id;
 
+    @Column(name = "task_id")
+    private Long taskId;
+
     @Column(nullable = false)
     private String type; // TASK_CREATED, TASK_ASSIGNED, TASK_UNASSIGNED, TASK_UPDATED, TASK_DELETED, TASK_COMPLETED
 
@@ -56,7 +59,9 @@ public class Notification {
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-
+    public void setTaskId(Long taskId) {
+        this.taskId = taskId;
+    }
     public String getType() { return type; }
     public void setType(String type) { this.type = type; }
 
