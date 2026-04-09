@@ -89,17 +89,4 @@ public class NotificationController {
                 .body(Map.of("error", "Error fetching recent notifications: " + e.getMessage()));
         }
     }
-    @PostMapping("/notify-task-completion")
-    public ResponseEntity<?> notifyTaskCompletion(@RequestBody Map<String, Object> payload) {
-        try {
-            System.out.println("Received payload: " + payload); // 🔹 log payload
-            Long taskId = Long.valueOf(payload.get("taskId").toString());
-            notificationService.notifyTaskCompletion(taskId);
-            return ResponseEntity.ok(Map.of("message", "Admin notified of task completion"));
-        } catch (Exception e) {
-            e.printStackTrace(); // 🔹 logs exact reason of failure
-            return ResponseEntity.status(500)
-                    .body(Map.of("error", "Error notifying admin: " + e.getMessage()));
-        }
-    }
 }

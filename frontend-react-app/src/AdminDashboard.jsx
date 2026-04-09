@@ -523,15 +523,13 @@ function AdminDashboard() {
       direction: prev.field === field && prev.direction === 'asc' ? 'desc' : 'asc'
     }));
   };
-  const API_BASE = process.env.REACT_APP_API_URL;
 
   // ============== NOTIFICATIONS ==============
   const fetchNotifications = async () => {
     setNotificationsLoading(true);
 
     try {
-      const response = await axios.get(`${API_BASE}/api/notifications`);
-
+      const response = await axios.get("/api/notifications");
       // ✅ Filter admin notifications correctly
       const adminNotifications = response.data.filter(
         n => n.user?.id === adminUserId
@@ -1035,21 +1033,21 @@ useEffect(() => {
         <div className="no-notifications">No notifications yet</div>
       ) : (
         notifications
-  .filter(notification => !notification.user || notification.user?.id === adminUserId)
-  .map(notification => (
-    <div
-      key={notification.id}
-      className={`notification-item ${notification.status === 'UNREAD' ? 'unread' : ''}`}
-      onClick={() => markAsRead(notification.id)}
-    >
-      <div className="notification-content">
-        <p className="notification-message">{notification.message}</p>
-        <span className="notification-time">
-          {formatNotificationTime(notification.createdAt)}
-        </span>
-      </div>
-    </div>
-  ))
+          .filter(notification => notification.user?.id === adminUserId) // ✅ FIX HERE
+          .map(notification => (
+            <div
+              key={notification.id}
+              className={`notification-item ${notification.status === 'UNREAD' ? 'unread' : ''}`}
+              onClick={() => markAsRead(notification.id)}
+            >
+              <div className="notification-content">
+                <p className="notification-message">{notification.message}</p>
+                <span className="notification-time">
+                  {getTimeAgo(notification.createdAt)}
+                </span>
+              </div>
+            </div>
+          ))
       )}
     </div>
   </div>
@@ -1136,7 +1134,7 @@ useEffect(() => {
               <div className="notification-content">
                 <p className="notification-message">{notification.message}</p>
                 <span className="notification-time">
-                  {formatNotificationTime(notification.createdAt)}
+                  {getTimeAgo(notification.createdAt)}
                 </span>
               </div>
             </div>
