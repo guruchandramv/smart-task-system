@@ -119,7 +119,7 @@ public class TaskController {
                 .body(Map.of("error", "Error fetching task: " + e.getMessage()));
         }
     }
-    
+
     @PutMapping("/{id}/update-completion")
     public ResponseEntity<Task> updateTaskCompletion(@PathVariable Long id, @RequestBody Map<String, Integer> payload) {
         Optional<Task> taskOptional = taskRepository.findById(id);
@@ -207,11 +207,18 @@ public class TaskController {
                 .body(Map.of("error", "Failed to create task: " + e.getMessage()));
         }
     }
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateTaskStatus(@PathVariable Long id, @RequestBody Task task) {
+    
+    @PutMapping("/{id}/status")
+    public ResponseEntity<?> updateTaskStatus(@PathVariable Long id, @RequestBody Map<String, String> payload) {
         try {
-            TaskDTO updatedTask = taskService.updateTaskStatus(id, task); // ✅ use TaskDTO
+            String newStatus = payload.get("status");
+            if (newStatus == null || newStatus.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Status is required"));
+            }
+
+            TaskDTO updatedTask = taskService.updateTaskStatus(id, newStatus);
             return ResponseEntity.ok(updatedTask);
+
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500)

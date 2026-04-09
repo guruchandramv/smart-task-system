@@ -384,10 +384,9 @@ const notifyAdmin = async (task, percentage) => {
     navigate("/login", { replace: true });
     setShowUserMenu(false);
   };
-
   const updateTaskStatus = async (taskId, newStatus) => {
     try {
-      const response = await axios.put(`/api/tasks/${taskId}`, { status: newStatus });
+      await axios.put(`/api/tasks/${taskId}/status`, { status: newStatus });
       setAssignedTasks(assignedTasks.map(task =>
         task.id === taskId ? { ...task, status: newStatus } : task
       ));

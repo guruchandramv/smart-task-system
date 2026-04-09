@@ -3,6 +3,8 @@ package com.example.taskmanager.service;
 import com.example.taskmanager.model.Task;
 import com.example.taskmanager.repository.TaskRepository;
 import com.example.taskmanager.dto.TaskDTO;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -37,5 +39,22 @@ public class TaskService {
     public List<TaskDTO> getAllTasks() {
         List<Task> tasks = taskRepository.findAll();
         return tasks.stream().map(TaskDTO::new).collect(Collectors.toList());
+    }
+     @Autowired
+    private NotificationService notificationService;
+
+    public TaskDTO updateTaskStatus(Long taskId, String newStatus) {
+        Task task = taskRepository.findById(taskId)
+            .orElseThrow(() -> new RuntimeException("Task not found with id: " + taskId));
+
+        String oldStatus = task.getStatus();
+        task.setStatus(newStatus);
+
+        Task updatedTask = taskRepository.save(task);
+
+        // Notify changes
+        notificationService.notifyTaskUpdated(task, task.getCreatedBy(), "status", oldStatus, newStatus);
+
+        return new TaskDTO(updatedTask);
     }
 }
