@@ -523,16 +523,18 @@ function AdminDashboard() {
       direction: prev.field === field && prev.direction === 'asc' ? 'desc' : 'asc'
     }));
   };
+  const API_BASE = process.env.REACT_APP_API_URL;
 
   // ============== NOTIFICATIONS ==============
   const fetchNotifications = async () => {
     setNotificationsLoading(true);
 
     try {
-      const response = await axios.get("/api/notifications");
+      const response = await axios.get(`${API_BASE}/api/notifications`);
+
       // ✅ Filter admin notifications correctly
       const adminNotifications = response.data.filter(
-        n => n.user?.id === 1337
+        n => n.user?.id === adminUserId
       );
 
       setNotifications(adminNotifications);
@@ -879,7 +881,7 @@ const handleProfileClick = () => {
 
         // ✅ Filter admin notifications correctly
         const adminNotifications = response.data.filter(
-          n => n.user?.id === 1337
+          n => n.user?.id === adminUserId
         );
 
         setNotifications(notifications);
@@ -1016,7 +1018,7 @@ useEffect(() => {
       <h3>Notifications</h3>
       <div className="notification-actions">
         {notifications
-          .filter(n => n.user?.id === 1337 && n.status === 'UNREAD')
+          .filter(n => n.user?.id === adminUserId && n.status === 'UNREAD')
           .length > 0 && (
           <button onClick={markAllAsRead} className="mark-read-btn">
             Mark all as read
@@ -1029,25 +1031,25 @@ useEffect(() => {
     <div className="notification-list">
       {notificationsLoading ? (
         <div className="notification-loading">Loading...</div>
-      ) : notifications.filter(n => n.user?.id === 1337).length === 0 ? (
+      ) : notifications.filter(n => n.user?.id === adminUserId).length === 0 ? (
         <div className="no-notifications">No notifications yet</div>
       ) : (
         notifications
-          .filter(notification => notification.user?.id === 1337) // ✅ FIX HERE
-          .map(notification => (
-            <div
-              key={notification.id}
-              className={`notification-item ${notification.status === 'UNREAD' ? 'unread' : ''}`}
-              onClick={() => markAsRead(notification.id)}
-            >
-              <div className="notification-content">
-                <p className="notification-message">{notification.message}</p>
-                <span className="notification-time">
-                  {formatNotificationTime(notification.createdAt)}
-                </span>
-              </div>
-            </div>
-          ))
+  .filter(notification => !notification.user || notification.user?.id === adminUserId)
+  .map(notification => (
+    <div
+      key={notification.id}
+      className={`notification-item ${notification.status === 'UNREAD' ? 'unread' : ''}`}
+      onClick={() => markAsRead(notification.id)}
+    >
+      <div className="notification-content">
+        <p className="notification-message">{notification.message}</p>
+        <span className="notification-time">
+          {formatNotificationTime(notification.createdAt)}
+        </span>
+      </div>
+    </div>
+  ))
       )}
     </div>
   </div>
@@ -1107,7 +1109,7 @@ useEffect(() => {
       <h3>Notifications</h3>
       <div className="notification-actions">
         {notifications
-          .filter(n => n.user?.id === 1337 && n.status === 'UNREAD')
+          .filter(n => n.user?.id === adminUserId && n.status === 'UNREAD')
           .length > 0 && (
           <button onClick={markAllAsRead} className="mark-read-btn">
             Mark all as read
@@ -1120,11 +1122,11 @@ useEffect(() => {
     <div className="notification-list">
       {notificationsLoading ? (
         <div className="notification-loading">Loading...</div>
-      ) : notifications.filter(n => n.user?.id === 1337).length === 0 ? (
+      ) : notifications.filter(n => n.user?.id === adminUserId).length === 0 ? (
         <div className="no-notifications">No notifications yet</div>
       ) : (
         notifications
-          .filter(notification => notification.user?.id === 1337) // ✅ FIX HERE
+          .filter(notification => notification.user?.id === adminUserId) // ✅ FIX HERE
           .map(notification => (
             <div
               key={notification.id}

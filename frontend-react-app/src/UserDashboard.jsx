@@ -145,11 +145,11 @@ function UserDashboard() {
     try {
       // Update task completion first
       await updateTaskCompletion(selectedTask.id, newPercentage);
-      console.log(`notifyAdminTaskCompletion(): selectedTask.id: `,selectedTask.id);
+
       // Notify admin
       await notifyAdminTaskCompletion(selectedTask.id);
 
-      console.log("Task completion updated & admin notified");
+      console.log("Task completion slider updated & admin notified");
     } catch (error) {
       console.error("Error updating task completion or notifying admin", error);
     }
@@ -159,7 +159,7 @@ function UserDashboard() {
   const updateTaskCompletion = async (taskId, percentage) => {
     try {
       await axios.put(`/api/tasks/${taskId}/update-completion`, { completionPercentage: percentage });
-      console.log("Task completion updated successfully");
+      console.log("Task completion slider updated successfully");
     } catch (error) {
       console.error("Error updating task completion", error);
     }
