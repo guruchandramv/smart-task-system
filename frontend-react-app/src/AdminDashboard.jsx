@@ -365,8 +365,7 @@ function AdminDashboard() {
 
     const totalTasks = allTasks.length;
     const completedTasks = allTasks.filter(task => task.status === 'COMPLETED').length;
-    const pendingTasks = allTasks.filter(task =>
-      task.status === 'NEW' || task.status === 'IN_PROGRESS' || task.status === 'ON_HOLD'
+    const pendingTasks = allTasks.filter(task =>   task.status === 'NEW' || task.status === 'IN_PROGRESS' || task.status === 'ON_HOLD'
     ).length;
 
     const overdueTasks = allTasks.filter(task => {
@@ -392,8 +391,7 @@ function AdminDashboard() {
     };
 
     const tasksPerUser = users.map(user => {
-      const userAssignedTasks = assignedTasks.filter(task =>
-        task.assignedUser && task.assignedUser.id === user.id
+      const userAssignedTasks = assignedTasks.filter(task => task.assignedUser && task.assignedUser.id === user.id
       );
       const userStatus = userStatuses[user.id] || {
         isOnline: false,
@@ -861,7 +859,7 @@ const handleProfileClick = () => {
       case 'IN_PROGRESS': return 'In Progress';
       case 'COMPLETED': return 'Completed';
       case 'ON_HOLD': return 'On Hold';
-      case 'NEW': return New;
+      case 'NEW': return 'New';
       default: return {status};
     }
   };
