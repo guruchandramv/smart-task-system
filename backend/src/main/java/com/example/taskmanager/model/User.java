@@ -5,9 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import java.util.List;
 import java.time.LocalDateTime;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-@JsonIgnoreProperties({"tasks"}) // ✅ prevent recursion
 @Entity
 @Table(name = "users", schema = "scott")
 public class User {
@@ -42,7 +40,7 @@ public class User {
     @Column(name = "is_online")
     private Boolean isOnline = false;
 
-    @OneToMany(mappedBy = "assignedUser", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "assignedUser", fetch = FetchType.EAGER)
     @JsonManagedReference
     private List<Task> tasks;
 

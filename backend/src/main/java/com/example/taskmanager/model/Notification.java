@@ -3,7 +3,6 @@ package com.example.taskmanager.model;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name = "NOTIFICATIONS", schema = "scott")
@@ -23,15 +22,13 @@ public class Notification {
     @Column(nullable = false)
     private String status; // UNREAD, READ
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "USER_ID")
-    @JsonIgnoreProperties({"tasks", "password", "email"})
     private User user; // The user who performed the action
 
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "TASK_ID")
-    @JsonIgnoreProperties({"assignedUser"})
     private Task task; // The related task
 
     @Column(nullable = false)

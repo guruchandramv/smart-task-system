@@ -28,7 +28,6 @@ public class Task {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ASSIGNED_USER_ID")
-    @JsonIgnoreProperties({"password", "tasks"}) 
     private User assignedUser;
 
     @Column(nullable = false)
