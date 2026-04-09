@@ -165,6 +165,6 @@ public class NotificationService {
     }
 
     public List<Notification> getNotificationsForUser(Long userId) {
-        return notificationRepository.findByUserId(userId);
+        return notificationRepository.findByUser_Id(userId);
     }
 }
