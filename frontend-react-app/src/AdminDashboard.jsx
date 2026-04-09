@@ -527,11 +527,28 @@ function AdminDashboard() {
   // ============== NOTIFICATIONS ==============
   const fetchNotifications = async () => {
     setNotificationsLoading(true);
+
     try {
-      const response = await axios.get(`/notifications/user/1337`);
-      setNotifications(response.data);
-      const unread = response.data.filter(n => n.status === 'UNREAD').length;
+      const response = await axios.get("/api/notifications");
+      const user = JSON.parse(localStorage.getItem("userId"));
+      if (!user) {
+        console.error("User not found in localStorage");
+        return;
+      }
+      // ✅ Filter admin notifications correctly
+      const adminNotifications = response.data.filter(
+        n => n.user?.id === user?.id
+      );
+
+      setNotifications(adminNotifications);
+
+      // ✅ Correct unread count
+      const unread = adminNotifications.filter(
+        n => n.status === "UNREAD"
+      ).length;
+
       setUnreadCount(unread);
+
     } catch (error) {
       console.error("Error fetching notifications:", error);
     } finally {
@@ -548,15 +565,19 @@ function AdminDashboard() {
     }
   };
 
-  const markAsRead = async (notificationId) => {
+  const markAsRead = async (id) => {
     try {
-      await axios.put(`/api/notifications/${notificationId}/read`);
-      setNotifications(notifications.map(n =>
-        n.id === notificationId ? { ...n, status: 'READ' } : n
-      ));
-      setUnreadCount(prev => Math.max(0, prev - 1));
+      await axios.put(`/api/notifications/${id}/read`);
+
+      // ✅ Update state instead of refetching
+      setNotifications(prev =>
+        prev.map(n =>
+          n.id === id ? { ...n, status: "READ" } : n
+        )
+      );
+
     } catch (error) {
-      console.error("Error marking notification as read:", error);
+      console.error("Error marking as read:", error);
     }
   };
 
@@ -856,11 +877,33 @@ const handleProfileClick = () => {
   // ============== USE EFFECTS ==============
   useEffect(() => {
     const fetchNotifications = async () => {
+      setNotificationsLoading(true);
+
       try {
-        const response = await axios.get(`/notifications/user/1337`);
-        setNotifications(response.data);
+        const response = await axios.get("/api/notifications");
+        const user = JSON.parse(localStorage.getItem("userId"));
+        if (!user) {
+          console.error("User not found in localStorage");
+          return;
+        }
+        // ✅ Filter admin notifications correctly
+        const adminNotifications = response.data.filter(
+          n => n.user?.id === user?.id
+        );
+
+        setNotifications(adminNotifications);
+
+        // ✅ Correct unread count
+        const unread = adminNotifications.filter(
+          n => n.status === "UNREAD"
+        ).length;
+
+        setUnreadCount(unread);
+
       } catch (error) {
         console.error("Error fetching notifications:", error);
+      } finally {
+        setNotificationsLoading(false);
       }
     };
 
@@ -982,7 +1025,7 @@ useEffect(() => {
       <h3>Notifications</h3>
       <div className="notification-actions">
         {notifications
-          .filter(n => n.user?.id === 1337 && n.status === 'UNREAD')
+          .filter(n => n.user?.id === JSON.parse(localStorage.getItem("userId"))?.id && n.status === 'UNREAD')
           .length > 0 && (
           <button onClick={markAllAsRead} className="mark-read-btn">
             Mark all as read
@@ -995,11 +1038,11 @@ useEffect(() => {
     <div className="notification-list">
       {notificationsLoading ? (
         <div className="notification-loading">Loading...</div>
-      ) : notifications.filter(n => n.user?.id === 1337).length === 0 ? (
+      ) : notifications.filter(n => n.user?.id === JSON.parse(localStorage.getItem("userId"))?.id).length === 0 ? (
         <div className="no-notifications">No notifications yet</div>
       ) : (
         notifications
-          .filter(notification => notification.user?.id === 1337) // ✅ FIX HERE
+          .filter(notification => notification.user?.id === JSON.parse(localStorage.getItem("userId"))?.id) // ✅ FIX HERE
           .map(notification => (
             <div
               key={notification.id}
@@ -1073,7 +1116,7 @@ useEffect(() => {
       <h3>Notifications</h3>
       <div className="notification-actions">
         {notifications
-          .filter(n => n.user?.id === 1337 && n.status === 'UNREAD')
+          .filter(n => n.user?.id === JSON.parse(localStorage.getItem("userId"))?.id && n.status === 'UNREAD')
           .length > 0 && (
           <button onClick={markAllAsRead} className="mark-read-btn">
             Mark all as read
@@ -1086,11 +1129,11 @@ useEffect(() => {
     <div className="notification-list">
       {notificationsLoading ? (
         <div className="notification-loading">Loading...</div>
-      ) : notifications.filter(n => n.user?.id === 1337).length === 0 ? (
+      ) : notifications.filter(n => n.user?.id === JSON.parse(localStorage.getItem("userId"))?.id).length === 0 ? (
         <div className="no-notifications">No notifications yet</div>
       ) : (
         notifications
-          .filter(notification => notification.user?.id === 1337) // ✅ FIX HERE
+          .filter(notification => notification.user?.id === JSON.parse(localStorage.getItem("userId"))?.id) // ✅ FIX HERE
           .map(notification => (
             <div
               key={notification.id}
