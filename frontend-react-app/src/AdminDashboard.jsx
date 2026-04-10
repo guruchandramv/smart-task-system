@@ -1025,29 +1025,27 @@ useEffect(() => {
     </div>
 
     <div className="notification-list">
-      {notificationsLoading ? (
-        <div className="notification-loading">Loading...</div>
-      ) : notifications.filter(n => n.user?.id === adminUserId).length === 0 ? (
-        <div className="no-notifications">No notifications yet</div>
-      ) : (
-        notifications
-          .filter(notification => notification.user?.id === adminUserId) // ✅ FIX HERE
-          .map(notification => (
-            <div
-              key={notification.id}
-              className={`notification-item ${notification.status === 'UNREAD' ? 'unread' : ''}`}
-              onClick={() => markAsRead(notification.id)}
-            >
-              <div className="notification-content">
-                <p className="notification-message">{notification.message}</p>
-                <span className="notification-time">
-                  {getTimeAgo(notification.createdAt)}
-                </span>
-              </div>
-            </div>
-          ))
-      )}
-    </div>
+  {notificationsLoading ? (
+    <div className="notification-loading">Loading...</div>
+  ) : notifications.length === 0 ? (
+    <div className="no-notifications">No notifications yet</div>
+  ) : (
+    notifications.map(notification => (
+      <div
+        key={notification.id}
+        className={`notification-item ${notification.status === 'UNREAD' ? 'unread' : ''}`}
+        onClick={() => markAsRead(notification.id)}
+      >
+        <div className="notification-content">
+          <p className="notification-message">{notification.message}</p>
+          <span className="notification-time">
+            {getTimeAgo(notification.createdAt)}
+          </span>
+        </div>
+      </div>
+    ))
+  )}
+</div>
   </div>
 )}
     </div>
@@ -1116,29 +1114,27 @@ useEffect(() => {
     </div>
 
     <div className="notification-list">
-      {notificationsLoading ? (
-        <div className="notification-loading">Loading...</div>
-      ) : notifications.filter(n => n.user?.id === adminUserId).length === 0 ? (
-        <div className="no-notifications">No notifications yet</div>
-      ) : (
-        notifications
-          .filter(notification => notification.user?.id === adminUserId) // ✅ FIX HERE
-          .map(notification => (
-            <div
-              key={notification.id}
-              className={`notification-item ${notification.status === 'UNREAD' ? 'unread' : ''}`}
-              onClick={() => markAsRead(notification.id)}
-            >
-              <div className="notification-content">
-                <p className="notification-message">{notification.message}</p>
-                <span className="notification-time">
-                  {getTimeAgo(notification.createdAt)}
-                </span>
-              </div>
-            </div>
-          ))
-      )}
-    </div>
+  {notificationsLoading ? (
+    <div className="notification-loading">Loading...</div>
+  ) : notifications.length === 0 ? (
+    <div className="no-notifications">No notifications yet</div>
+  ) : (
+    notifications.map(notification => (
+      <div
+        key={notification.id}
+        className={`notification-item ${notification.status === 'UNREAD' ? 'unread' : ''}`}
+        onClick={() => markAsRead(notification.id)}
+      >
+        <div className="notification-content">
+          <p className="notification-message">{notification.message}</p>
+          <span className="notification-time">
+            {getTimeAgo(notification.createdAt)}
+          </span>
+        </div>
+      </div>
+    ))
+  )}
+</div>
   </div>
 )}
     </div>

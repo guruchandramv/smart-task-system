@@ -22,8 +22,7 @@ public class NotificationService {
         return message.replaceAll("[^\\x20-\\x7E\\n\\r\\t]", "").trim();
     }
     public List<Notification> getByUserId(Long userId) {
-        List<Notification> list = notificationRepository.findByUser_Id(userId);
-
+        List<Notification> list = notificationRepository.findByUser_IdOrderByCreatedAtDesc(userId);
         for (Notification n : list) {
             System.out.println("Notification ID: " + n.getId());
 

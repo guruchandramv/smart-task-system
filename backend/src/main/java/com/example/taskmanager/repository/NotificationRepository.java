@@ -41,4 +41,6 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     @Query("SELECT COUNT(n) FROM Notification n WHERE n.status = 'UNREAD'")
     long countUnread();
     List<Notification> findByUser_Id(Long userId);
+
+    List<Notification> findByUser_IdOrderByCreatedAtDesc(Long userId);
 }
