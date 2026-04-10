@@ -637,8 +637,8 @@ function AdminDashboard() {
     const menuWidth = 200;
     const menuHeight = 180;
 
-    let x = e.pageX;
-    let y = e.pageY;
+    let x = e.clientX;
+    let y = e.clientY;
 
     if (x + menuWidth > viewportWidth) x = viewportWidth - menuWidth - 10;
     if (y + menuHeight > viewportHeight) y = viewportHeight - menuHeight - 10;
@@ -672,7 +672,25 @@ function AdminDashboard() {
     setShowUnassignConfirm(true);
     closeContextMenu();
   };
+  const handleRightClick = (e, task) => {
+    e.preventDefault();
 
+    const menuWidth = 180;
+    const menuHeight = 150;
+
+    let x = e.clientX;
+    let y = e.clientY;
+
+    if (x + menuWidth > window.innerWidth) {
+      x -= menuWidth;
+    }
+
+    if (y + menuHeight > window.innerHeight) {
+      y -= menuHeight;
+    }
+
+    setContextMenu({ visible: true, x, y, task });
+  };
   const confirmUnassign = async () => {
     if (!taskToUnassign) return;
 
