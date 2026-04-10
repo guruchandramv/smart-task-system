@@ -227,21 +227,49 @@ public class TaskController {
     }
 
     @PutMapping("/{id}/status")
-    public ResponseEntity<?> updateTaskStatus(@PathVariable Long id, @RequestBody Map<String, String> payload) {
+    public ResponseEntity<?> updateTaskStatus(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> payload) {
+            
         try {
             String newStatus = payload.get("status");
+        
             if (newStatus == null || newStatus.isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Status is required"));
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Status is required"));
             }
-
-            TaskDTO updatedTask = taskService.updateTaskStatus(id, newStatus);
-            messagingTemplate.convertAndSend("/topic/tasks", updatedTask);
-            return ResponseEntity.ok(updatedTask);
-
+        
+            Optional<Task> optionalTask = taskRepository.findById(id);
+            if (optionalTask.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+        
+            Task task = optionalTask.get();
+        
+            // ✅ SET STATUS
+            task.setStatus(newStatus);
+        
+            // ✅ BUSINESS LOGIC FOR COMPLETION %
+            if ("COMPLETED".equalsIgnoreCase(newStatus)) {
+                task.setCompletionPercentage(100);
+            } else {
+                task.setCompletionPercentage(0);
+            }
+        
+            taskRepository.save(task);
+        
+            // ✅ WebSocket update
+            messagingTemplate.convertAndSend("/topic/tasks", task);
+        
+            return ResponseEntity.ok(task);
+        
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500)
-                .body(Map.of("error", "Error updating task status", "message", e.getMessage()));
+                    .body(Map.of(
+                            "error", "Error updating task status",
+                            "message", e.getMessage()
+                    ));
         }
     }
 

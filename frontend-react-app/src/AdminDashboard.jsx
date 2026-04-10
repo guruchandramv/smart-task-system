@@ -55,6 +55,7 @@ function AdminDashboard() {
   const [error, setError] = useState("");
   const [errorDetails, setErrorDetails] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [activeTab, setActiveTab] = useState("unassigned");
   const [backendStatus, setBackendStatus] = useState("checking");
   const [showStatistics, setShowStatistics] = useState(true);
@@ -920,12 +921,15 @@ const handleProfileClick = () => {
     return () => client.deactivate();
   }, []);
   useEffect(() => {
-    if (filteredUnassignedTasks.length > 0) {
-      setActiveTab("unassigned");
-    } else {
-      setActiveTab("assigned");
+    if (isInitialLoad && filteredUnassignedTasks.length >= 0) {
+      if (filteredUnassignedTasks.length > 0) {
+        setActiveTab("unassigned");
+      } else {
+        setActiveTab("assigned");
+      }
+      setIsInitialLoad(false); // ✅ stop future runs
     }
-  }, [filteredUnassignedTasks]);
+  }, [filteredUnassignedTasks, isInitialLoad]);
   useEffect(() => {
     const fetchNotifications = async () => {
       setNotificationsLoading(true);
