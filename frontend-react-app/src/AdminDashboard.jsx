@@ -2,11 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from './axiosConfig.js';
 import "./AdminDashboard.css";
-import { Axios } from "axios";
-import axiosInstance from "./axiosConfig.js";
+import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
-import { Stomp } from "stompjs";
-import { useEffect } from "react";
 
 // Configure axios defaults
 axios.defaults.headers.common['Content-Type'] = 'application/json';
@@ -24,71 +21,6 @@ function AdminDashboard() {
     return `${base}/${path}`;
   };
   const user = JSON.parse(localStorage.getItem("user") || "{}");
-
-  // ============== PARTICLE BACKGROUND ANIMATION ==============
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    let animationFrameId;
-    let particles = [];
-
-    const resizeCanvas = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-
-    const createParticles = () => {
-      const particleCount = 80;
-      for (let i = 0; i < particleCount; i++) {
-        particles.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          radius: Math.random() * 2 + 1,
-          speedX: (Math.random() - 0.5) * 0.3,
-          speedY: (Math.random() - 0.5) * 0.3,
-          opacity: Math.random() * 0.4 + 0.1
-        });
-      }
-    };
-
-    const drawParticles = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      particles.forEach(particle => {
-        ctx.beginPath();
-        ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(102, 126, 234, ${particle.opacity})`;
-        ctx.fill();
-
-        particle.x += particle.speedX;
-        particle.y += particle.speedY;
-
-        if (particle.x < 0) particle.x = canvas.width;
-        if (particle.x > canvas.width) particle.x = 0;
-        if (particle.y < 0) particle.y = canvas.height;
-        if (particle.y > canvas.height) particle.y = 0;
-      });
-
-      animationFrameId = requestAnimationFrame(drawParticles);
-    };
-
-    resizeCanvas();
-    createParticles();
-    drawParticles();
-
-    window.addEventListener('resize', () => {
-      resizeCanvas();
-      particles = [];
-      createParticles();
-    });
-
-    return () => {
-      cancelAnimationFrame(animationFrameId);
-      window.removeEventListener('resize', resizeCanvas);
-    };
-  }, []);
 
   // ============== STATE DECLARATIONS ==============
   const [unassignedTasks, setUnassignedTasks] = useState([]);
@@ -871,46 +803,121 @@ const handleProfileClick = () => {
   };
 
   // ============== USE EFFECTS ==============
+  // ============== PARTICLE BACKGROUND ANIMATION ==============
   useEffect(() => {
-    const socket = new SockJS("http://localhost:8080/ws");
-    const stompClient = Stomp.over(socket);
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-    stompClient.connect({}, () => {
-      console.log("✅ Connected to WebSocket");
+    const ctx = canvas.getContext('2d');
+    let animationFrameId;
+    let particles = [];
 
-      stompClient.subscribe("/topic/tasks", (message) => {
-        const updatedTask = JSON.parse(message.body);
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
 
-        console.log("📡 Task update received:", updatedTask);
-
-        // ✅ Update UNASSIGNED tasks
-        setUnassignedTasks((prev) => {
-          // remove if exists
-          let updated = prev.filter(t => t.id !== updatedTask.id);
-
-          if (updatedTask.status === "NEW") {
-            updated.unshift(updatedTask); // add to top
-          }
-
-          return updated;
+    const createParticles = () => {
+      const particleCount = 80;
+      for (let i = 0; i < particleCount; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          radius: Math.random() * 2 + 1,
+          speedX: (Math.random() - 0.5) * 0.3,
+          speedY: (Math.random() - 0.5) * 0.3,
+          opacity: Math.random() * 0.4 + 0.1
         });
+      }
+    };
 
-        // ✅ Update ASSIGNED tasks
-        setAssignedTasks((prev) => {
-          let updated = prev.filter(t => t.id !== updatedTask.id);
+    const drawParticles = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-          if (updatedTask.status !== "NEW") {
-            updated.unshift(updatedTask);
-          }
+      particles.forEach(particle => {
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(102, 126, 234, ${particle.opacity})`;
+        ctx.fill();
 
-          return updated;
-        });
+        particle.x += particle.speedX;
+        particle.y += particle.speedY;
+
+        if (particle.x < 0) particle.x = canvas.width;
+        if (particle.x > canvas.width) particle.x = 0;
+        if (particle.y < 0) particle.y = canvas.height;
+        if (particle.y > canvas.height) particle.y = 0;
       });
+
+      animationFrameId = requestAnimationFrame(drawParticles);
+    };
+
+    resizeCanvas();
+    createParticles();
+    drawParticles();
+
+    window.addEventListener('resize', () => {
+      resizeCanvas();
+      particles = [];
+      createParticles();
     });
 
     return () => {
-      if (stompClient) stompClient.disconnect();
+      cancelAnimationFrame(animationFrameId);
+      window.removeEventListener('resize', resizeCanvas);
     };
+  }, []);
+  useEffect(() => {
+    const client = new Client({
+      webSocketFactory: () =>
+        new SockJS("https://smart-task-system-production-8b1e.up.railway.app/ws"),
+
+      reconnectDelay: 5000,
+
+      onConnect: () => {
+        console.log("✅ Connected to WebSocket");
+
+        client.subscribe("/topic/tasks", (message) => {
+          const updatedTask = JSON.parse(message.body);
+
+          console.log("📡 Task update:", updatedTask);
+
+          // ✅ Unassigned
+          setUnassignedTasks((prev) => {
+            let updated = prev.filter(t => t.id !== updatedTask.id);
+
+            if (updatedTask.status === "NEW") {
+              updated.unshift(updatedTask);
+            }
+
+            return updated;
+          });
+
+          // ✅ Assigned
+          setAssignedTasks((prev) => {
+            let updated = prev.filter(t => t.id !== updatedTask.id);
+
+            if (updatedTask.status !== "NEW") {
+              updated.unshift(updatedTask);
+            }
+
+            return updated;
+          });
+        });
+      },
+
+      onStompError: (frame) => {
+        console.error("❌ Broker error:", frame);
+      },
+
+      onWebSocketError: (error) => {
+        console.error("❌ WebSocket error:", error);
+      }
+    });
+
+    client.activate();
+
+    return () => client.deactivate();
   }, []);
   useEffect(() => {
     if (filteredUnassignedTasks.length > 0) {
@@ -945,7 +952,7 @@ const handleProfileClick = () => {
     fetchNotifications();
 }, []);
   // Close dropdown when clicking outside
-useEffect(() => {
+  useEffect(() => {
   const handleClickOutside = (event) => {
     if (menuRef.current && !menuRef.current.contains(event.target)) {
       setShowUserMenu(false);
@@ -956,7 +963,7 @@ useEffect(() => {
   return () => {
     document.removeEventListener("mousedown", handleClickOutside);
   };
-}, []);
+  }, []);
   useEffect(() => {
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
