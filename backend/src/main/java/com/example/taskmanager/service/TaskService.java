@@ -5,6 +5,7 @@ import com.example.taskmanager.repository.TaskRepository;
 import com.example.taskmanager.dto.TaskDTO;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -13,6 +14,9 @@ import java.util.stream.Collectors;
 
 @Service
 public class TaskService {
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
     private final TaskRepository taskRepository;
 
     public TaskService(TaskRepository taskRepository) {

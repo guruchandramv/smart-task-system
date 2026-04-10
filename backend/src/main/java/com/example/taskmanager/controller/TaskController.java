@@ -7,6 +7,8 @@ import com.example.taskmanager.model.Task;
 import com.example.taskmanager.model.User;
 import com.example.taskmanager.repository.TaskRepository;
 import com.example.taskmanager.repository.UserRepository;
+import com.example.taskmanager.service.TaskService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +18,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.List;
 import com.example.taskmanager.service.NotificationService;
-import com.example.taskmanager.service.TaskService;
+
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.util.stream.Collectors;
 
@@ -30,7 +33,8 @@ public class TaskController {
     private TaskService taskService;
     @Autowired
     private TaskRepository taskRepository;
-
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
     @Autowired
     private UserRepository userRepository;
 
@@ -149,7 +153,7 @@ public class TaskController {
             task.setCompletionPercentage(completionPercentage);
             taskRepository.save(task);
         }
-
+        messagingTemplate.convertAndSend("/topic/tasks", task);
         return ResponseEntity.ok(task);
     }
     /**
@@ -212,6 +216,7 @@ public class TaskController {
             Task savedTask = taskRepository.save(task);
             //System.out.println("✅ Task created with ID: " + savedTask.getId());
             notificationService.notifyTaskCreated(savedTask, adminUser.get());
+            messagingTemplate.convertAndSend("/topic/tasks", task);
             return ResponseEntity.status(201).body(savedTask);
 
         } catch (Exception e) {
@@ -230,6 +235,7 @@ public class TaskController {
             }
 
             TaskDTO updatedTask = taskService.updateTaskStatus(id, newStatus);
+            messagingTemplate.convertAndSend("/topic/tasks", updatedTask);
             return ResponseEntity.ok(updatedTask);
 
         } catch (Exception e) {
@@ -310,6 +316,7 @@ public class TaskController {
             }
 
             Task updatedTask = taskRepository.save(task);
+            messagingTemplate.convertAndSend("/topic/tasks", updatedTask);
             return ResponseEntity.ok(updatedTask);
 
         } catch (Exception e) {
@@ -379,7 +386,7 @@ public class TaskController {
                 Task result = refreshedTask.get();
                 return ResponseEntity.ok(result);
             }
-
+            messagingTemplate.convertAndSend("/topic/tasks", updatedTask);
             return ResponseEntity.ok(updatedTask);
 
         } catch (Exception e) {
@@ -427,7 +434,7 @@ public class TaskController {
             // FIX: Use the CORRECT admin user in notification
             notificationService.notifyTaskUnassigned(updatedTask, adminUser, previousUser);
             //System.out.println("✅ Notification: Task unassigned from " + previousUser.getUsername() + " by admin " + adminUser.getUsername());
-
+            messagingTemplate.convertAndSend("/topic/tasks", updatedTask);
             return ResponseEntity.ok(updatedTask);
 
         } catch (Exception e) {
@@ -459,7 +466,7 @@ public class TaskController {
 
             // 🔔 CREATE NOTIFICATION
             notificationService.notifyTaskDeleted(taskTitle, deletedBy);
-
+            messagingTemplate.convertAndSend("/topic/tasks", task);
             return ResponseEntity.ok(Map.of(
                 "message", "Task deleted successfully",
                 "id", taskId

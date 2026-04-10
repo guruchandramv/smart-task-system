@@ -6,6 +6,7 @@ import com.example.taskmanager.model.User;
 import com.example.taskmanager.repository.NotificationRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -16,7 +17,8 @@ public class NotificationService {
 
     @Autowired
     private NotificationRepository notificationRepository;
-
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
     // Helper method to clean message
     private String cleanMessage(String message) {
         return message.replaceAll("[^\\x20-\\x7E\\n\\r\\t]", "").trim();

@@ -4,6 +4,9 @@ import axios from './axiosConfig.js';
 import "./AdminDashboard.css";
 import { Axios } from "axios";
 import axiosInstance from "./axiosConfig.js";
+import SockJS from "sockjs-client";
+import { Stomp } from "stompjs";
+import { useEffect } from "react";
 
 // Configure axios defaults
 axios.defaults.headers.common['Content-Type'] = 'application/json';
@@ -869,6 +872,47 @@ const handleProfileClick = () => {
 
   // ============== USE EFFECTS ==============
   useEffect(() => {
+    const socket = new SockJS("http://localhost:8080/ws");
+    const stompClient = Stomp.over(socket);
+
+    stompClient.connect({}, () => {
+      console.log("✅ Connected to WebSocket");
+
+      stompClient.subscribe("/topic/tasks", (message) => {
+        const updatedTask = JSON.parse(message.body);
+
+        console.log("📡 Task update received:", updatedTask);
+
+        // ✅ Update UNASSIGNED tasks
+        setUnassignedTasks((prev) => {
+          // remove if exists
+          let updated = prev.filter(t => t.id !== updatedTask.id);
+
+          if (updatedTask.status === "NEW") {
+            updated.unshift(updatedTask); // add to top
+          }
+
+          return updated;
+        });
+
+        // ✅ Update ASSIGNED tasks
+        setAssignedTasks((prev) => {
+          let updated = prev.filter(t => t.id !== updatedTask.id);
+
+          if (updatedTask.status !== "NEW") {
+            updated.unshift(updatedTask);
+          }
+
+          return updated;
+        });
+      });
+    });
+
+    return () => {
+      if (stompClient) stompClient.disconnect();
+    };
+  }, []);
+  useEffect(() => {
     if (filteredUnassignedTasks.length > 0) {
       setActiveTab("unassigned");
     } else {
@@ -1065,7 +1109,6 @@ useEffect(() => {
       </div>
     );
   }
-
   return (
     <div className="admin-dashboard">
       <canvas ref={canvasRef} className="particles-bg"></canvas>
@@ -1098,27 +1141,29 @@ useEffect(() => {
     </div>
 
     <div className="notification-list">
-  {notificationsLoading ? (
-    <div className="notification-loading">Loading...</div>
-  ) : notifications.length === 0 ? (
-    <div className="no-notifications">No notifications yet</div>
-  ) : (
-    notifications.map(notification => (
-      <div
-        key={notification.id}
-        className={`notification-item ${notification.status === 'UNREAD' ? 'unread' : ''}`}
-        onClick={() => markAsRead(notification.id)}
-      >
-        <div className="notification-content">
-          <p className="notification-message">{notification.message}</p>
-          <span className="notification-time">
-            {getTimeAgo(notification.createdAt)}
-          </span>
-        </div>
-      </div>
-    ))
-  )}
-</div>
+      {notificationsLoading ? (
+        <div className="notification-loading">Loading...</div>
+      ) : notifications.filter(n => n.user?.id === adminUserId).length === 0 ? (
+        <div className="no-notifications">No notifications yet</div>
+      ) : (
+        notifications
+          .filter(notification => notification.user?.id === adminUserId) // ✅ FIX HERE
+          .map(notification => (
+            <div
+              key={notification.id}
+              className={`notification-item ${notification.status === 'UNREAD' ? 'unread' : ''}`}
+              onClick={() => markAsRead(notification.id)}
+            >
+              <div className="notification-content">
+                <p className="notification-message">{notification.message}</p>
+                <span className="notification-time">
+                  {getTimeAgo(notification.createdAt)}
+                </span>
+              </div>
+            </div>
+          ))
+      )}
+    </div>
   </div>
 )}
     </div>
@@ -1396,51 +1441,30 @@ useEffect(() => {
                 </div>
               ) : (
                 <div className="tasks-grid">
-  {filteredUnassignedTasks.map(task => (
-    <div
-      key={task.id}
-      className={`task-card ${getPriorityClass(task.priority)}`}
-      onContextMenu={(e) => handleContextMenu(e, task)}
-      onClick={() => handleTaskClick(task)}
-    >
-      <div className="task-header">
-        <h3 title={task.title}>{task.title}</h3>
-        <h4>{getStatusBadge(task.status)}</h4>
-      </div>
-
-      <p className="task-description" title={task.description}>
-        {task.description}
-      </p>
-
-      <div className="task-footer">
-        <span className="task-priority">
-          Priority: <span className="priority-badge critical">{task.priority}</span>
-        </span>
-        <span className="task-deadline">
-          Due: <button className="view-tasks-btn">
-            {task.deadline ? new Date(task.deadline).toLocaleDateString() : 'No deadline'}
-          </button>
-        </span>
-      </div>
-
-      {/* ✅ Progress Bar */}
-      <div className="task-progress-bar">
-  <div
-    className="task-progress-fill"
-    style={{ width: `${task.completionPercentage || 0}%` }}
-  ></div>
-
-  {/* ✅ Debug log + visible value */}
-  {console.log("Task ID:", task.id, "Completion:", task.completionPercentage)}
-
-  <span className="progress-text">
-    {task.completionPercentage || 0}%
-  </span>
-</div>
-
-    </div>
-  ))}
-</div>
+                  {filteredUnassignedTasks.map(task => (
+                    <div key={task.id} className={`task-card ${getPriorityClass(task.priority)}`} onContextMenu={(e) => handleContextMenu(e, task)} onClick={() => handleTaskClick(task)}>
+                      <div className="task-header">
+                        <h3 title={task.title}>{task.title}</h3>
+                        <h4>{getStatusBadge(task.status)}</h4>
+                      </div>
+                      <p className="task-description" title={task.description}>{task.description}</p>
+                      <div className="task-footer">
+                        <span className="task-priority">Priority: <span class="priority-badge critical">{task.priority}</span></span>
+                        <span className="task-deadline">  Due: <button class="view-tasks-btn">{task.deadline ? new Date(task.deadline).toLocaleDateString() : 'No deadline'}</button></span>
+                      </div>
+                        {/* ✅ Progress Bar */}
+                        <div className="task-progress-bar">
+                          <div
+                            className="task-progress-fill"
+                            style={{ width: `${task.completionPercentage || 0}%` }}
+                          ></div>
+                          <span className="progress-text">
+                            {task.completionPercentage || 0}%
+                          </span>
+                        </div>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           )}
@@ -1457,52 +1481,28 @@ useEffect(() => {
               ) : (
                 <div className="tasks-grid">
                   {filteredAssignedTasks.map(task => (
-                    <div className="tasks-grid">
-                    {filteredUnassignedTasks.map(task => (
-                      <div
-                        key={task.id}
-                        className={`task-card ${getPriorityClass(task.priority)}`}
-                        onContextMenu={(e) => handleContextMenu(e, task)}
-                        onClick={() => handleTaskClick(task)}
-                      >
-                        <div className="task-header">
-                          <h3 title={task.title}>{task.title}</h3>
-                          <h4>{getStatusBadge(task.status)}</h4>
-                        </div>
-
-                        <p className="task-description" title={task.description}>
-                          {task.description}
-                        </p>
-
-                        <div className="task-footer">
-                          <span className="task-priority">
-                            Priority: <span className="priority-badge critical">{task.priority}</span>
-                          </span>
-                          <span className="task-deadline">
-                            Due: <button className="view-tasks-btn">
-                              {task.deadline ? new Date(task.deadline).toLocaleDateString() : 'No deadline'}
-                            </button>
-                          </span>
-                        </div>
-
+                    <div key={task.id} className={`task-card ${getPriorityClass(task.priority)}`} onContextMenu={(e) => handleContextMenu(e, task)} onClick={() => handleTaskClick(task)}>
+                      <div className="task-header">
+                        <h3 title={task.title}>{task.title}</h3>
+                        <h4>{getStatusBadge(task.status)}</h4>
+                      </div>
+                      <p className="task-description" title={task.description}>{task.description}</p>
+                      <div className="task-assignee">Assigned to: <button class="view-tasks-btn">{task.assignedUser?.username || 'Unknown'}</button></div>
+                      <div className="task-footer">
+                        <span className="task-priority">Priority: <span class="priority-badge critical">{task.priority}</span></span>
+                        <span className="task-deadline">  Due: <button class="view-tasks-btn">{task.deadline ? new Date(task.deadline).toLocaleDateString() : 'No deadline'}</button></span>
+                      </div>
                         {/* ✅ Progress Bar */}
                         <div className="task-progress-bar">
-  <div
-    className="task-progress-fill"
-    style={{ width: `${task.completionPercentage || 0}%` }}
-  ></div>
-
-  {/* ✅ Debug log + visible value */}
-  {console.log("Task ID:", task.id, "Completion:", task.completionPercentage)}
-
-  <span className="progress-text">
-    {task.completionPercentage || 0}%
-  </span>
-</div>
-
-                      </div>
-                    ))}
-                  </div>
+                          <div
+                            className="task-progress-fill"
+                            style={{ width: `${task.completionPercentage || 0}%` }}
+                          ></div>
+                          <span className="progress-text">
+                            {task.completionPercentage || 0}%
+                          </span>
+                        </div>
+                    </div>
                   ))}
                 </div>
               )}
@@ -1601,7 +1601,6 @@ useEffect(() => {
           {contextMenu.task.status === 'NEW' ? (
             <>
               <div className="menu-item" onClick={() => handleAssignTask(contextMenu.task)}>Assign Task</div>
-              <div className="menu-item" onClick={() => handleUnassignTask(contextMenu.task)}>Unassign Task</div>
               <div className="menu-item" onClick={() => handleEditTask(contextMenu.task)}>Edit Task</div>
               <div className="menu-item delete" onClick={() => handleDeleteTask(contextMenu.task)}>Delete Task</div>
             </>
