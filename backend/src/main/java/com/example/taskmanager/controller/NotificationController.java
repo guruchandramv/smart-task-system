@@ -89,4 +89,9 @@ public class NotificationController {
                 .body(Map.of("error", "Error fetching recent notifications: " + e.getMessage()));
         }
     }
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Notification>> getByUser(@PathVariable Long userId) {
+        List<Notification> notifications = notificationService.getByUserId(userId);
+        return ResponseEntity.ok(notifications);
+    }
 }

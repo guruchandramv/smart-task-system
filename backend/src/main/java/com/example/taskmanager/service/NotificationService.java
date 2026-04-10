@@ -21,7 +21,9 @@ public class NotificationService {
     private String cleanMessage(String message) {
         return message.replaceAll("[^\\x20-\\x7E\\n\\r\\t]", "").trim();
     }
-
+    public List<Notification> getByUserId(Long userId) {
+        return notificationRepository.findByUser_Id(userId);
+    }
     // Create notification for task creation
     public void notifyTaskCreated(Task task, User admin) {
         Notification notification = new Notification();

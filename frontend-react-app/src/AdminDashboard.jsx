@@ -527,18 +527,14 @@ function AdminDashboard() {
   // ============== NOTIFICATIONS ==============
   const fetchNotifications = async () => {
     setNotificationsLoading(true);
-
     try {
-      const response = await axios.get("/api/notifications");
-      // ✅ Filter admin notifications correctly
-      const adminNotifications = response.data.filter(
-        n => n.user?.id === adminUserId
-      );
+      const response = await axios.get("/api/notifications/user/${adminUserId}");
+      const notifications = Array.isArray(response.data) ? response.data : [];
 
-      setNotifications(adminNotifications);
+      setNotifications(notifications);
 
       // ✅ Correct unread count
-      const unread = adminNotifications.filter(
+      const unread = notifications.filter(
         n => n.status === "UNREAD"
       ).length;
 
@@ -871,21 +867,23 @@ const handleProfileClick = () => {
 
   // ============== USE EFFECTS ==============
   useEffect(() => {
+    if (filteredUnassignedTasks.length > 0) {
+      setActiveTab("unassigned");
+    } else {
+      setActiveTab("assigned");
+    }
+  }, [filteredUnassignedTasks]);
+  useEffect(() => {
     const fetchNotifications = async () => {
       setNotificationsLoading(true);
       try {
-        const response = await axios.get("/api/notifications");
+        const response = await axios.get("/api/notifications/user/${adminUserId}");
         const notifications = Array.isArray(response.data) ? response.data : [];
-
-        // ✅ Filter admin notifications correctly
-        const adminNotifications = response.data.filter(
-          n => n.user?.id === adminUserId
-        );
 
         setNotifications(notifications);
 
         // ✅ Correct unread count
-        const unread = adminNotifications.filter(
+        const unread = notifications.filter(
           n => n.status === "UNREAD"
         ).length;
 
@@ -898,7 +896,7 @@ const handleProfileClick = () => {
       }
     };
 
-    //fetchNotifications();
+    fetchNotifications();
 }, []);
   // Close dropdown when clicking outside
 useEffect(() => {
