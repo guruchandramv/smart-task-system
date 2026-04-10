@@ -22,9 +22,26 @@ public class NotificationService {
         return message.replaceAll("[^\\x20-\\x7E\\n\\r\\t]", "").trim();
     }
     public List<Notification> getByUserId(Long userId) {
-        System.out.println("Fetching notifications for user: " + userId);
         List<Notification> list = notificationRepository.findByUser_Id(userId);
-        System.out.println("Found: " + list.size());
+
+        for (Notification n : list) {
+            System.out.println("Notification ID: " + n.getId());
+
+            try {
+                if (n.getUser() != null) {
+                    System.out.println("User ID: " + n.getUser().getId());
+                }
+
+                if (n.getTask() != null) {
+                    System.out.println("Task ID: " + n.getTask().getId());
+                }
+
+            } catch (Exception e) {
+                System.out.println("❌ Error in notification: " + n.getId());
+                e.printStackTrace();
+            }
+        }
+
         return list;
     }
     // Create notification for task creation

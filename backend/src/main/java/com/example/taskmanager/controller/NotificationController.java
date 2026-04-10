@@ -90,8 +90,16 @@ public class NotificationController {
         }
     }
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Notification>> getByUser(@PathVariable Long userId) {
-        List<Notification> notifications = notificationService.getByUserId(userId);
-        return ResponseEntity.ok(notifications);
-    }
+public ResponseEntity<?> getByUser(@PathVariable Long userId) {
+    return ResponseEntity.ok(
+        notificationService.getByUserId(userId)
+            .stream()
+            .map(n -> Map.of(
+                "id", n.getId(),
+                "message", n.getMessage(),
+                "status", n.getStatus(),
+                "createdAt", n.getCreatedAt()
+            ))
+    );
+}
 }
