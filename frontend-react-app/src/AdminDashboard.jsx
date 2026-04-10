@@ -879,9 +879,18 @@ const handleProfileClick = () => {
         console.log("✅ Connected to WebSocket");
 
         client.subscribe("/topic/tasks", (message) => {
-          const updatedTask = JSON.parse(message.body);
+          const updatedTask = JSON.parse(message.body); // ✅ FIX
 
-          console.log("📡 Task update:", updatedTask);
+          // ✅ Update modal in realtime
+          setSelectedTaskDetails((prev) => {
+            if (!prev) return prev;
+
+            if (prev.id === updatedTask.id) {
+              return updatedTask;
+            }
+
+            return prev;
+          });
 
           // ✅ Unassigned
           setUnassignedTasks((prev) => {
@@ -1046,7 +1055,6 @@ const handleProfileClick = () => {
         🔔
         {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
       </button>
-
       {showNotifications && (
   <div className="notification-panel">
     <div className="notification-header">
@@ -1088,7 +1096,6 @@ const handleProfileClick = () => {
   </div>
 )}
     </div>
-
     {/* User Avatar Dropdown - ADD THIS */}
     <div className="user-avatar-wrapper" ref={menuRef}>
       <div className="user-avatar" onClick={toggleUserMenu}>
@@ -1152,29 +1159,27 @@ const handleProfileClick = () => {
     </div>
 
     <div className="notification-list">
-      {notificationsLoading ? (
-        <div className="notification-loading">Loading...</div>
-      ) : notifications.filter(n => n.user?.id === adminUserId).length === 0 ? (
-        <div className="no-notifications">No notifications yet</div>
-      ) : (
-        notifications
-          .filter(notification => notification.user?.id === adminUserId) // ✅ FIX HERE
-          .map(notification => (
-            <div
-              key={notification.id}
-              className={`notification-item ${notification.status === 'UNREAD' ? 'unread' : ''}`}
-              onClick={() => markAsRead(notification.id)}
-            >
-              <div className="notification-content">
-                <p className="notification-message">{notification.message}</p>
-                <span className="notification-time">
-                  {getTimeAgo(notification.createdAt)}
-                </span>
-              </div>
-            </div>
-          ))
-      )}
-    </div>
+  {notificationsLoading ? (
+    <div className="notification-loading">Loading...</div>
+  ) : notifications.length === 0 ? (
+    <div className="no-notifications">No notifications yet</div>
+  ) : (
+    notifications.map(notification => (
+      <div
+        key={notification.id}
+        className={`notification-item ${notification.status === 'UNREAD' ? 'unread' : ''}`}
+        onClick={() => markAsRead(notification.id)}
+      >
+        <div className="notification-content">
+          <p className="notification-message">{notification.message}</p>
+          <span className="notification-time">
+            {getTimeAgo(notification.createdAt)}
+          </span>
+        </div>
+      </div>
+    ))
+  )}
+</div>
   </div>
 )}
     </div>
@@ -1729,6 +1734,16 @@ const handleProfileClick = () => {
             <div className="detail-row"><label>Deadline:</label><span><button class="view-tasks-btn">{selectedTaskDetails.deadline ? new Date(selectedTaskDetails.deadline).toLocaleDateString() : 'No deadline'}</button></span></div>
             <div className="detail-row"><label>Status:</label><button class="view-tasks-btn">{getStatusBadge(selectedTaskDetails.status)}</button></div>
             {selectedTaskDetails.status !== 'NEW' && <div className="detail-row"><label>Assigned to:</label><button class="view-tasks-btn">{selectedTaskDetails.assignedUser?.username || 'Unknown'}</button></div>}
+            {/* ✅ Progress Bar */}
+            <div className="task-progress-bar">
+              <div
+                className="task-progress-fill"
+                style={{ width: `${selectedTaskDetails.completionPercentage || 0}%` }}
+              ></div>
+              <span className="progress-text">
+                {selectedTaskDetails.completionPercentage || 0}%
+              </span>
+            </div>
             <button className="close-btn" onClick={() => setShowTaskDetails(false)}>x</button>
           </div>
         </div>
