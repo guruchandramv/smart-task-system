@@ -70,9 +70,9 @@ public class TaskController {
     @GetMapping("/unassigned")
     public ResponseEntity<?> getUnassignedTasks() {
         try {
-            System.out.println("Fetching unassigned tasks...");
+            //System.out.println("Fetching unassigned tasks...");
             List<Task> unassignedTasks = taskRepository.findByStatus("NEW");
-            System.out.println("Found " + unassignedTasks.size() + " unassigned tasks");
+            //System.out.println("Found " + unassignedTasks.size() + " unassigned tasks");
             return ResponseEntity.ok(unassignedTasks);
         } catch (Exception e) {
             e.printStackTrace();
@@ -88,9 +88,9 @@ public class TaskController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<?> getTasksByUser(@PathVariable Long userId) {
         try {
-            System.out.println("Fetching tasks for user: " + userId);
+            //System.out.println("Fetching tasks for user: " + userId);
             List<Task> tasks = taskRepository.findByAssignedUserId(userId);
-            System.out.println("Found " + tasks.size() + " tasks for user");
+           //System.out.println("Found " + tasks.size() + " tasks for user");
             return ResponseEntity.ok(tasks);
         } catch (Exception e) {
             e.printStackTrace();
@@ -106,7 +106,7 @@ public class TaskController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getTaskById(@PathVariable Long id) {
         try {
-            System.out.println("Fetching task with ID: " + id);
+            //System.out.println("Fetching task with ID: " + id);
             Optional<Task> task = taskRepository.findById(id);
             if (task.isPresent()) {
                 return ResponseEntity.ok(task.get());
@@ -143,7 +143,7 @@ public class TaskController {
     @PostMapping
     public ResponseEntity<?> createTask(@RequestBody Map<String, Object> taskPayload) {
         try {
-            System.out.println("📝 Creating new unassigned task: " + taskPayload);
+            //System.out.println("📝 Creating new unassigned task: " + taskPayload);
 
             // Get admin user
             Optional<User> adminUser = userRepository.findById(1L);
@@ -194,11 +194,8 @@ public class TaskController {
             task.setCreatedBy(adminUser.get());
 
             Task savedTask = taskRepository.save(task);
-            System.out.println("✅ Task created with ID: " + savedTask.getId());
-
-
+            //System.out.println("✅ Task created with ID: " + savedTask.getId());
             notificationService.notifyTaskCreated(savedTask, adminUser.get());
-
             return ResponseEntity.status(201).body(savedTask);
 
         } catch (Exception e) {
@@ -233,7 +230,7 @@ public class TaskController {
     @PutMapping("/{taskId}")
     public ResponseEntity<?> updateTask(@PathVariable Long taskId, @RequestBody Map<String, Object> taskPayload) {
         try {
-            System.out.println("Updating task: " + taskId);
+            //System.out.println("Updating task: " + taskId);
             Optional<Task> taskOptional = taskRepository.findById(taskId);
 
             if (!taskOptional.isPresent()) {
@@ -310,195 +307,185 @@ public class TaskController {
      * PUT assign task to user
      * Endpoint: PUT /api/tasks/{taskId}/assign/{userId}
      */
-/**
- * PUT assign task to user
- * Endpoint: PUT /api/tasks/{taskId}/assign/{userId}
- */
-@PutMapping("/{taskId}/assign/{userId}")
-public ResponseEntity<?> assignTask(@PathVariable Long taskId, @PathVariable Long userId) {
-    try {
-        System.out.println("Assigning task " + taskId + " to user " + userId);
+    @PutMapping("/{taskId}/assign/{userId}")
+    public ResponseEntity<?> assignTask(@PathVariable Long taskId, @PathVariable Long userId) {
+        try {
+            //System.out.println("Assigning task " + taskId + " to user " + userId);
 
-        Optional<Task> taskOptional = taskRepository.findById(taskId);
-        Optional<User> userOptional = userRepository.findById(userId);
+            Optional<Task> taskOptional = taskRepository.findById(taskId);
+            Optional<User> userOptional = userRepository.findById(userId);
 
-        if (!taskOptional.isPresent()) {
-            return ResponseEntity.notFound().build();
+            if (!taskOptional.isPresent()) {
+                return ResponseEntity.notFound().build();
+            }
+            if (!userOptional.isPresent()) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("error", "User not found with id: " + userId));
+            }
+
+            Task task = taskOptional.get();
+            User userToAssign = userOptional.get();
+
+            // FIX: Get the ACTUAL ADMIN user who is performing this action
+            // Method 1: Get from database (find first admin)
+            User adminUser = userRepository.findAll().stream()
+                .filter(u -> "ADMIN".equals(u.getRole()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("No admin user found"));
+
+            // Method 2: Better approach - get from token/session (implement this later)
+            // User adminUser = getCurrentUser();
+
+            // Store previous user for logging
+            User previousUser = task.getAssignedUser();
+
+            // Assign the task
+            task.setAssignedUser(userToAssign);
+            task.setStatus("IN_PROGRESS");
+
+            Task updatedTask = taskRepository.save(task);
+            //System.out.println("✅ Task assigned successfully by admin: " + adminUser.getUsername());
+
+            // FIX: Use the CORRECT admin user in notification
+            if (previousUser == null) {
+                // First time assignment
+                notificationService.notifyTaskAssigned(updatedTask, adminUser, userToAssign);
+                //System.out.println("✅ Notification: Task assigned to " + userToAssign.getUsername() + " by admin " + adminUser.getUsername());
+            } else {
+                // Reassignment
+                notificationService.notifyTaskAssigned(updatedTask, adminUser, userToAssign);
+                //System.out.println("✅ Notification: Task reassigned from " + previousUser.getUsername() + " to " + userToAssign.getUsername() + " by admin " + adminUser.getUsername());
+            }
+
+            // Return the updated task
+            Optional<Task> refreshedTask = taskRepository.findById(updatedTask.getId());
+            if (refreshedTask.isPresent()) {
+                Task result = refreshedTask.get();
+                return ResponseEntity.ok(result);
+            }
+
+            return ResponseEntity.ok(updatedTask);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500)
+                .body(Map.of("error", "Error assigning task: " + e.getMessage()));
         }
-        if (!userOptional.isPresent()) {
-            return ResponseEntity.badRequest()
-                .body(Map.of("error", "User not found with id: " + userId));
-        }
-
-        Task task = taskOptional.get();
-        User userToAssign = userOptional.get();
-
-        // FIX: Get the ACTUAL ADMIN user who is performing this action
-        // Method 1: Get from database (find first admin)
-        User adminUser = userRepository.findAll().stream()
-            .filter(u -> "ADMIN".equals(u.getRole()))
-            .findFirst()
-            .orElseThrow(() -> new RuntimeException("No admin user found"));
-
-        // Method 2: Better approach - get from token/session (implement this later)
-        // User adminUser = getCurrentUser();
-
-        // Store previous user for logging
-        User previousUser = task.getAssignedUser();
-
-        // Assign the task
-        task.setAssignedUser(userToAssign);
-        task.setStatus("IN_PROGRESS");
-
-        Task updatedTask = taskRepository.save(task);
-        System.out.println("✅ Task assigned successfully by admin: " + adminUser.getUsername());
-
-        // FIX: Use the CORRECT admin user in notification
-        if (previousUser == null) {
-            // First time assignment
-            notificationService.notifyTaskAssigned(updatedTask, adminUser, userToAssign);
-            System.out.println("✅ Notification: Task assigned to " + userToAssign.getUsername() +
-                             " by admin " + adminUser.getUsername());
-        } else {
-            // Reassignment
-            notificationService.notifyTaskAssigned(updatedTask, adminUser, userToAssign);
-            System.out.println("✅ Notification: Task reassigned from " + previousUser.getUsername() +
-                             " to " + userToAssign.getUsername() + " by admin " + adminUser.getUsername());
-        }
-
-        // Return the updated task
-        Optional<Task> refreshedTask = taskRepository.findById(updatedTask.getId());
-        if (refreshedTask.isPresent()) {
-            Task result = refreshedTask.get();
-            return ResponseEntity.ok(result);
-        }
-
-        return ResponseEntity.ok(updatedTask);
-
-    } catch (Exception e) {
-        e.printStackTrace();
-        return ResponseEntity.status(500)
-            .body(Map.of("error", "Error assigning task: " + e.getMessage()));
     }
-}
     /**
- * PUT unassign task (move back to unassigned queue)
- * Endpoint: PUT /api/tasks/{taskId}/unassign
- */
-@PutMapping("/{taskId}/unassign")
-public ResponseEntity<?> unassignTask(@PathVariable Long taskId) {
-    try {
-        System.out.println("Unassigning task " + taskId);
+    * PUT unassign task (move back to unassigned queue)
+    * Endpoint: PUT /api/tasks/{taskId}/unassign
+    */
+    @PutMapping("/{taskId}/unassign")
+    public ResponseEntity<?> unassignTask(@PathVariable Long taskId) {
+        try {
+            //System.out.println("Unassigning task " + taskId);
 
-        Optional<Task> taskOptional = taskRepository.findById(taskId);
+            Optional<Task> taskOptional = taskRepository.findById(taskId);
 
-        if (!taskOptional.isPresent()) {
-            return ResponseEntity.notFound().build();
+            if (!taskOptional.isPresent()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            Task task = taskOptional.get();
+
+            if (task.getAssignedUser() == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Task is not assigned to any user"));
+            }
+
+            User previousUser = task.getAssignedUser();
+
+            // FIX: Get the ACTUAL ADMIN user
+            User adminUser = userRepository.findAll().stream()
+                .filter(u -> "ADMIN".equals(u.getRole()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("No admin user found"));
+
+            // Unassign the task
+            task.setAssignedUser(null);
+            task.setStatus("NEW");
+
+            Task updatedTask = taskRepository.save(task);
+            //System.out.println("✅ Task " + taskId + " unassigned by admin: " + adminUser.getUsername());
+
+            // FIX: Use the CORRECT admin user in notification
+            notificationService.notifyTaskUnassigned(updatedTask, adminUser, previousUser);
+            //System.out.println("✅ Notification: Task unassigned from " + previousUser.getUsername() + " by admin " + adminUser.getUsername());
+
+            return ResponseEntity.ok(updatedTask);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500)
+                .body(Map.of("error", "Error unassigning task: " + e.getMessage()));
         }
-
-        Task task = taskOptional.get();
-
-        if (task.getAssignedUser() == null) {
-            return ResponseEntity.badRequest()
-                .body(Map.of("error", "Task is not assigned to any user"));
-        }
-
-        User previousUser = task.getAssignedUser();
-
-        // FIX: Get the ACTUAL ADMIN user
-        User adminUser = userRepository.findAll().stream()
-            .filter(u -> "ADMIN".equals(u.getRole()))
-            .findFirst()
-            .orElseThrow(() -> new RuntimeException("No admin user found"));
-
-        // Unassign the task
-        task.setAssignedUser(null);
-        task.setStatus("NEW");
-
-        Task updatedTask = taskRepository.save(task);
-        System.out.println("✅ Task " + taskId + " unassigned by admin: " + adminUser.getUsername());
-
-        // FIX: Use the CORRECT admin user in notification
-        notificationService.notifyTaskUnassigned(updatedTask, adminUser, previousUser);
-        System.out.println("✅ Notification: Task unassigned from " + previousUser.getUsername() +
-                         " by admin " + adminUser.getUsername());
-
-        return ResponseEntity.ok(updatedTask);
-
-    } catch (Exception e) {
-        e.printStackTrace();
-        return ResponseEntity.status(500)
-            .body(Map.of("error", "Error unassigning task: " + e.getMessage()));
     }
-}
     /**
      * DELETE task
      * Endpoint: DELETE /api/tasks/{taskId}
      */
     @DeleteMapping("/{taskId}")
-public ResponseEntity<?> deleteTask(@PathVariable Long taskId) {
-    try {
-        System.out.println("Deleting task: " + taskId);
+    public ResponseEntity<?> deleteTask(@PathVariable Long taskId) {
+        try {
+            //System.out.println("Deleting task: " + taskId);
 
-        Optional<Task> taskOptional = taskRepository.findById(taskId);
-        if (!taskOptional.isPresent()) {
-            return ResponseEntity.notFound().build();
+            Optional<Task> taskOptional = taskRepository.findById(taskId);
+            if (!taskOptional.isPresent()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            Task task = taskOptional.get();
+            String taskTitle = task.getTitle();
+            User deletedBy = task.getCreatedBy();
+
+            taskRepository.deleteById(taskId);
+            //System.out.println("✅ Task deleted successfully");
+
+            // 🔔 CREATE NOTIFICATION
+            notificationService.notifyTaskDeleted(taskTitle, deletedBy);
+
+            return ResponseEntity.ok(Map.of(
+                "message", "Task deleted successfully",
+                "id", taskId
+            ));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500)
+                .body(Map.of("error", "Error deleting task: " + e.getMessage()));
         }
-
-        Task task = taskOptional.get();
-        String taskTitle = task.getTitle();
-        User deletedBy = task.getCreatedBy();
-
-        taskRepository.deleteById(taskId);
-        System.out.println("✅ Task deleted successfully");
-
-        // 🔔 CREATE NOTIFICATION
-        notificationService.notifyTaskDeleted(taskTitle, deletedBy);
-
-        return ResponseEntity.ok(Map.of(
-            "message", "Task deleted successfully",
-            "id", taskId
-        ));
-
-    } catch (Exception e) {
-        e.printStackTrace();
-        return ResponseEntity.status(500)
-            .body(Map.of("error", "Error deleting task: " + e.getMessage()));
     }
-}
-    /**
- * GET tasks assigned to a specific user (assigned endpoint for frontend)
- * Endpoint: GET /api/tasks/assigned/{userId}
- */
-@GetMapping("/assigned/{userId}")
-public ResponseEntity<?> getAssignedTasksByUser(@PathVariable Long userId) {
-    try {
-        System.out.println("Fetching assigned tasks for user ID: " + userId);
+        /**
+     * GET tasks assigned to a specific user (assigned endpoint for frontend)
+     * Endpoint: GET /api/tasks/assigned/{userId}
+     */
+    @GetMapping("/assigned/{userId}")
+    public ResponseEntity<?> getAssignedTasksByUser(@PathVariable Long userId) {
+        try {
+            //System.out.println("Fetching assigned tasks for user ID: " + userId);
 
-        // Verify user exists
-        Optional<User> userOptional = userRepository.findById(userId);
-        if (!userOptional.isPresent()) {
-            return ResponseEntity.status(404)
-                .body(Map.of("error", "User not found with id: " + userId));
+            // Verify user exists
+            Optional<User> userOptional = userRepository.findById(userId);
+            if (!userOptional.isPresent()) {
+                return ResponseEntity.status(404)
+                    .body(Map.of("error", "User not found with id: " + userId));
+            }
+
+            // Get all tasks for this user
+            List<Task> tasks = taskRepository.findByAssignedUserId(userId);
+
+            // Filter out NEW status tasks in the response (or let frontend handle it)
+            //System.out.println("Found " + tasks.size() + " total tasks for user " + userId);
+
+            // Optional: You can also filter here
+            // List<Task> filteredTasks = tasks.stream()
+            //     .filter(task -> !"NEW".equals(task.getStatus()))
+            //     .collect(Collectors.toList());
+            return ResponseEntity.ok(tasks);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500)
+                .body(Map.of("error", "Error fetching assigned tasks: " + e.getMessage()));
         }
-
-        // Get all tasks for this user
-        List<Task> tasks = taskRepository.findByAssignedUserId(userId);
-
-        // Filter out NEW status tasks in the response (or let frontend handle it)
-        System.out.println("Found " + tasks.size() + " total tasks for user " + userId);
-
-        // Optional: You can also filter here
-        // List<Task> filteredTasks = tasks.stream()
-        //     .filter(task -> !"NEW".equals(task.getStatus()))
-        //     .collect(Collectors.toList());
-
-        return ResponseEntity.ok(tasks);
-
-    } catch (Exception e) {
-        e.printStackTrace();
-        return ResponseEntity.status(500)
-            .body(Map.of("error", "Error fetching assigned tasks: " + e.getMessage()));
     }
-}
 }

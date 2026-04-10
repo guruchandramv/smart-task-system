@@ -24,16 +24,16 @@ public class NotificationService {
     public List<Notification> getByUserId(Long userId) {
         List<Notification> list = notificationRepository.findByUser_IdOrderByCreatedAtDesc(userId);
         for (Notification n : list) {
-            System.out.println("Notification ID: " + n.getId());
+            //System.out.println("Notification ID: " + n.getId());
 
             try {
-                if (n.getUser() != null) {
-                    System.out.println("User ID: " + n.getUser().getId());
+                /*if (n.getUser() != null) {
+                    //System.out.println("User ID: " + n.getUser().getId());
                 }
 
                 if (n.getTask() != null) {
-                    System.out.println("Task ID: " + n.getTask().getId());
-                }
+                    //System.out.println("Task ID: " + n.getTask().getId());
+                }*/
 
             } catch (Exception e) {
                 System.out.println("❌ Error in notification: " + n.getId());
@@ -56,7 +56,7 @@ public class NotificationService {
         notification.setCreatedAt(LocalDateTime.now());
 
         notificationRepository.save(notification);
-        System.out.println("✅ Notification stored: " + notification.getMessage());
+        //System.out.println("✅ Notification stored: " + notification.getMessage());
     }
 
     // Create notification for task assignment
@@ -72,7 +72,7 @@ public class NotificationService {
         notification.setCreatedAt(LocalDateTime.now());
 
         notificationRepository.save(notification);
-        System.out.println("✅ Notification stored: " + notification.getMessage());
+        //System.out.println("✅ Notification stored: " + notification.getMessage());
     }
 
     // Create notification for task unassignment
@@ -88,7 +88,7 @@ public class NotificationService {
         notification.setCreatedAt(LocalDateTime.now());
 
         notificationRepository.save(notification);
-        System.out.println("✅ Notification stored: " + notification.getMessage());
+        //System.out.println("✅ Notification stored: " + notification.getMessage());
     }
 
     // Create notification for task update
@@ -106,7 +106,7 @@ public class NotificationService {
         notification.setCreatedAt(LocalDateTime.now());
 
         notificationRepository.save(notification);
-        System.out.println("✅ Notification stored: " + notification.getMessage());
+        //System.out.println("✅ Notification stored: " + notification.getMessage());
     }
 
     // Create notification for task deletion
@@ -121,7 +121,7 @@ public class NotificationService {
         notification.setCreatedAt(LocalDateTime.now());
 
         notificationRepository.save(notification);
-        System.out.println("✅ Notification stored: " + notification.getMessage());
+        //System.out.println("✅ Notification stored: " + notification.getMessage());
     }
 
     // Create notification for task completion
@@ -137,7 +137,7 @@ public class NotificationService {
         notification.setCreatedAt(LocalDateTime.now());
 
         notificationRepository.save(notification);
-        System.out.println("✅ Notification stored: " + notification.getMessage());
+        //System.out.println("✅ Notification stored: " + notification.getMessage());
     }
 
     // Get all notifications
@@ -158,13 +158,13 @@ public class NotificationService {
     // Mark notification as read
     public void markAsRead(Long notificationId) {
         notificationRepository.markAsRead(notificationId);
-        System.out.println("✅ Notification " + notificationId + " marked as read");
+        //System.out.println("✅ Notification " + notificationId + " marked as read");
     }
 
     // Mark all as read
     public void markAllAsRead() {
         notificationRepository.markAllAsRead();
-        System.out.println("✅ All notifications marked as read");
+        //System.out.println("✅ All notifications marked as read");
     }
 
     // Get unread count

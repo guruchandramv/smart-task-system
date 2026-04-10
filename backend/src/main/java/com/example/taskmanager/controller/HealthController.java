@@ -9,7 +9,7 @@ import java.util.Map;
 
 @RestController
 public class HealthController {
-    
+
     @GetMapping("/health")
     public Map<String, String> health() {
         Map<String, String> status = new HashMap<>();
@@ -17,30 +17,26 @@ public class HealthController {
         status.put("timestamp", String.valueOf(System.currentTimeMillis()));
         return status;
     }
-    
+
     @GetMapping("/debug-env")
     public Map<String, String> debugEnv() {
         Map<String, String> env = new HashMap<>();
-        env.put("DB_URL", System.getenv("DB_URL"));
-        env.put("DB_USERNAME", System.getenv("DB_USERNAME"));
-        env.put("DB_PASSWORD_SET", System.getenv("DB_PASSWORD") != null ? "YES" : "NO");
+        env.put("SPRING_DATASOURCE_URL", System.getenv("SPRING_DATASOURCE_URL"));
+        env.put("SPRING_DATASOURCE_USERNAME", System.getenv("SPRING_DATASOURCE_USERNAME"));
+        env.put("SPRING_DATASOURCE_PASSWORD", System.getenv("SPRING_DATASOURCE_PASSWORD") != null ? "YES" : "NO");
         env.put("PORT", System.getenv("PORT"));
-        env.put("WORKING_DIR", System.getProperty("user.dir"));
+        // env.put("WORKING_DIR", System.getProperty("user.dir"));
         return env;
     }
-    
+
     @GetMapping("/test-db-simple")
     public String testDbSimple() {
         try {
             Class.forName("org.postgresql.Driver");
-            String url = System.getenv("DB_URL");
-            String user = System.getenv("DB_USERNAME");
-            String pass = System.getenv("DB_PASSWORD");
-            
-            // Log the URL (without password) for debugging
+            String url = System.getenv("SPRING_DATASOURCE_URL");
+            String user = System.getenv("SPRING_DATASOURCE_USERNAME");
+            String pass = System.getenv("SPRING_DATASOURCE_PASSWORD");
             System.out.println("Attempting to connect to: " + url);
-            System.out.println("Username: " + user);
-            
             Connection conn = DriverManager.getConnection(url, user, pass);
             conn.close();
             return "✅ Connected successfully! URL: " + url;
