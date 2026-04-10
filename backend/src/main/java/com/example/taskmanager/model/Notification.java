@@ -22,9 +22,13 @@ public class Notification {
     @Column(nullable = false)
     private String status; // UNREAD, READ
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "USER_ID")
     @JsonIgnore
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "TASK_ID")
     @JsonIgnore
     private Task task;
 
