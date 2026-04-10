@@ -62,7 +62,23 @@ public class TaskController {
             return "❌ Database connection failed: " + e.getMessage();
         }
     }
+    /**
+     * GET assigned tasks (status != NEW)
+     * Endpoint: GET /api/tasks/assigned
+     */
+    @GetMapping("/assigned")
+    public ResponseEntity<?> getAssignedTasks() {
+        try {
+            // Fetch tasks that are NOT NEW (i.e., assigned)
+            List<Task> assignedTasks = taskRepository.findByStatusNot("NEW");
 
+            return ResponseEntity.ok(assignedTasks);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500)
+                .body(Map.of("error", "Error fetching assigned tasks: " + e.getMessage()));
+        }
+    }
     /**
      * GET unassigned tasks (status = NEW)
      * Endpoint: GET /api/tasks/unassigned
@@ -455,7 +471,8 @@ public class TaskController {
                 .body(Map.of("error", "Error deleting task: " + e.getMessage()));
         }
     }
-        /**
+
+    /**
      * GET tasks assigned to a specific user (assigned endpoint for frontend)
      * Endpoint: GET /api/tasks/assigned/{userId}
      */
