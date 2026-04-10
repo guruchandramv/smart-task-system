@@ -5,7 +5,6 @@ import com.example.taskmanager.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -90,16 +89,20 @@ public class NotificationController {
         }
     }
     @GetMapping("/user/{userId}")
-public ResponseEntity<?> getByUser(@PathVariable Long userId) {
-    return ResponseEntity.ok(
-        notificationService.getByUserId(userId)
-            .stream()
-            .map(n -> Map.of(
-                "id", n.getId(),
-                "message", n.getMessage(),
-                "status", n.getStatus(),
-                "createdAt", n.getCreatedAt()
-            ))
-    );
-}
+    public ResponseEntity<?> getNotificationsByUser(@PathVariable Long userId) {
+        List<Notification> notifications = notificationService.getByUserId(userId);
+
+        List<Map<String, Object>> response = notifications.stream()
+    .map(n -> {
+        Map<String, Object> map = new java.util.HashMap<>();
+        map.put("id", n.getId());
+        map.put("message", n.getMessage());
+        map.put("status", n.getStatus());
+        map.put("createdAt", n.getCreatedAt());
+        return map;
+    })
+    .collect(java.util.stream.Collectors.toList());
+
+        return ResponseEntity.ok(response);
+    }
 }
