@@ -528,7 +528,7 @@ function AdminDashboard() {
   const fetchNotifications = async () => {
     setNotificationsLoading(true);
     try {
-      const response = await axios.get("/api/notifications/user/${adminUserId}");
+      const response = await axios.get(`/api/notifications/user/${adminUserId}`);
       const notifications = Array.isArray(response.data) ? response.data : [];
 
       setNotifications(notifications);
@@ -877,7 +877,7 @@ const handleProfileClick = () => {
     const fetchNotifications = async () => {
       setNotificationsLoading(true);
       try {
-        const response = await axios.get("/api/notifications/user/${adminUserId}");
+        const response = await axios.get(`/api/notifications/user/${adminUserId}`);
         const notifications = Array.isArray(response.data) ? response.data : [];
 
         setNotifications(notifications);

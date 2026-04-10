@@ -22,7 +22,10 @@ public class NotificationService {
         return message.replaceAll("[^\\x20-\\x7E\\n\\r\\t]", "").trim();
     }
     public List<Notification> getByUserId(Long userId) {
-        return notificationRepository.findByUser_Id(userId);
+        System.out.println("Fetching notifications for user: " + userId);
+        List<Notification> list = notificationRepository.findByUser_Id(userId);
+        System.out.println("Found: " + list.size());
+        return list;
     }
     // Create notification for task creation
     public void notifyTaskCreated(Task task, User admin) {
