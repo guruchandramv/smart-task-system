@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 public class TaskMessage {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "msg_seq_gen")
-    @SequenceGenerator(name = "msg_seq_gen", sequenceName = "MSG_SEQ", allocationSize = 1)
+    @SequenceGenerator(name = "msg_seq_gen", sequenceName = "scott.msg_seq", allocationSize = 1)
     private Long id;
 
     // 🔗 Task संबंध

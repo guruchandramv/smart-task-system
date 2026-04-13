@@ -135,12 +135,19 @@ function UserDashboard() {
 
   const submitMessage = async (taskId) => {
     try {
+      const userId = localStorage.getItem("userId");
+
+      if (!userId) {
+        console.error("User not logged in");
+        return;
+      }
+
       await axios.post(`/api/tasks/${taskId}/messages`, {
         message: message,
-        userId: currentUser.id   // make sure you have this
+        userId: userId
       });
 
-      setMessage(""); // clear input
+      setMessage("");
 
     } catch (error) {
       console.error("Error saving message:", error);
@@ -826,7 +833,7 @@ function UserDashboard() {
             <div class="detail-row"><label>UPDATE MESSAGE:</label></div>
               <div class="form-group">
                 <textarea rows="3" value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Enter Update Details for the Task"></textarea>
-                <div className="submit-btn" onClick={() => submitMessage(task.id)}>SUBMIT</div>
+                <div className="submit-btn" onClick={() => submitMessage(selectedTask.id)}>SUBMIT</div>
               </div>
               <button className="msg-std-btn" onClick={() => setShowMessageHistory(true)}>SHOW MESSAGE HISTORY</button>
             </div>
