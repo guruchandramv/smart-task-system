@@ -269,8 +269,17 @@ public class TaskController {
         }
     }
     @GetMapping("/{taskId}/messages")
-    public List<TaskMessage> getMessages(@PathVariable Long taskId) {
-        return taskMessageRepository.findByTaskIdOrderByMessageNumberAsc(taskId);
+    public ResponseEntity<?> getMessages(@PathVariable Long taskId) {
+        try {
+            List<TaskMessage> messages =
+                    taskMessageRepository.findByTaskIdOrderByMessageNumberAsc(taskId);
+        
+            return ResponseEntity.ok(messages);
+        
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Error fetching messages");
+        }
     }
     @PutMapping("/{id}/status")
     public ResponseEntity<?> updateTaskStatus(

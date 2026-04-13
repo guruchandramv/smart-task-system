@@ -1,6 +1,9 @@
 package com.example.taskmanager.model;
 
 import javax.persistence.*;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -11,17 +14,18 @@ public class TaskMessage {
     @SequenceGenerator(name = "msg_seq_gen", sequenceName = "scott.msg_seq", allocationSize = 1)
     private Long id;
 
-    // 🔗 Task संबंध
+    // Task
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "task_id", nullable = false)
     private Task task;
 
-    // 🔗 User संबंध
+    // User
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnoreProperties({"password", "tasks"})
     private User user;
 
-    // 🔢 Message number per task
+    // Message number per task
     @Column(name = "message_number")
     private Integer messageNumber;
 

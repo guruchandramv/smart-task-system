@@ -17,6 +17,7 @@ function UserDashboard() {
   const [selectedTask, setSelectedTask] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [message, setMessage] = useState("");
+  const [messageHist, setMessageHist] = useState([]);
   const [showMessageHistory, setShowMessageHistory] = useState(false);
   const [userInfo, setUserInfo] = useState({ id: null, username: "", email: "", role: "" });
   const [completionPercentage, setCompletionPercentage] = useState(0);
@@ -152,6 +153,27 @@ function UserDashboard() {
     } catch (error) {
       console.error("Error saving message:", error);
     }
+  };
+  const fetchMessages = async (taskId) => {
+    try {
+      const response = await axios.get(`/api/tasks/${taskId}/messages`);
+      setMessageHist(response.data);
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+    }
+  };
+
+  const formatDateTime = (dateString) => {
+    const date = new Date(dateString);
+
+    return date.toLocaleString("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true
+    });
   };
 
   // Toggle user menu
@@ -835,7 +857,7 @@ function UserDashboard() {
                 <textarea rows="3" value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Enter Update Details for the Task"></textarea>
                 <div className="submit-btn" onClick={() => submitMessage(selectedTask.id)}>SUBMIT</div>
               </div>
-              <button className="msg-std-btn" onClick={() => setShowMessageHistory(true)}>SHOW MESSAGE HISTORY</button>
+              <button className="msg-std-btn" onClick={() => {fetchMessages(selectedTask.id); setShowMessageHistory(true)}}>SHOW MESSAGE HISTORY</button>
             </div>
             <br></br>
             <br></br>
@@ -854,30 +876,22 @@ function UserDashboard() {
       {showMessageHistory && (
         <div className="modal-overlay" onClick={() => setShowMessageHistory(false)}>
           <div className="modal task-details-modal" onClick={e => e.stopPropagation()}>
-            <h2>Message History: </h2>
-            <p>
-              [01/04/26 10:15 AM] You: Hey, are we still on for lunch today?
-              <br></br><br></br>
-              [02/04/26 10:16 AM] You: Definitely. Was thinking about that new taco place?
-              <br></br><br></br>
-              [03/04/26 10:17 AM] You: Sounds perfect. 🌮
-              <br></br><br></br>
-              [04/04/26 10:17 AM] You: 12:30?
-              <br></br><br></br>
-              [05/04/26 10:20 AM] You: Make it 12:45, I have a quick call right before.
-              <br></br><br></br>
-              [06/04/26 10:21 AM] You: No problem, see you there.
-              <br></br><br></br>
-              [07/04/26 11:50 AM] You: Actually, can you grab a table? Place looks packed on maps.
-              <br></br><br></br>
-              [08/04/26 11:52 AM] You: On it.
-              <br></br><br></br>
-              [09/04/26 12:48 PM] You: Just parked, coming in.
-              <br></br><br></br>
-              [10/04/26 12:50 PM] You: Where are you sitting?
-              <br></br><br></br>
-              [11/04/26 12:51 AM] You: By the window, right side.
-            </p>
+            
+            <h2>Message History:</h2>
+            
+            <div>
+              {messages.length === 0 ? (
+                <p>No messages found</p>
+              ) : (
+                messages.map((msg, index) => (
+                  <p key={msg.id}>
+                    [{formatDateTime(msg.createdAt)}] [{msg.user.username}]: {msg.message}
+                    <br /><br />
+                  </p>
+                ))
+              )}
+            </div>
+            
           </div>
         </div>
       )}
