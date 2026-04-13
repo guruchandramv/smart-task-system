@@ -803,11 +803,11 @@ const handleProfileClick = () => {
 
   const getStatusBadge = (status) => {
     switch(status) {
-      case 'IN_PROGRESS': return 'In Progress';
-      case 'COMPLETED': return 'Completed';
-      case 'ON_HOLD': return 'On Hold';
-      case 'NEW': return 'New';
-      default: return {status};
+      case 'IN_PROGRESS': return 'IN PROGRESS';
+      case 'COMPLETED': return 'COMPLETED';
+      case 'ON_HOLD': return 'ON HOLD';
+      case 'NEW': return 'NEW';
+      default: return status;
     }
   };
 
@@ -1782,7 +1782,7 @@ const handleProfileClick = () => {
                  <button className="view-tasks-btn">
                    {selectedTaskDetails.assignedUser?.username || 'Unknown'}
                  </button>
-                       
+
                  {" "}At:{" "}
                  <button className="view-tasks-btn">
                    {selectedTaskDetails.assignedAt
