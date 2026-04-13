@@ -876,22 +876,22 @@ function UserDashboard() {
       {showMessageHistory && (
         <div className="modal-overlay" onClick={() => setShowMessageHistory(false)}>
           <div className="modal task-details-modal" onClick={e => e.stopPropagation()}>
-            
+
             <h2>Message History:</h2>
-            
+
             <div>
-              {messages.length === 0 ? (
+              {messageHist.length === 0 ? (
                 <p>No messages found</p>
               ) : (
-                messages.map((msg, index) => (
+                messageHist.map((msg, index) => (
                   <p key={msg.id}>
-                    [{formatDateTime(msg.createdAt)}] [{msg.user.username}]: {msg.message}
+                    [{formatDateTime(msg.createdAt)}] [{msg.username}]: {msg.message}
                     <br /><br />
                   </p>
                 ))
               )}
             </div>
-            
+
           </div>
         </div>
       )}

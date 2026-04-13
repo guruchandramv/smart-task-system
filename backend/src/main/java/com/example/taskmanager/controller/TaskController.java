@@ -3,6 +3,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 
 import com.example.taskmanager.dto.TaskDTO;
+import com.example.taskmanager.dto.TaskMessageDTO;
 import com.example.taskmanager.model.Task;
 import com.example.taskmanager.model.TaskMessage;
 import com.example.taskmanager.model.User;
@@ -273,9 +274,11 @@ public class TaskController {
         try {
             List<TaskMessage> messages =
                     taskMessageRepository.findByTaskIdOrderByMessageNumberAsc(taskId);
-        
-            return ResponseEntity.ok(messages);
-        
+
+            List<TaskMessageDTO> response = messages.stream().map(TaskMessageDTO::new).collect(Collectors.toList());
+
+            return ResponseEntity.ok(response);
+
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body("Error fetching messages");
