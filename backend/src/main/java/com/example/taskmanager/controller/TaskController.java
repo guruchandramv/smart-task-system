@@ -445,7 +445,7 @@ public class TaskController {
 
             // Assign the task
             task.setAssignedUser(userToAssign);
-            task.setAssignedAt(LocalDateTime.now());
+            //task.setAssignedAt(LocalDateTime.now());
             task.setStatus("IN PROGRESS");
 
             Task updatedTask = taskRepository.save(task);
@@ -508,7 +508,7 @@ public class TaskController {
 
             // Unassign the task
             task.setAssignedUser(null);
-            task.setAssignedAt(null);
+            //task.setAssignedAt(null);
             task.setStatus("NEW");
 
             Task updatedTask = taskRepository.save(task);
