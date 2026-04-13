@@ -516,7 +516,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 .menu-item:hover {
-  background: #312E58 !important;
+  background: #312e58 !important;
 }
 
 .menu-item.delete {
@@ -527,8 +527,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .menu-item.delete:hover {
   background: #ffebee;
 }
-.menu-item.seperator
-{
+.menu-item.seperator {
   color: white !important;
   border-top: 1px solid #e0e0e0 !important;
 }
@@ -771,6 +770,29 @@ span {
 
 .save-btn:hover {
   transform: translateY(-2px);
+}
+
+.msg-std-btn {
+  position: relative !important;
+  padding: 0.5rem !important;
+  background: green !important;
+  color: ivory;
+  font-size: large !important;
+  width: fit-content !important;
+  right: -20% !important;
+}
+
+.message-row {
+  margin-bottom: 10px !important;
+}
+
+.msg-header {
+  color: violet !important;
+  font-weight: 500 !important;
+}
+
+.msg-text {
+  color: white !important;
 }
 
 .modal.confirm-modal p {
@@ -3910,7 +3932,7 @@ span {
 
   font-weight: bolder; /* 🔥 Bold text */
   font-size: 13px;
-  color:rgb(255, 0, 200) !important; /* High visibility */
+  color: rgb(255, 0, 200) !important; /* High visibility */
 
   pointer-events: none;
 }

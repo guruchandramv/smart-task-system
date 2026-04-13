@@ -111,6 +111,9 @@ function AdminDashboard() {
   const [showTaskDetails, setShowTaskDetails] = useState(false);
   const [selectedTaskDetails, setSelectedTaskDetails] = useState(null);
 
+  const [showMessageHistory, setShowMessageHistory] = useState(false);
+  const [messages, setMessages] = useState([]);
+
   const [showUnassignConfirm, setShowUnassignConfirm] = useState(false);
   const [taskToUnassign, setTaskToUnassign] = useState(null);
 
@@ -127,6 +130,21 @@ function AdminDashboard() {
   const adminUsername = localStorage.getItem("username");
   const adminProfilePicture = localStorage.getItem("profilePicture");
   // ============== TIME FORMATTING FUNCTIONS ==============
+  const formatDateTime = (dateString) => {
+    const date = new Date(dateString);
+    date.setHours(date.getHours() + 5);
+    date.setMinutes(date.getMinutes() + 30);
+    let formatted = date.toLocaleString("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true
+    });
+    formatted = formatted.replace("am", "AM").replace("pm", "PM");
+    return formatted;
+  };
   const formatLocalTime = (date) => {
     const options = {
       weekday: 'long',
@@ -226,17 +244,12 @@ function AdminDashboard() {
     }
   };
 
-  const fetchUserStatus = async (userId) => {
+  const fetchMessages = async (taskId) => {
     try {
-      const response = await axios.get(`/api/activity/user-status/${userId}`);
-      setUserStatuses(prev => ({
-        ...prev,
-        [userId]: response.data
-      }));
-      return response.data;
+      const response = await axios.get(`/api/tasks/${taskId}/messages`);
+      setMessages(response.data);
     } catch (error) {
-      console.error("Error fetching user status:", error);
-      return null;
+      console.error("Error fetching messages:", error);
     }
   };
 
@@ -1752,7 +1765,7 @@ const handleProfileClick = () => {
             </div>
             <div className="detail-row">
               <label>Priority:</label>
-              <span className={`priority-badge ${selectedTaskDetails.priority?.toLowerCase()}`}>{selectedTaskDetails.priority}</span>
+              <span className={`priority-badge critical`}>{selectedTaskDetails.priority}</span>
             </div>
             <div className="detail-row">
               <label>Deadline:</label>
@@ -1781,9 +1794,48 @@ const handleProfileClick = () => {
                 {selectedTaskDetails.completionPercentage || 0}%
               </span>
             </div>
+            <div style={{ marginTop: "10px" }}>
+              <button
+                className="msg-std-btn"
+                onClick={() => {
+                  fetchMessages(selectedTaskDetails.id);
+                  setShowMessageHistory(true);
+                }}
+              >
+                SHOW MESSAGE HISTORY
+              </button>
+            </div>
           </div>
         </div>
       )}
+      {showMessageHistory && (
+      <div className="modal-overlay" onClick={() => setShowMessageHistory(false)}>
+        <div className="modal task-details-modal" onClick={e => e.stopPropagation()}>
+
+          <div className="modal-header">
+            <h2>Message History</h2>
+            <button className="close-btn" onClick={() => setShowMessageHistory(false)}>X</button>
+          </div>
+          <hr></hr><br></br>
+          <div style={{ maxHeight: "300px", overflowY: "auto" }}>
+            {messages.length === 0 ? (
+              <p>No messages available.</p>
+            ) : (
+              messages.map((msg) => (
+                <p key={msg.id} className="message-row">
+                  <span className="msg-header">
+                    [{formatDateTime(msg.createdAt)}] [{msg.username}]:
+                  </span>{" "}
+                  <span className="msg-text">
+                    {msg.message}
+                  </span>
+                </p>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+    )}
     </div>
   );
 }

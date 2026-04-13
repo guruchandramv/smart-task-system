@@ -386,9 +386,22 @@ span {
   color: ivory;
   font-size: large !important;
   width: fit-content !important;
-  /* right: 7% !important;
-    top: 84.9% !important; */
+  right: -20% !important;
 }
+
+.message-row {
+  margin-bottom: 10px !important;
+}
+
+.msg-header {
+  color: violet !important;
+  font-weight: 500 !important;
+}
+
+.msg-text {
+  color: white !important;
+}
+
 .hint {
   color: #999;
   font-size: 0.9rem;

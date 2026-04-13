@@ -165,8 +165,10 @@ function UserDashboard() {
 
   const formatDateTime = (dateString) => {
     const date = new Date(dateString);
-
-    return date.toLocaleString("en-GB", {
+    date.setHours(date.getHours() + 5);
+    date.setMinutes(date.getMinutes() + 30);
+    return date.toLocaleString("en-IN", {
+      timeZone: "Asia/Kolkata",
       day: "2-digit",
       month: "2-digit",
       year: "2-digit",
@@ -867,31 +869,30 @@ function UserDashboard() {
               <p>Please complete it as soon as possible.</p>
             </div>
           )}
-          <button className="user-close-btn" onClick={() => setShowDetails(false)}>
-            X
-          </button>
+          <button className="user-close-btn" onClick={() => setShowDetails(false)}>X</button>
           </div>
         </div>
       )}
       {showMessageHistory && (
         <div className="modal-overlay" onClick={() => setShowMessageHistory(false)}>
           <div className="modal task-details-modal" onClick={e => e.stopPropagation()}>
-
             <h2>Message History:</h2>
-
             <div>
               {messageHist.length === 0 ? (
                 <p>No messages found</p>
               ) : (
                 messageHist.map((msg, index) => (
-                  <p key={msg.id}>
-                    [{formatDateTime(msg.createdAt)}] [{msg.username}]: {msg.message}
-                    <br /><br />
-                  </p>
+                  <p key={msg.id} className="message-row">
+                  <span className="msg-header">
+                    [{formatDateTime(msg.createdAt)}] [{msg.username}]:
+                  </span>{" "}
+                  <span className="msg-text">
+                    {msg.message}
+                  </span>
+                </p>
                 ))
               )}
             </div>
-
           </div>
         </div>
       )}
