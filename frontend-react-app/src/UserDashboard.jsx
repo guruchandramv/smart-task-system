@@ -16,6 +16,8 @@ function UserDashboard() {
   const [errorDetails, setErrorDetails] = useState("");
   const [selectedTask, setSelectedTask] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [message, setMessage] = useState("");
+  const [showMessageHistory, setShowMessageHistory] = useState(false);
   const [userInfo, setUserInfo] = useState({ id: null, username: "", email: "", role: "" });
   const [completionPercentage, setCompletionPercentage] = useState(0);
 
@@ -130,6 +132,20 @@ function UserDashboard() {
   useEffect(() => {
     calculateUserStatistics();
   }, [assignedTasks]);
+
+  const submitMessage = async (taskId) => {
+    try {
+      await axios.post(`/api/tasks/${taskId}/messages`, {
+        message: message,
+        userId: currentUser.id   // make sure you have this
+      });
+
+      setMessage(""); // clear input
+
+    } catch (error) {
+      console.error("Error saving message:", error);
+    }
+  };
 
   // Toggle user menu
   const toggleUserMenu = () => {
@@ -408,9 +424,9 @@ function UserDashboard() {
 
   const getStatusBadge = (status) => {
     switch(status) {
-      case 'IN_PROGRESS': return <span className="status-badge in-progress">In Progress</span>;
-      case 'COMPLETED': return <span className="status-badge completed">Completed</span>;
-      case 'ON_HOLD': return <span className="status-badge on-hold">On Hold</span>;
+      case 'IN_PROGRESS': return <span className="status-badge in-progress">IN PROGRESS</span>;
+      case 'COMPLETED': return <span className="status-badge completed">COMPLETED</span>;
+      case 'ON_HOLD': return <span className="status-badge on-hold">ON HOLD</span>;
       default: return <span className="status-badge new">{status}</span>;
     }
   };
@@ -694,7 +710,7 @@ function UserDashboard() {
 
         {filteredTasks.length === 0 ? (
           <div className="no-tasks">
-            <h2>No tasks found</h2>
+            <h2 className="user-statistics-dashboard__title">No tasks found</h2>
             {assignedTasks.length > 0 ? (
               <p>No tasks match your filters. <button onClick={clearFilters} className="clear-filters-link">Clear filters</button></p>
             ) : (
@@ -702,7 +718,9 @@ function UserDashboard() {
             )}
           </div>
         ) : (
-          <div className="tasks-grid">
+          <>
+          <h2 className="user-statistics-dashboard">My Tasks: </h2>
+          <div className="user-tasks-grid">
             {filteredTasks.map(task => {
               const isOverdue = isTaskOverdue(task);
               const daysOverdue = getDaysOverdue(task);
@@ -716,11 +734,11 @@ function UserDashboard() {
                     setShowDetails(true);
                   }}
                 >
-                  {isOverdue && (
+                  {/* {isOverdue && (
                     <div className="overdue-badge">
                       ⚠️ {daysOverdue} {daysOverdue === 1 ? 'day' : 'days'} overdue
                     </div>
-                  )}
+                  )} */}
                   <div className="task-header">
                     <h3 title={task.title}>{task.title}</h3>
                     {getStatusBadge(task.status)}
@@ -729,16 +747,16 @@ function UserDashboard() {
                     {task.description}
                   </p>
                   <div className="task-meta">
-                    <span className="task-priority">Priority: {task.priority}</span>
-                    <span className={`task-deadline ${isOverdue ? 'overdue-text' : ''}`}>
-                      Due: {task.deadline ? new Date(task.deadline).toLocaleDateString() : 'No deadline'}
-                      {isOverdue && ` (${daysOverdue} day${daysOverdue > 1 ? 's' : ''} overdue)`}
-                    </span>
+                    <span className="task-priority">Priority: <div className="priority-badge critical">{task.priority}</div></span>
+                    <span>Due:</span>
+                    <div className="view-tasks-btn">{task.deadline ? new Date(task.deadline).toLocaleDateString() : 'No deadline'}</div>
                   </div>
+                  <span className="overdue-warning">{isOverdue && ` (${daysOverdue} day${daysOverdue > 1 ? 's' : ''} overdue)`}</span>
                 </div>
               );
             })}
           </div>
+          </>
         )}
       </div>
 
@@ -749,12 +767,12 @@ function UserDashboard() {
 
             <div className="detail-row">
               <label>Description:</label>
-              <p>{selectedTask.description || 'No description'}</p>
+              <h4>{selectedTask.description || 'No description'}</h4>
             </div>
 
             <div className="detail-row">
               <label>Priority:</label>
-              <span className={`priority-badge ${selectedTask.priority?.toLowerCase()}`}>
+              <span className={`priority-badge critical`}>
                 {selectedTask.priority}
               </span>
             </div>
@@ -772,44 +790,87 @@ function UserDashboard() {
                 }
               </span>
             </div>
-            <div className="detail-row">
-        <label>Completion Percentage:</label>
-        <input
-          type="range"
-          min="0"
-          max="100"
-          value={completionPercentage}
-          onChange={handleSliderChange}
-          className="completion-slider"
-        />
-        <span>{completionPercentage}%</span>
-      </div>
-            <div className="detail-row">
-              <label>Status:</label>
+            <div className="form-group">
+            <div className="assign-modal">
+              <h4>Status:</h4>
               <select
                 value={selectedTask.status}
                 onChange={(e) => {
                   updateTaskStatus(selectedTask.id, e.target.value);
                   setSelectedTask({...selectedTask, status: e.target.value});
                 }}
-                className="status-select"
+                className="custom-dropdown"
               >
-                <option value="IN_PROGRESS">In Progress</option>
-                <option value="ON_HOLD">On Hold</option>
-                <option value="COMPLETED">Completed</option>
+                <option value="IN_PROGRESS">IN PROGRESS</option>
+                <option value="ON_HOLD">ON HOLD</option>
+                <option value="COMPLETED">COMPLETED</option>
               </select>
             </div>
-
-            {isTaskOverdue(selectedTask) && selectedTask.status !== 'COMPLETED' && (
-              <div className="overdue-notice">
-                <strong>⚠️ This task is overdue!</strong>
-                <p>Please complete it as soon as possible.</p>
+          </div>
+        <div className="detail-row">
+          <label>Task Progress: </label>
+          <div className="slider-container">
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={completionPercentage}
+              onChange={handleSliderChange}
+              className="completion-slider"
+              style={{
+                "--value": completionPercentage
+              }}
+            />
+            <span className="slider-value">{completionPercentage}%</span>
+          </div>
+            <div class="detail-row"><label>UPDATE MESSAGE:</label></div>
+              <div class="form-group">
+                <textarea rows="3" value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Enter Update Details for the Task"></textarea>
+                <div className="submit-btn" onClick={() => submitMessage(task.id)}>SUBMIT</div>
               </div>
-            )}
-
-            <button className="close-btn" onClick={() => setShowDetails(false)}>
-              X
-            </button>
+              <button className="msg-std-btn" onClick={() => setShowMessageHistory(true)}>SHOW MESSAGE HISTORY</button>
+            </div>
+            <br></br>
+            <br></br>
+          {isTaskOverdue(selectedTask) && selectedTask.status !== 'COMPLETED' && (
+            <div className="overdue-notice">
+              <strong>⚠️ This task is overdue!</strong>
+              <p>Please complete it as soon as possible.</p>
+            </div>
+          )}
+          <button className="user-close-btn" onClick={() => setShowDetails(false)}>
+            X
+          </button>
+          </div>
+        </div>
+      )}
+      {showMessageHistory && (
+        <div className="modal-overlay" onClick={() => setShowMessageHistory(false)}>
+          <div className="modal task-details-modal" onClick={e => e.stopPropagation()}>
+            <h2>Message History: </h2>
+            <p>
+              [01/04/26 10:15 AM] You: Hey, are we still on for lunch today?
+              <br></br><br></br>
+              [02/04/26 10:16 AM] You: Definitely. Was thinking about that new taco place?
+              <br></br><br></br>
+              [03/04/26 10:17 AM] You: Sounds perfect. 🌮
+              <br></br><br></br>
+              [04/04/26 10:17 AM] You: 12:30?
+              <br></br><br></br>
+              [05/04/26 10:20 AM] You: Make it 12:45, I have a quick call right before.
+              <br></br><br></br>
+              [06/04/26 10:21 AM] You: No problem, see you there.
+              <br></br><br></br>
+              [07/04/26 11:50 AM] You: Actually, can you grab a table? Place looks packed on maps.
+              <br></br><br></br>
+              [08/04/26 11:52 AM] You: On it.
+              <br></br><br></br>
+              [09/04/26 12:48 PM] You: Just parked, coming in.
+              <br></br><br></br>
+              [10/04/26 12:50 PM] You: Where are you sitting?
+              <br></br><br></br>
+              [11/04/26 12:51 AM] You: By the window, right side.
+            </p>
           </div>
         </div>
       )}

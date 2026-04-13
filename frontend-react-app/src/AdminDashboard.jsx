@@ -804,7 +804,6 @@ const handleProfileClick = () => {
   };
 
   // ============== USE EFFECTS ==============
-  // ============== PARTICLE BACKGROUND ANIMATION ==============
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -1297,12 +1296,13 @@ const handleProfileClick = () => {
             </div>
           </div>
 
+          {/* REMOVED POLLING AS IT IS REPLACED BY WEBSOCKET REALTIME UPDATING
           <div className="status-update-indicator">
             <span className={`update-dot ${Object.values(userStatuses).some(s => s.isOnline) ? 'has-online' : ''}`}></span>
             <span>Last updated: {new Date(lastUpdate).toLocaleTimeString()}</span>
             <button class="sort-btn ">⏱️ 2s polling</button>
             <button onClick={fetchAllUserStatuses} className="refresh-status-btn">🔄 REFRESH</button>
-          </div>
+          </div> */}
 
           <div className="user-tasks-table">
             <h3>Tasks Per User</h3>
@@ -1394,8 +1394,6 @@ const handleProfileClick = () => {
 
       <div className="dashboard-content">
       <div className="tasks-view-wrapper">
-  <div className="tasks-view-panel">
-    {
 		<div className="tasks-view-panel">
           <div className="filters-section">
             <h3>Filters & Sorting</h3>
@@ -1461,7 +1459,7 @@ const handleProfileClick = () => {
                     <div key={task.id} className={`task-card ${getPriorityClass(task.priority)}`} onContextMenu={(e) => handleContextMenu(e, task)} onClick={() => handleTaskClick(task)}>
                       <div className="task-header">
                         <h3 title={task.title}>{task.title}</h3>
-                        <h4>{getStatusBadge(task.status)}</h4>
+                        <div className="priority-badge status">{getStatusBadge(task.status)}</div>
                       </div>
                       <p className="task-description" title={task.description}>{task.description}</p>
                       <div className="task-footer">
@@ -1500,10 +1498,10 @@ const handleProfileClick = () => {
                     <div key={task.id} className={`task-card ${getPriorityClass(task.priority)}`} onContextMenu={(e) => handleContextMenu(e, task)} onClick={() => handleTaskClick(task)}>
                       <div className="task-header">
                         <h3 title={task.title}>{task.title}</h3>
-                        <h4>{getStatusBadge(task.status)}</h4>
+                        <div className="priority-badge status">{getStatusBadge(task.status)}</div>
                       </div>
                       <p className="task-description" title={task.description}>{task.description}</p>
-                      <div className="task-assignee">Assigned to: <button class="view-tasks-btn">{task.assignedUser?.username || 'Unknown'}</button></div>
+                      <div className="task-assignee"><strong>Assigned to: </strong><button class="view-tasks-btn">{task.assignedUser?.username || 'Unknown'}</button></div>
                       <div className="task-footer">
                         <span className="task-priority">Priority: <span class="priority-badge critical">{task.priority}</span></span>
                         <span className="task-deadline">  Due: <button class="view-tasks-btn">{task.deadline ? new Date(task.deadline).toLocaleDateString() : 'No deadline'}</button></span>
@@ -1525,8 +1523,6 @@ const handleProfileClick = () => {
             </div>
           )}
         </div>
-	}
-  </div>
 </div>
       </div>
       {showCreateTask && (
@@ -1591,7 +1587,7 @@ const handleProfileClick = () => {
           <div className="modal user-tasks-modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h3>Tasks for <button class="view-tasks-btn">{selectedUser.username}</button></h3>
-              <button onClick={() => setShowUserTasksModal(false)} className="close-btn">✕</button>
+              <button onClick={() => setShowUserTasksModal(false)} className="close-btn">X</button>
             </div>
             <div className="user-tasks-list">
               {userTasks.length === 0 ? <p className="no-tasks-message">No tasks assigned to this user</p> : userTasks.map(task => (
@@ -1617,14 +1613,14 @@ const handleProfileClick = () => {
           {contextMenu.task.status === 'NEW' ? (
             <>
               <div className="menu-item" onClick={() => handleAssignTask(contextMenu.task)}>Assign Task</div>
-              <div className="menu-item" onClick={() => handleEditTask(contextMenu.task)}>Edit Task</div>
+              <div className="menu-item seperator" onClick={() => handleEditTask(contextMenu.task)}>Edit Task</div>
               <div className="menu-item delete" onClick={() => handleDeleteTask(contextMenu.task)}>Delete Task</div>
             </>
           ) : (
             <>
               <div className="menu-item" onClick={() => handleReassignTask(contextMenu.task)}>Reassign Task</div>
-              <div className="menu-item" onClick={() => handleUnassignTask(contextMenu.task)}>Unassign Task</div>
-              <div className="menu-item" onClick={() => handleEditTask(contextMenu.task)}>Edit Task</div>
+              <div className="menu-item seperator" onClick={() => handleUnassignTask(contextMenu.task)}>Unassign Task</div>
+              <div className="menu-item seperator" onClick={() => handleEditTask(contextMenu.task)}>Edit Task</div>
               <div className="menu-item delete" onClick={() => handleDeleteTask(contextMenu.task)}>Delete Task</div>
             </>
           )}
@@ -1662,7 +1658,8 @@ const handleProfileClick = () => {
           <div className="modal assign-modal" onClick={e => e.stopPropagation()}>
             <h3>Reassign Task: {selectedTaskForReassign?.title}</h3>
             <p>Current assignee: <strong>{selectedTaskForReassign?.assignedUser?.username}</strong></p>
-            <p>Select a new user:</p>
+            <br></br>
+            <h4>Select a new user:</h4>
             {users.length === 0 ? (
               <div className="no-users-message"><p>No users available</p><button onClick={fetchAllData} className="retry-btn">Refresh</button></div>
             ) : (
@@ -1688,11 +1685,9 @@ const handleProfileClick = () => {
         <div className="modal-overlay" onClick={() => setShowUnassignConfirm(false)}>
           <div className="modal confirm-modal" onClick={e => e.stopPropagation()}>
             <h3>Unassign Task</h3>
-            <p>Are you sure you want to unassign "{taskToUnassign?.title}"?</p>
-            <p>This task will be moved back to the unassigned queue.</p>
             <div className="modal-actions">
-              <button onClick={confirmUnassign} className="unassign-btn">Yes, Unassign</button>
-              <button onClick={() => setShowUnassignConfirm(false)} className="cancel-btn">No, Keep</button>
+              <button onClick={confirmUnassign} className="unassign-btn">Unassign</button>
+              <button onClick={() => setShowUnassignConfirm(false)} className="cancel-btn">Cancel</button>
             </div>
           </div>
         </div>
@@ -1702,13 +1697,31 @@ const handleProfileClick = () => {
         <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
           <div className="modal edit-modal" onClick={e => e.stopPropagation()}>
             <h3>Edit Task</h3>
-            <div className="form-group"><label>Title:</label><input type="text" value={editingTask.title} onChange={(e) => setEditingTask({...editingTask, title: e.target.value})} /></div>
-            <div className="form-group"><label>Description:</label><textarea value={editingTask.description} onChange={(e) => setEditingTask({...editingTask, description: e.target.value})} rows="3" /></div>
+            <button className="close-btn-edit" onClick={() => setShowEditModal(false)}>X</button>
+            <div className="form-group"><div className="assign-modal"><h4>Title:</h4></div><input type="text" value={editingTask.title} onChange={(e) => setEditingTask({...editingTask, title: e.target.value})} /></div>
+            <br></br>
+            <div className="form-group"><div className="assign-modal"><h4>Description:</h4></div><textarea value={editingTask.description} onChange={(e) => setEditingTask({...editingTask, description: e.target.value})} rows="3" /></div>
+            <br></br>
             <div className="form-row">
-              <div className="form-group"><label>Priority:</label><select value={editingTask.priority} onChange={(e) => setEditingTask({...editingTask, priority: e.target.value})}><option value="LOW">Low</option><option value="MEDIUM">Medium</option><option value="HIGH">High</option><option value="CRITICAL">Critical</option></select></div>
-              <div className="form-group"><label>Deadline:</label><input type="date" value={editingTask.deadline?.split('T')[0]} onChange={(e) => setEditingTask({...editingTask, deadline: e.target.value})} /></div>
+              <div className="form-group"><div className="assign-modal"><h4>Priority:</h4></div><select value={editingTask.priority} onChange={(e) => setEditingTask({...editingTask, priority: e.target.value})} className="custom-dropdown"><option value="LOW">LOW</option><option value="MEDIUM">MEDIUM</option><option value="HIGH">HIGH</option><option value="CRITICAL">CRITICAL</option></select></div>
+            <div className="form-group"><div className="assign-modal"><h4>Deadline:</h4></div><input type="date" value={editingTask.deadline?.split('T')[0]} onChange={(e) => setEditingTask({...editingTask, deadline: e.target.value})} /></div>
             </div>
-            <div className="form-group"><label>Status:</label><select value={editingTask.status} onChange={(e) => setEditingTask({...editingTask, status: e.target.value})}><option value="NEW">New</option><option value="IN_PROGRESS">In Progress</option><option value="ON_HOLD">On Hold</option><option value="COMPLETED">Completed</option></select></div>
+            <br></br>
+            <div className="form-group">
+              <div className="assign-modal">
+                <h4>Status:</h4>
+              </div>
+              <select
+                value={editingTask.status}
+                onChange={(e) => setEditingTask({ ...editingTask, status: e.target.value })}
+                className="custom-dropdown"
+              >
+                <option value="NEW">NEW</option>
+                <option value="IN_PROGRESS">IN PROGRESS</option>
+                <option value="ON_HOLD">ON HOLD</option>
+                <option value="COMPLETED">COMPLETED</option>
+              </select>
+            </div>
             <div className="modal-actions"><button onClick={saveEditedTask} className="save-btn">Save Changes</button><button onClick={() => setShowEditModal(false)} className="cancel-btn">Cancel</button></div>
           </div>
         </div>
@@ -1720,7 +1733,7 @@ const handleProfileClick = () => {
             <h3>Delete Task</h3>
             <p>Are you sure you want to delete "{taskToDelete?.title}"?</p>
             <p className="warning">This action cannot be undone!</p>
-            <div className="modal-actions"><button onClick={confirmDelete} className="delete-btn">Yes, Delete</button><button onClick={() => setShowDeleteConfirm(false)} className="cancel-btn">No, Cancel</button></div>
+            <div className="modal-actions"><button onClick={confirmDelete} className="delete-btn">Delete</button><button onClick={() => setShowDeleteConfirm(false)} className="cancel-btn">Cancel</button></div>
           </div>
         </div>
       )}
@@ -1728,13 +1741,37 @@ const handleProfileClick = () => {
       {showTaskDetails && selectedTaskDetails && (
         <div className="modal-overlay" onClick={() => setShowTaskDetails(false)}>
           <div className="modal task-details-modal" onClick={e => e.stopPropagation()}>
-            <h2>{selectedTaskDetails.title}</h2>
-            <div className="detail-row"><label>Description:</label><h4>{selectedTaskDetails.description || 'No description'}</h4></div>
-            <div className="detail-row"><label>Priority:</label><span className={`priority-badge ${selectedTaskDetails.priority?.toLowerCase()}`}>{selectedTaskDetails.priority}</span></div>
-            <div className="detail-row"><label>Deadline:</label><span><button class="view-tasks-btn">{selectedTaskDetails.deadline ? new Date(selectedTaskDetails.deadline).toLocaleDateString() : 'No deadline'}</button></span></div>
-            <div className="detail-row"><label>Status:</label><button class="view-tasks-btn">{getStatusBadge(selectedTaskDetails.status)}</button></div>
-            {selectedTaskDetails.status !== 'NEW' && <div className="detail-row"><label>Assigned to:</label><button class="view-tasks-btn">{selectedTaskDetails.assignedUser?.username || 'Unknown'}</button></div>}
+            <div className="modal-header">
+              <h2>{selectedTaskDetails.title}</h2>
+              <button className="close-btn" onClick={() => setShowTaskDetails(false)}>X</button>
+            </div>
+            <br></br> <hr></hr>
+            <div className="detail-row">
+              <label>Description:</label>
+              <h4>{selectedTaskDetails.description || 'No description'}</h4>
+            </div>
+            <div className="detail-row">
+              <label>Priority:</label>
+              <span className={`priority-badge ${selectedTaskDetails.priority?.toLowerCase()}`}>{selectedTaskDetails.priority}</span>
+            </div>
+            <div className="detail-row">
+              <label>Deadline:</label>
+              <span><button className="view-tasks-btn">{selectedTaskDetails.deadline ? new Date(selectedTaskDetails.deadline).toLocaleDateString() : 'No deadline'}</button></span>
+            </div>
+            <div className="detail-row">
+              <label>Status:</label>
+              <button className="view-tasks-btn">{getStatusBadge(selectedTaskDetails.status)}</button>
+            </div>
+            {selectedTaskDetails.status !== 'NEW' && (
+              <div className="detail-row">
+                <label>Assigned to:</label>
+                <button className="view-tasks-btn">{selectedTaskDetails.assignedUser?.username || 'Unknown'}</button>
+              </div>
+            )}
             {/* ✅ Progress Bar */}
+            <div className="detail-row">
+                <label>Task Progress:</label>
+            </div>
             <div className="task-progress-bar">
               <div
                 className="task-progress-fill"
@@ -1744,7 +1781,6 @@ const handleProfileClick = () => {
                 {selectedTaskDetails.completionPercentage || 0}%
               </span>
             </div>
-            <button className="close-btn" onClick={() => setShowTaskDetails(false)}>x</button>
           </div>
         </div>
       )}

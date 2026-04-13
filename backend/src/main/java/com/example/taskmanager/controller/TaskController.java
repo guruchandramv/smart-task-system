@@ -4,9 +4,11 @@ import java.sql.DriverManager;
 
 import com.example.taskmanager.dto.TaskDTO;
 import com.example.taskmanager.model.Task;
+import com.example.taskmanager.model.TaskMessage;
 import com.example.taskmanager.model.User;
 import com.example.taskmanager.repository.TaskRepository;
 import com.example.taskmanager.repository.UserRepository;
+import com.example.taskmanager.repository.TaskMessageRepository;
 import com.example.taskmanager.service.TaskService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +35,8 @@ public class TaskController {
     private TaskService taskService;
     @Autowired
     private TaskRepository taskRepository;
+    @Autowired
+    private TaskMessageRepository taskMessageRepository;
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
     @Autowired
@@ -225,7 +229,49 @@ public class TaskController {
                 .body(Map.of("error", "Failed to create task: " + e.getMessage()));
         }
     }
+    @PostMapping("/{taskId}/messages")
+    public ResponseEntity<?> addMessage(
+            @PathVariable Long taskId,
+            @RequestBody Map<String, String> payload) {
 
+        try {
+            String messageText = payload.get("message");
+            Long userId = Long.parseLong(payload.get("userId"));
+
+            if (messageText == null || messageText.isEmpty()) {
+                return ResponseEntity.badRequest().body("Message cannot be empty");
+            }
+
+            Task task = taskRepository.findById(taskId)
+                    .orElseThrow(() -> new RuntimeException("Task not found"));
+
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            // 🔢 Get next message number
+            Integer lastNumber = taskMessageRepository.getMaxMessageNumber(taskId);
+            Integer nextNumber = lastNumber + 1;
+
+            // 💾 Save message
+            TaskMessage msg = new TaskMessage();
+            msg.setTask(task);
+            msg.setUser(user);
+            msg.setMessage(messageText);
+            msg.setMessageNumber(nextNumber);
+
+            taskMessageRepository.save(msg);
+
+            return ResponseEntity.ok(msg);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Error saving message");
+        }
+    }
+    @GetMapping("/{taskId}/messages")
+    public List<TaskMessage> getMessages(@PathVariable Long taskId) {
+        return taskMessageRepository.findByTaskIdOrderByMessageNumberAsc(taskId);
+    }
     @PutMapping("/{id}/status")
     public ResponseEntity<?> updateTaskStatus(
             @PathVariable Long id,
