@@ -1776,12 +1776,22 @@ const handleProfileClick = () => {
               <button className="view-tasks-btn">{getStatusBadge(selectedTaskDetails.status)}</button>
             </div>
             {selectedTaskDetails.status !== 'NEW' && (
-              <div className="detail-row">
-                <label>Assigned to:  <button className="view-tasks-btn">{selectedTaskDetails.assignedUser?.username || 'Unknown'}</button>
-                 At: <button className="view-tasks-btn">{selectedTaskDetails.assignedAt}</button>
-                </label>
-              </div>
-            )}
+             <div className="detail-row">
+               <label>
+                 Assigned to:{" "}
+                 <button className="view-tasks-btn">
+                   {selectedTaskDetails.assignedUser?.username || 'Unknown'}
+                 </button>
+                       
+                 {" "}At:{" "}
+                 <button className="view-tasks-btn">
+                   {selectedTaskDetails.assignedAt
+                     ? formatDateTime(selectedTaskDetails.assignedAt)
+                     : 'N/A'}
+                 </button>
+               </label>
+             </div>
+           )}
             {/* ✅ Progress Bar */}
             <div className="detail-row">
                 <label>Task Progress:</label>

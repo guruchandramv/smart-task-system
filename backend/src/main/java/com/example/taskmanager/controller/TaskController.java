@@ -80,7 +80,6 @@ public class TaskController {
         try {
             // Fetch tasks that are NOT NEW (i.e., assigned)
             List<Task> assignedTasks = taskRepository.findByStatusNot("NEW");
-
             return ResponseEntity.ok(assignedTasks);
         } catch (Exception e) {
             e.printStackTrace();
@@ -447,7 +446,7 @@ public class TaskController {
             // Assign the task
             task.setAssignedUser(userToAssign);
             task.setAssignedAt(LocalDateTime.now());
-            task.setStatus("NEW");
+            task.setStatus("IN PROGRESS");
 
             Task updatedTask = taskRepository.save(task);
             //System.out.println("✅ Task assigned successfully by admin: " + adminUser.getUsername());
