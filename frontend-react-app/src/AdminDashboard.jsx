@@ -1777,8 +1777,9 @@ const handleProfileClick = () => {
             </div>
             {selectedTaskDetails.status !== 'NEW' && (
               <div className="detail-row">
-                <label>Assigned to:</label>
-                <button className="view-tasks-btn">{selectedTaskDetails.assignedUser?.username || 'Unknown'}</button>
+                <label>Assigned to:  <button className="view-tasks-btn">{selectedTaskDetails.assignedUser?.username || 'Unknown'}</button>
+                 At: <button className="view-tasks-btn">{selectedTaskDetails.assignedAt}</button>
+                </label>
               </div>
             )}
             {/* ✅ Progress Bar */}

@@ -446,7 +446,8 @@ public class TaskController {
 
             // Assign the task
             task.setAssignedUser(userToAssign);
-            task.setStatus("IN_PROGRESS");
+            task.setAssignedAt(LocalDateTime.now());
+            task.setStatus("NEW");
 
             Task updatedTask = taskRepository.save(task);
             //System.out.println("✅ Task assigned successfully by admin: " + adminUser.getUsername());
@@ -508,6 +509,7 @@ public class TaskController {
 
             // Unassign the task
             task.setAssignedUser(null);
+            task.setAssignedAt(null);
             task.setStatus("NEW");
 
             Task updatedTask = taskRepository.save(task);

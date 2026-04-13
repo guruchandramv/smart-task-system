@@ -32,6 +32,10 @@ public class Task {
     @JsonManagedReference
     private User assignedUser;
 
+    @Column(name = "assigned_at")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime assignedAt;
+
     @Column(nullable = false)
     private String priority;
 
@@ -89,6 +93,9 @@ public class Task {
 
     public User getAssignedUser() { return assignedUser; }
     public void setAssignedUser(User assignedUser) { this.assignedUser = assignedUser; }
+
+    public LocalDateTime getAssignedAt() { return assignedAt; }
+    public void setAssignedAt(LocalDateTime assignedAt) { this.assignedAt = assignedAt; }
 
     public String getPriority() { return priority; }
     public void setPriority(String priority) { this.priority = priority; }
