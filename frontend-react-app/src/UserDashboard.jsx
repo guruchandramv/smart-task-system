@@ -219,7 +219,7 @@ function UserDashboard() {
 
     try {
       const response = await axios.get(`/api/tasks/assigned/${userId}`);
-      console.log("fetchAssignedTasks() response: ",response);
+      //console.log("fetchAssignedTasks() response: ",response);
       const filtered = response.data.filter(task => task.status !== 'NEW');
       setAssignedTasks(filtered);
     } catch (error) {
@@ -262,9 +262,13 @@ function UserDashboard() {
     today.setHours(0, 0, 0, 0);
 
     const totalTasks = assignedTasks.length;
+    //console.log("Total Task: " + totalTasks);
     const completedTasks = assignedTasks.filter(task => task.status === 'COMPLETED').length;
-    const inProgressTasks = assignedTasks.filter(task => task.status === 'IN_PROGRESS').length;
-    const onHoldTasks = assignedTasks.filter(task => task.status === 'ON_HOLD').length;
+    //console.log("Completed Task: " + completedTasks);
+    const inProgressTasks = assignedTasks.filter(task => task.status === 'IN PROGRESS').length;
+    //console.log("In Progress Task: " + inProgressTasks);
+    const onHoldTasks = assignedTasks.filter(task => task.status === 'ON HOLD').length;
+    //console.log("On HOld Task: " + onHoldTasks);
     const pendingTasks = inProgressTasks + onHoldTasks;
 
     const overdueTasks = assignedTasks.filter(task => {
@@ -455,10 +459,10 @@ function UserDashboard() {
 
   const getStatusBadge = (status) => {
     switch(status) {
-      case 'IN_PROGRESS': return <span className="status-badge in-progress">IN PROGRESS</span>;
+      case 'IN PROGRESS': return <span className="status-badge in-progress">IN PROGRESS</span>;
       case 'COMPLETED': return <span className="status-badge completed">COMPLETED</span>;
-      case 'ON_HOLD': return <span className="status-badge on-hold">ON HOLD</span>;
-      default: return <span className="status-badge new">{status}</span>;
+      case 'ON HOLD': return <span className="status-badge on-hold">ON HOLD</span>;
+      default: return <span className="status-badge default">{status}</span>;
     }
   };
 
@@ -822,7 +826,7 @@ function UserDashboard() {
               </span>
             </div>
             <div className="form-group">
-            <div className="assign-modal">
+              <div className="assign-modal">
               <h4>Status:</h4>
               <select
                 value={selectedTask.status}
@@ -832,9 +836,9 @@ function UserDashboard() {
                 }}
                 className="custom-dropdown"
               >
-                <option value="IN_PROGRESS">IN PROGRESS</option>
-                <option value="ON_HOLD">ON HOLD</option>
-                <option value="COMPLETED">COMPLETED</option>
+                <option value="IN_PROGRESS" className="status-badge-c-dd in-progress">IN PROGRESS</option>
+                <option value="ON_HOLD" className="status-badge-c-dd on-hold">ON HOLD</option>
+                <option value="COMPLETED" className="status-badge-c-dd completed">COMPLETED</option>
               </select>
             </div>
           </div>

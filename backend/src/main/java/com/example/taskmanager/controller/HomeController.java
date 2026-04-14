@@ -21,8 +21,7 @@ public class HomeController {
         return "BACKEND OF Smart Task Management System is running successfully!";
     }
 
-    // Changed to a different path to avoid conflict
-    @GetMapping("/api/home/user-list")  // Changed from /api/home-users
+    @GetMapping("/api/home/user-list")
     public List<User> getUsers() {
         return userRepository.findAll();
     }

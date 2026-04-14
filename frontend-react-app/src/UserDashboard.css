@@ -105,9 +105,14 @@
 }
 
 .status-badge.in-progress {
-  background: cornflowerblue !important;
-  color: floralwhite !important;
+  background:rgba(255, 250, 240,100) !important;
+  color: orange !important;
   font-size: medium !important;
+}
+
+.status-badge.on-hold {
+  background: #fff3e0;
+  color: red !important;
 }
 
 .status-badge.completed {
@@ -115,9 +120,25 @@
   color: #388e3c;
 }
 
-.status-badge.on-hold {
-  background: #fff3e0;
-  color: #f57c00;
+.status-badge-c-dd.in-progress {
+  background: #1A1732 !important;
+  color: orange !important;
+  font-size: medium !important;
+}
+
+.status-badge-c-dd.completed {
+  background: #1A1732;
+  color: #388e3c;
+}
+
+.status-badge-c-dd.on-hold {
+  background: #1A1732;
+  color: red !important;
+}
+
+.status-badge-c-dd.default {
+  background: #1A1732;
+  color:#f87171 !important;
 }
 
 .task-description {
@@ -198,6 +219,7 @@
   font-family: "Space Grotesk", sans-serif !important;
 }
 .task-details-modal {
+  position: relative !important;
   background: rgba(15, 12, 41, 0.95);
   backdrop-filter: blur(20px);
   border-radius: 24px;
@@ -207,10 +229,12 @@
   border: 1px solid rgba(102, 126, 234, 0.5);
   animation: slideUp 0.3s ease-out;
 }
-
 .task-details-modal h2 {
   margin-top: 0;
   color: #333;
+
+  padding-right: 40px; /* ✅ creates space for close button */
+
   border-bottom: 2px solid #f0f0f0;
   padding-bottom: 1rem;
 }
@@ -231,9 +255,12 @@ span {
   font-size: 1.09rem !important;
 }
 .detail-row p {
-  margin: 0;
-  color: #666;
-  line-height: 1.5;
+  color: white;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.6rem;
+  border-radius: 10px;
 }
 
 .priority-badge {
@@ -298,18 +325,19 @@ span {
 }
 .user-close-btn {
   background: none !important;
-  color: white !important;
+  color: red !important;
   border: none !important;
-  font-size: 2rem !important;
+  font-size: 1.8rem !important;
   cursor: pointer !important;
+
   position: absolute !important;
-  top: 30px !important;
-  right: 5% !important;
-  width: 45px !important;
+  top: 15px !important;     /* ✅ tighter and cleaner */
+  right: 15px !important;   /* ✅ fixed spacing (NOT %) */
+
+  width: auto !important;
   padding: 0 !important;
   margin: 0 !important;
 }
-
 .user-close-btn:hover {
   background: rgba(102, 126, 234, 0.5);
 }
@@ -362,7 +390,7 @@ span {
   font-size: large !important;
   width: 83px !important;
   right: 7% !important;
-  top: 75.33% !important;
+  top: 76.63% !important;
 }
 
 .submit-btn:hover {
@@ -408,15 +436,60 @@ span {
   margin-top: 0.5rem;
 }
 
+
+/* User Avatar and Dropdown Styles - FIXED */
 .user-info {
   display: flex;
   align-items: center;
   gap: 1rem;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 0.4rem 0.8rem 0.4rem 1.2rem;
-  border-radius: 50px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(5px);
+  position: relative;
+  z-index: 1000;
+}
+
+.user-avatar-wrapper {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  z-index: 1001;
+}
+
+.user-avatar {
+  width: 50px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  position: relative;
+  z-index: 1002;
+}
+
+.user-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.avatar-initials {
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.avatar-status {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid #0f0c29;
+  background-color: #10b981;
+  animation: pulse-green 2s ease-in-out infinite;
 }
 
 .error-container {
@@ -1215,11 +1288,6 @@ span {
   border-bottom: 1px solid rgba(102, 126, 234, 0.3);
 }
 
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
 .welcome-text {
   color: green !important;
   font-weight: 500;
@@ -1239,26 +1307,6 @@ span {
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
-/* User Avatar Styles */
-.user-avatar {
-  position: relative;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  overflow: hidden;
-}
-
-.user-avatar:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-}
 
 .avatar-initials {
   color: white;
@@ -1296,23 +1344,6 @@ span {
     transform: scale(1.1);
     box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3);
   }
-}
-
-/* User Info Section */
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  background: rgba(255, 255, 255, 0.05);
-  padding: 0.3rem 1rem 0.3rem 0.5rem;
-  border-radius: 50px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(5px);
-}
-
-/* Optional: Add a dropdown menu on hover */
-.user-avatar:hover .user-dropdown {
-  display: block;
 }
 
 .user-dropdown {
@@ -1859,26 +1890,6 @@ span {
   }
 }
 
-.task-details-modal h2 {
-  color: white;
-  font-size: 1.3rem;
-  margin-bottom: 1.5rem;
-  font-weight: 600;
-}
-
-.detail-row {
-  margin-bottom: 1.2rem;
-}
-
-.detail-row p {
-  color: white;
-  font-size: 0.9rem;
-  line-height: 1.4;
-  background: rgba(255, 255, 255, 0.05);
-  padding: 0.6rem;
-  border-radius: 10px;
-}
-
 .status-select {
   width: 100%;
   padding: 0.8rem;
@@ -2016,59 +2027,20 @@ span {
     padding: 2rem;
   }
 }
-/* User Avatar and Dropdown Styles - FIXED */
-.user-info {
+
+.modal-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 1rem;
-  position: relative;
-  z-index: 1000;
+  gap: 10px;
 }
 
-.user-avatar-wrapper {
-  position: relative;
-  display: inline-block;
-  cursor: pointer;
-  z-index: 1001;
-}
-
-.user-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  position: relative;
-  z-index: 1002;
-}
-
-.user-avatar:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-}
-
-.avatar-initials {
-  color: white;
-  font-size: 1rem;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.avatar-status {
-  position: absolute;
-  bottom: 2px;
-  right: 2px;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  border: 2px solid #0f0c29;
-  background-color: #10b981;
-  animation: pulse-green 2s ease-in-out infinite;
+.modal-header h2 {
+  margin: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Dropdown Menu - CRITICAL FIX */

@@ -1108,7 +1108,7 @@ const handleProfileClick = () => {
   </div>
 )}
     </div>
-    {/* User Avatar Dropdown - ADD THIS */}
+    {/* User Avatar Dropdown */}
     <div className="user-avatar-wrapper" ref={menuRef}>
       <div className="user-avatar" onClick={toggleUserMenu}>
         <div className="avatar-initials">
@@ -1142,7 +1142,6 @@ const handleProfileClick = () => {
   return (
     <div className="admin-dashboard">
       <canvas ref={canvasRef} className="particles-bg"></canvas>
-
       <header className="dashboard-header">
   <h1>Admin Dashboard</h1>
   <div className="header-controls">
@@ -1752,60 +1751,98 @@ const handleProfileClick = () => {
       )}
 
       {showTaskDetails && selectedTaskDetails && (
-        <div className="modal-overlay" onClick={() => setShowTaskDetails(false)}>
-          <div className="modal task-details-modal" onClick={e => e.stopPropagation()}>
+        <div
+          className="modal-overlay"
+          onClick={() => setShowTaskDetails(false)}
+        >
+          <div
+            className="modal task-details-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* ✅ Header */}
             <div className="modal-header">
-              <h2>{selectedTaskDetails.title}</h2>
-              <button className="close-btn" onClick={() => setShowTaskDetails(false)}>X</button>
+              <h2 title={selectedTaskDetails.title}>
+                {selectedTaskDetails.title}
+              </h2>
+              <button
+                className="close-btn"
+                onClick={() => setShowTaskDetails(false)}
+              >
+                ✕
+              </button>
             </div>
-            <br></br> <hr></hr>
+
+            <hr />
+
+            {/* Description */}
             <div className="detail-row">
               <label>Description:</label>
-              <h4>{selectedTaskDetails.description || 'No description'}</h4>
+              <h4>{selectedTaskDetails.description || "No description"}</h4>
             </div>
+
+            {/* Priority */}
             <div className="detail-row">
               <label>Priority:</label>
-              <span className={`priority-badge critical`}>{selectedTaskDetails.priority}</span>
+              <span className="priority-badge critical">
+                {selectedTaskDetails.priority}
+              </span>
             </div>
+
+            {/* Deadline */}
             <div className="detail-row">
               <label>Deadline:</label>
-              <span><button className="view-tasks-btn">{selectedTaskDetails.deadline ? new Date(selectedTaskDetails.deadline).toLocaleDateString() : 'No deadline'}</button></span>
+              <button className="view-tasks-btn">
+                {selectedTaskDetails.deadline
+                  ? new Date(selectedTaskDetails.deadline).toLocaleDateString()
+                  : "No deadline"}
+              </button>
             </div>
+
+            {/* Status */}
             <div className="detail-row">
               <label>Status:</label>
-              <button className="view-tasks-btn">{getStatusBadge(selectedTaskDetails.status)}</button>
+              <button className="view-tasks-btn">
+                {getStatusBadge(selectedTaskDetails.status)}
+              </button>
             </div>
-            {selectedTaskDetails.status !== 'NEW' && (
-             <div className="detail-row">
-               <label>
-                 Assigned to:{" "}
-                 <button className="view-tasks-btn">
-                   {selectedTaskDetails.assignedUser?.username || 'Unknown'}
-                 </button>
 
-                 {" "}At:{" "}
-                 <button className="view-tasks-btn">
-                   {selectedTaskDetails.assignedAt
-                     ? formatDateTime(selectedTaskDetails.assignedAt)
-                     : 'N/A'}
-                 </button>
-               </label>
-             </div>
-           )}
-            {/* ✅ Progress Bar */}
+            {/* Assigned */}
+            {selectedTaskDetails.status !== "NEW" && (
+              <div className="detail-row">
+                <label>Assigned to:</label>
+                <div className="assigned-info">
+                  <button className="view-tasks-btn">
+                    {selectedTaskDetails.assignedUser?.username || "Unknown"}
+                  </button>
+                  <span>@</span>
+                  <button className="view-tasks-btn">
+                    {selectedTaskDetails.assignedAt
+                      ? formatDateTime(selectedTaskDetails.assignedAt)
+                      : "N/A"}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Progress */}
             <div className="detail-row">
-                <label>Task Progress:</label>
+              <label>Task Progress:</label>
             </div>
+
             <div className="task-progress-bar">
               <div
                 className="task-progress-fill"
-                style={{ width: `${selectedTaskDetails.completionPercentage || 0}%` }}
-              ></div>
+                style={{
+                  width: `${selectedTaskDetails.completionPercentage || 0}%`,
+                }}
+              />
               <span className="progress-text">
                 {selectedTaskDetails.completionPercentage || 0}%
               </span>
             </div>
-            <div style={{ marginTop: "10px" }}>
+
+            {/* Message History */}
+            <div style={{ marginTop: "15px" }}>
               <button
                 className="msg-std-btn"
                 onClick={() => {
