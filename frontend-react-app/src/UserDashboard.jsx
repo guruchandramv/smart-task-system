@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from './axiosConfig.js';
 import "./UserDashboard.css";
-// Import heartbeat functions only once
 import { startHeartbeat, stopHeartbeat, logoutUser } from './heartbeatService';
 
 axios.defaults.headers.common['Content-Type'] = 'application/json';

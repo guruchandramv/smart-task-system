@@ -4,6 +4,7 @@ import Login from "./Login";
 import Signup from "./Signup";
 import UserDashboard from "./UserDashboard";
 import AdminDashboard from "./AdminDashboard";
+import Profile from "./Profile";
 
 function App() {
   return (
@@ -19,7 +20,7 @@ function App() {
         {/* Dashboard routes */}
         <Route path="/dashboard" element={<UserDashboard />} />
         <Route path="/admin" element={<AdminDashboard />} />
-
+        <Route path="/profile" element={<Profile />} />
         {/* Catch all - redirect to login */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
