@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import "./Profile.css";
+import axios from './axiosConfig.js';
+import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
-  const userId = localStorage.getItem("userId"); // make sure you store this after login
+  const userId = localStorage.getItem("userId");
+  const navigate = useNavigate();
 
   const [user, setUser] = useState({
     username: "",
@@ -21,7 +23,7 @@ const Profile = () => {
 
   const fetchUser = async () => {
     try {
-      const res = await axios.get(`http://localhost:8080/api/users/${userId}`);
+      const res = await axios.get(`/api/users/${userId}`);
       setUser(res.data);
     } catch (err) {
       console.error("Error fetching user:", err);
@@ -36,7 +38,7 @@ const Profile = () => {
   // 🔽 Save profile changes
   const handleSave = async () => {
     try {
-      await axios.put(`http://localhost:8080/api/users/${userId}`, user);
+      await axios.put(`/api/users/${userId}`, user);
       setEditMode(false);
       alert("Profile updated!");
     } catch (err) {
@@ -57,7 +59,7 @@ const Profile = () => {
 
     try {
       const res = await axios.post(
-        `http://localhost:8080/api/upload/profile/${userId}`,
+        `/api/upload/profile/${userId}`,
         formData
       );
 
@@ -66,60 +68,85 @@ const Profile = () => {
       console.error("Upload error:", err);
     }
   };
-
+  const handleDashboardRedirect = () => {
+    if (user.role === "ADMIN") {
+      navigate("/admin");
+    } else {
+      navigate("/dashboard");
+    }
+  };
   return (
-    <div className="profile-container">
-      <div className="profile-card">
+    <div className="profile-page">
+      <div className="profile-header">
+        <h2>My Profile</h2>
+        <button
+          className="dashboard-btn"
+          onClick={handleDashboardRedirect}
+        >
+          ⬅ Dashboard
+        </button>
+      </div>
 
-        {/* Profile Image */}
-        <div className="profile-image-section">
+      <div className="profile-card-modern">
+
+        {/* LEFT - Profile Image */}
+        <div className="profile-left">
           <img
-            src={`http://localhost:8080${user.profilePicture}`}
+            src={user.profilePicture}
             alt="Profile"
-            className="profile-image"
+            className="profile-avatar"
           />
 
           <input type="file" onChange={handleFileChange} />
-          <button onClick={handleUpload}>Upload</button>
+          <button className="upload-btn" onClick={handleUpload}>
+            Upload Image
+          </button>
         </div>
 
-        {/* User Info */}
-        <div className="profile-info">
+        {/* RIGHT - User Info */}
+        <div className="profile-right">
 
-          <label>Username:</label>
-          {editMode ? (
-            <input
-              name="username"
-              value={user.username}
-              onChange={handleChange}
-            />
-          ) : (
-            <p>{user.username}</p>
-          )}
+          <div className="profile-field">
+            <label>Username</label>
+            {editMode ? (
+              <input
+                name="username"
+                value={user.username}
+                onChange={handleChange}
+              />
+            ) : (
+              <p>{user.username}</p>
+            )}
+          </div>
 
-          <label>Email:</label>
-          {editMode ? (
-            <input
-              name="email"
-              value={user.email}
-              onChange={handleChange}
-            />
-          ) : (
-            <p>{user.email}</p>
-          )}
+          <div className="profile-field">
+            <label>Email</label>
+            {editMode ? (
+              <input
+                name="email"
+                value={user.email}
+                onChange={handleChange}
+              />
+            ) : (
+              <p>{user.email}</p>
+            )}
+          </div>
 
-          <label>Password:</label>
-          <p>********</p>
+          <div className="profile-field">
+            <label>Password</label>
+            <p>••••••••</p>
+          </div>
 
-          {/* Buttons */}
-          <div className="profile-buttons">
+          <div className="profile-actions">
             {editMode ? (
               <>
-                <button onClick={handleSave}>Save</button>
-                <button onClick={() => setEditMode(false)}>Cancel</button>
+                <button className="save-btn" onClick={handleSave}>Save</button>
+                <button className="cancel-btn" onClick={() => setEditMode(false)}>Cancel</button>
               </>
             ) : (
-              <button onClick={() => setEditMode(true)}>Edit Profile</button>
+              <button className="edit-btn" onClick={() => setEditMode(true)}>
+                Edit Profile
+              </button>
             )}
           </div>
 

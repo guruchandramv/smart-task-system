@@ -8,8 +8,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.nio.file.*;
 import java.util.Map;
+
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 
 @RestController
 @RequestMapping("/api/upload")
@@ -19,28 +21,33 @@ public class UploadController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private Cloudinary cloudinary;
+
     @PostMapping("/profile/{id}")
-    public ResponseEntity<?> uploadProfilePicture(
-            @PathVariable Long id,
-            @RequestParam("file") MultipartFile file) {
+public ResponseEntity<?> uploadProfilePicture(
+        @PathVariable Long id,
+        @RequestParam("file") MultipartFile file) {
 
-        try {
-            String uploadDir = "uploads/profile_pictures/";
-            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-
-            Path path = Paths.get(uploadDir + fileName);
-            Files.createDirectories(path.getParent());
-            Files.write(path, file.getBytes());
-
-            User user = userRepository.findById(id).orElseThrow();
-            user.setProfilePicture("/" + uploadDir + fileName);
-            userRepository.save(user);
-
-            return ResponseEntity.ok(Map.of("path", user.getProfilePicture()));
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().body("Upload failed");
+    try {
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body("File is empty");
         }
+
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Map<String, Object> uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
+        String imageUrl = (String) uploadResult.get("secure_url");
+
+        user.setProfilePicture(imageUrl);
+        userRepository.save(user);
+
+        return ResponseEntity.ok(Map.of("path", imageUrl));
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.internalServerError().body(e.getMessage());
     }
+}
 }

@@ -1,54 +1,126 @@
-.profile-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 90vh;
-    background: #f5f6fa;
+/* Page Background */
+.profile-page {
+    background: #0f172a;
+    min-height: 100vh;
+    padding: 30px;
+    color: #e2e8f0;
   }
 
-  .profile-card {
+  /* Header */
+  .profile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+  }
+
+  .profile-header h2 {
+    font-size: 24px;
+    font-weight: 600;
+  }
+
+  /* Card */
+  .profile-card-modern {
     display: flex;
     gap: 40px;
+    background: #1e293b;
     padding: 30px;
     border-radius: 12px;
-    background: white;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    border: 1px solid #334155;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
   }
 
-  .profile-image-section {
-    text-align: center;
-  }
-
-  .profile-image {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-bottom: 10px;
-  }
-
-  .profile-info {
+  /* Left Section */
+  .profile-left {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    align-items: center;
   }
 
-  .profile-info input {
+  .profile-avatar {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 15px;
+    border: 3px solid #334155;
+  }
+
+  /* Right Section */
+  .profile-right {
+    flex: 1;
+  }
+
+  /* Fields */
+  .profile-field {
+    margin-bottom: 15px;
+  }
+
+  .profile-field label {
+    font-size: 13px;
+    color: #94a3b8;
+  }
+
+  .profile-field p {
+    font-size: 16px;
+    margin-top: 5px;
+  }
+
+  .profile-field input {
+    width: 100%;
     padding: 8px;
+    margin-top: 5px;
     border-radius: 6px;
-    border: 1px solid #ccc;
+    border: 1px solid #475569;
+    background: #0f172a;
+    color: white;
   }
 
-  .profile-buttons {
+  /* Buttons */
+  .profile-actions {
+    margin-top: 20px;
+  }
+
+  .edit-btn,
+  .save-btn,
+  .cancel-btn,
+  .upload-btn,
+  .dashboard-btn {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-right: 10px;
+  }
+
+  /* Colors */
+  .edit-btn {
+    background: #3b82f6;
+    color: white;
+  }
+
+  .save-btn {
+    background: #22c55e;
+    color: white;
+  }
+
+  .cancel-btn {
+    background: #ef4444;
+    color: white;
+  }
+
+  .upload-btn {
+    background: #6366f1;
+    color: white;
     margin-top: 10px;
   }
 
-  .profile-buttons button {
-    margin-right: 10px;
-    padding: 8px 12px;
-    border: none;
-    background: #4CAF50;
+  .dashboard-btn {
+    background: #64748b;
     color: white;
-    border-radius: 6px;
-    cursor: pointer;
+  }
+
+  /* Hover */
+  button:hover {
+    opacity: 0.9;
   }
