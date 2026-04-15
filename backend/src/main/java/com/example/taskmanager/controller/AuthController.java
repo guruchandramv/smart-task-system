@@ -16,7 +16,6 @@ import java.util.Map;
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "http://localhost:3000")
 public class AuthController {
-
     @Autowired
     private UserRepository userRepository;
 
@@ -75,5 +74,26 @@ public class AuthController {
             e.printStackTrace();
             return ResponseEntity.status(500).body("Error: " + e.getMessage());
         }
+    }
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody Map<String, String> data) {
+        String email = data.get("email");
+        String oldPassword = data.get("oldPassword");
+        String newPassword = data.get("newPassword");
+    
+        User user = userRepository.findByEmail(email).orElse(null);
+    
+        if (user == null) {
+            return ResponseEntity.badRequest().body("User not found");
+        }
+    
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            return ResponseEntity.status(401).body("Incorrect old password");
+        }
+    
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    
+        return ResponseEntity.ok("Password updated successfully");
     }
 }

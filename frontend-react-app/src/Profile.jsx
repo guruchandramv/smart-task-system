@@ -175,10 +175,20 @@ const Profile = () => {
             )}
           </div>
 
-          <div className="profile-field">
-            <label>Password</label>
-            <p>••••••••</p>
-          </div>
+          <div className="profile-field password-row">
+              <label>Password</label>
+                    
+              <div className="password-container">
+                <p>••••••••</p>
+                    
+                <button
+                  className="reset-password-btn"
+                  onClick={() => navigate("/reset-password")}
+                >
+                  Reset Password
+                </button>
+              </div>
+            </div>
 
           <div className="profile-actions">
             {editMode ? (

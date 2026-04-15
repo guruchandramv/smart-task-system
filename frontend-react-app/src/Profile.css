@@ -146,3 +146,24 @@
     font-size: 14px;
     font-weight: 500;
   }
+  .password-row .password-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* 🔥 pushes button to right */
+    margin-top: 5px;
+  }
+
+  .reset-password-btn {
+    padding: 6px 12px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: none;
+    background: #ef4444;
+    color: white;
+    cursor: pointer;
+    transition: 0.3s ease;
+  }
+
+  .reset-password-btn:hover {
+    background: #dc2626;
+  }

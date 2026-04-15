@@ -5,6 +5,7 @@ import Signup from "./Signup";
 import UserDashboard from "./UserDashboard";
 import AdminDashboard from "./AdminDashboard";
 import Profile from "./Profile";
+import ResetPassword from "./ResetPassword";
 
 function App() {
   return (
@@ -23,6 +24,8 @@ function App() {
         <Route path="/profile" element={<Profile />} />
         {/* Catch all - redirect to login */}
         <Route path="*" element={<Navigate to="/login" replace />} />
+        {/* Redirect to ResetPassword.jsx page from Profile.jsx */}
+        <Route path="/reset-password" element={<ResetPassword />} />
       </Routes>
     </BrowserRouter>
   );
