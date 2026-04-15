@@ -29,6 +29,7 @@
   cursor: pointer;
   transition: all 0.3s;
   border-left: 4px solid #ccc;
+  width: fit-content !important;
 }
 
 .task-card:hover {
@@ -106,8 +107,9 @@
 
 .status-badge.in-progress {
   background:rgba(255, 250, 240,100) !important;
-  color: orange !important;
-  font-size: medium !important;
+  color:violet !important;
+  font-size: large !important;
+  font-weight: bolder !important;
 }
 
 .status-badge.on-hold {
