@@ -20,6 +20,9 @@ function UserDashboard() {
   const [showMessageHistory, setShowMessageHistory] = useState(false);
   const [userInfo, setUserInfo] = useState({ id: null, username: "", email: "", role: "" });
   const [completionPercentage, setCompletionPercentage] = useState(0);
+  const [UserProfilePicture, setUserProfilePicture] = useState("");
+  const [Username, setUsername] = useState("");
+
 
   // State for user dropdown menu
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -58,7 +61,16 @@ function UserDashboard() {
     field: "deadline",
     direction: "asc"
   });
+
   // USE EFFECTS
+  useEffect(() => {
+    const userId = localStorage.getItem("userId");
+    axios.get(`/api/users/${userId}`)
+      .then(res => {
+        setUsername(res.data.username);
+        setUserProfilePicture(res.data.profilePicture);
+      });
+  }, []);
   useEffect(() => {
     if (selectedTask) {
       setCompletionPercentage(selectedTask.completionPercentage);
@@ -478,9 +490,17 @@ function UserDashboard() {
           <div className="user-info">
             <div className="user-avatar-wrapper" ref={menuRef}>
               <div className="user-avatar" onClick={toggleUserMenu}>
-                <div className="avatar-initials">
-                  {userInfo.username ? userInfo.username.charAt(0).toUpperCase() : 'U'}
+              {UserProfilePicture ? (
+                <img
+                  src={UserProfilePicture}
+                  alt="Profile"
+                  className="avatar-image"
+                />
+              ) : (
+                <div className="avatar-fallback">
+                  {Username ? Username.charAt(0).toUpperCase() : "-"}
                 </div>
+              )}
                 <div className="avatar-status online"></div>
               </div>
               {showUserMenu && (
@@ -514,9 +534,14 @@ function UserDashboard() {
         <div className="user-info">
           <div className="user-avatar-wrapper" ref={menuRef}>
             <div className="user-avatar" onClick={toggleUserMenu}>
-              <div className="avatar-initials">
-                {userInfo.username ? userInfo.username.charAt(0).toUpperCase() : 'U'}
-              </div>
+            <img
+              src={UserProfilePicture || "/default-avatar.png"}
+              alt="Profile"
+              className="avatar-image"
+              onError={(e) => {
+                e.target.src = "/default-avatar.png";
+              }}
+            />
               <div className="avatar-status online"></div>
             </div>
             {showUserMenu && (

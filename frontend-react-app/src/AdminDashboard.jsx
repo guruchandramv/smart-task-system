@@ -126,9 +126,12 @@ function AdminDashboard() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [userTasks, setUserTasks] = useState([]);
 
+  const [adminProfilePicture, setAdminProfilePicture] = useState("");
+  const [AdminUsername, setAdminUsername] = useState("");
+
   const adminUserId = localStorage.getItem("userId");
   const adminUsername = localStorage.getItem("username");
-  const adminProfilePicture = localStorage.getItem("profilePicture");
+
   // ============== TIME FORMATTING FUNCTIONS ==============
   const formatDateTime = (dateString) => {
     const date = new Date(dateString);
@@ -818,6 +821,13 @@ const handleProfileClick = () => {
 
   // ============== USE EFFECTS ==============
   useEffect(() => {
+    axios.get(`/api/users/${adminUserId}`)
+      .then(res => {
+        setAdminUsername(res.data.username);
+        setAdminProfilePicture(res.data.profilePicture);
+      });
+  }, []);
+  useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -1111,9 +1121,11 @@ const handleProfileClick = () => {
     {/* User Avatar Dropdown */}
     <div className="user-avatar-wrapper" ref={menuRef}>
       <div className="user-avatar" onClick={toggleUserMenu}>
-        <div className="avatar-initials">
-          {adminUsername ? adminUsername.charAt(0).toUpperCase() : 'A'}
-        </div>
+      <img
+        src={adminProfilePicture || "/default-avatar.png"}
+        alt="Profile"
+        className="avatar-image"
+      />
         <div className="avatar-status online"></div>
       </div>
       {showUserMenu && (
@@ -1197,9 +1209,17 @@ const handleProfileClick = () => {
     {/* User Avatar Dropdown - ADD THIS */}
     <div className="user-avatar-wrapper" ref={menuRef}>
       <div className="user-avatar" onClick={toggleUserMenu}>
-        <div className="avatar-initials">
-          {adminUsername ? adminUsername.charAt(0).toUpperCase() : 'A'}
-        </div>
+        {adminProfilePicture ? (
+                  <img
+                    src={adminProfilePicture}
+                    alt="Profile"
+                    className="avatar-image"
+                  />
+                ) : (
+                  <div className="avatar-fallback">
+                    {adminUsername ? adminUsername.charAt(0).toUpperCase() : "A"}
+                  </div>
+                )}
         <div className="avatar-status online"></div>
       </div>
       {showUserMenu && (

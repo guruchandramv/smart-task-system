@@ -2,10 +2,12 @@ import React, { useEffect, useState } from "react";
 import "./Profile.css";
 import axios from './axiosConfig.js';
 import { useNavigate } from "react-router-dom";
+import { useRef } from "react";
 
 const Profile = () => {
   const userId = localStorage.getItem("userId");
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
 
   const [user, setUser] = useState({
     username: "",
@@ -15,6 +17,7 @@ const Profile = () => {
 
   const [editMode, setEditMode] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [successMessage, setSuccessMessage] = useState("");
 
   // 🔽 Fetch user data
   useEffect(() => {
@@ -39,33 +42,72 @@ const Profile = () => {
   const handleSave = async () => {
     try {
       await axios.put(`/api/users/${userId}`, user);
-      setEditMode(false);
-      alert("Profile updated!");
-    } catch (err) {
-      console.error(err);
+
+      setSuccessMessage("Profile updated successfully ✅");
+
+      // Auto hide after 3 seconds
+      setTimeout(() => {
+        setSuccessMessage("");
+        setEditMode(false);
+      }, 3000);
+
+    } catch (error) {
+      console.error(error);
     }
   };
 
   // 🔽 Handle profile picture change
-  const handleFileChange = (e) => {
-    setSelectedFile(e.target.files[0]);
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await axios.post(
+        `https://smart-task-system-production-8b1e.up.railway.app/api/upload/profile/${userId}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      // 🔥 instantly update UI
+      setUser((prev) => ({
+        ...prev,
+        profilePicture: res.data.path,
+      }));
+
+    } catch (err) {
+      console.error("Upload error:", err);
+    }
   };
-
+  const handleUploadClick = () => {
+    fileInputRef.current.click();
+  };
   const handleUpload = async () => {
-    if (!selectedFile) return;
-
     const formData = new FormData();
     formData.append("file", selectedFile);
 
     try {
-      const res = await axios.post(
-        `/api/upload/profile/${userId}`,
-        formData
+
+       console.log(selectedFile);
+      const response = await axios.post(
+        `https://smart-task-system-production-8b1e.up.railway.app/api/upload/profile/${userId}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
       );
 
-      setUser({ ...user, profilePicture: res.data.path });
-    } catch (err) {
-      console.error("Upload error:", err);
+      console.log("Upload success:", response.data);
+    } catch (error) {
+      console.error("Upload error:", error);
     }
   };
   const handleDashboardRedirect = () => {
@@ -96,11 +138,18 @@ const Profile = () => {
             alt="Profile"
             className="profile-avatar"
           />
+            {/* Hidden File Input */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              style={{ display: "none" }}
+              onChange={handleFileChange}
+            />
 
-          <input type="file" onChange={handleFileChange} />
-          <button className="upload-btn" onClick={handleUpload}>
-            Upload Image
-          </button>
+            {/* Upload Button */}
+            <button className="upload-btn" onClick={handleUploadClick}>
+              Upload Image
+            </button>
         </div>
 
         {/* RIGHT - User Info */}
@@ -125,7 +174,8 @@ const Profile = () => {
               <input
                 name="email"
                 value={user.email}
-                onChange={handleChange}
+                disabled
+                className="disabled-input"
               />
             ) : (
               <p>{user.email}</p>
@@ -142,6 +192,9 @@ const Profile = () => {
               <>
                 <button className="save-btn" onClick={handleSave}>Save</button>
                 <button className="cancel-btn" onClick={() => setEditMode(false)}>Cancel</button>
+                {successMessage && (
+                  <p className="success-text">{successMessage}</p>
+                )}
               </>
             ) : (
               <button className="edit-btn" onClick={() => setEditMode(true)}>

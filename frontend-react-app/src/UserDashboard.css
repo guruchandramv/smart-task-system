@@ -437,7 +437,26 @@ span {
 }
 
 
-/* User Avatar and Dropdown Styles - FIXED */
+/* User Avatar and Dropdown Styles */
+
+.avatar-image {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.avatar-fallback {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #3b82f6; /* plain color */
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 16px;
+}
 .user-info {
   display: flex;
   align-items: center;
@@ -473,23 +492,22 @@ span {
   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
 }
 
-.avatar-initials {
-  color: white;
-  font-size: 1rem;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
+/* Online Status Indicator */
 .avatar-status {
   position: absolute;
   bottom: 2px;
   right: 2px;
-  width: 10px;
-  height: 10px;
+  width: 15px;
+  height: 15px;
   border-radius: 50%;
   border: 2px solid #0f0c29;
   background-color: #10b981;
   animation: pulse-green 2s ease-in-out infinite;
+}
+
+.avatar-status.offline {
+  background-color: #6b7280;
+  animation: none;
 }
 
 .error-container {
@@ -1305,33 +1323,6 @@ span {
   color: #ffffff;
   font-weight: 600;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-}
-
-
-.avatar-initials {
-  color: white;
-  font-size: 1rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* Online Status Indicator */
-.avatar-status {
-  position: absolute;
-  bottom: 2px;
-  right: 2px;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  border: 2px solid #0f0c29;
-  background-color: #10b981;
-  animation: pulse-green 2s ease-in-out infinite;
-}
-
-.avatar-status.offline {
-  background-color: #6b7280;
-  animation: none;
 }
 
 @keyframes pulse-green {

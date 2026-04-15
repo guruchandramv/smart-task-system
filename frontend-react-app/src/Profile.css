@@ -57,12 +57,12 @@
   }
 
   .profile-field label {
-    font-size: 13px;
+    font-size: x-large;
     color: #94a3b8;
   }
 
   .profile-field p {
-    font-size: 16px;
+    font-size: x-large;
     margin-top: 5px;
   }
 
@@ -74,6 +74,7 @@
     border: 1px solid #475569;
     background: #0f172a;
     color: white;
+    font-size: large;
   }
 
   /* Buttons */
@@ -102,6 +103,7 @@
   .save-btn {
     background: #22c55e;
     color: white;
+    font-size: large;
   }
 
   .cancel-btn {
@@ -113,6 +115,9 @@
     background: #6366f1;
     color: white;
     margin-top: 10px;
+    width: 135px;
+    height: 45px;
+    font-size: 17px;
   }
 
   .dashboard-btn {
@@ -123,4 +128,19 @@
   /* Hover */
   button:hover {
     opacity: 0.9;
+  }
+  .disabled-input {
+    width: 100%;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #475569;
+    background: #1e293b;
+    color: #94a3b8;
+    cursor: not-allowed;
+  }
+  .success-text {
+    margin-top: 10px;
+    color: #22c55e;
+    font-size: 14px;
+    font-weight: 500;
   }
