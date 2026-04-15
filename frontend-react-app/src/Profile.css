@@ -58,7 +58,7 @@
 
   .profile-field label {
     font-size: x-large;
-    color: #94a3b8;
+    color: antiquewhite;
   }
 
   .profile-field p {
@@ -98,6 +98,7 @@
   .edit-btn {
     background: #3b82f6;
     color: white;
+    font-size: large;
   }
 
   .save-btn {
@@ -123,6 +124,7 @@
   .dashboard-btn {
     background: #64748b;
     color: white;
+    font-size: larger;
   }
 
   /* Hover */

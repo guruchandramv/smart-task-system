@@ -121,14 +121,7 @@ const Profile = () => {
     <div className="profile-page">
       <div className="profile-header">
         <h2>My Profile</h2>
-        <button
-          className="dashboard-btn"
-          onClick={handleDashboardRedirect}
-        >
-          ⬅ Dashboard
-        </button>
       </div>
-
       <div className="profile-card-modern">
 
         {/* LEFT - Profile Image */}
@@ -205,6 +198,8 @@ const Profile = () => {
 
         </div>
       </div>
+      <br/>
+      <button className="dashboard-btn" onClick={handleDashboardRedirect}> ⬅ Dashboard</button>
     </div>
   );
 };

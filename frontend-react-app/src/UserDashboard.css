@@ -436,15 +436,39 @@ span {
   margin-top: 0.5rem;
 }
 
-
-/* User Avatar and Dropdown Styles */
-
-.avatar-image {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  position: relative;
+  z-index: 1000;
 }
+/* User Avatar and Dropdown Styles */
+.user-avatar-wrapper {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  z-index: 1001;
+}
+
+.user-avatar {
+  width: 50px;
+  height: 50px; /* make it perfectly circular */
+  border-radius: 50%;
+  overflow: hidden; /* 🔥 important: clips image inside circle */
+  background: none; /* ❌ remove gradient */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
 .avatar-fallback {
   width: 40px;
   height: 40px;
@@ -457,36 +481,6 @@ span {
   font-weight: 600;
   font-size: 16px;
 }
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  position: relative;
-  z-index: 1000;
-}
-
-.user-avatar-wrapper {
-  position: relative;
-  display: inline-block;
-  cursor: pointer;
-  z-index: 1001;
-}
-
-.user-avatar {
-  width: 50px;
-  height: 48px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  position: relative;
-  z-index: 1002;
-}
-
 .user-avatar:hover {
   transform: scale(1.05);
   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);

@@ -128,6 +128,7 @@ function AdminDashboard() {
 
   const [adminProfilePicture, setAdminProfilePicture] = useState("");
   const [AdminUsername, setAdminUsername] = useState("");
+  const [userPictures, setUserPictures] = useState({});
 
   const adminUserId = localStorage.getItem("userId");
   const adminUsername = localStorage.getItem("username");
@@ -828,6 +829,17 @@ const handleProfileClick = () => {
       });
   }, []);
   useEffect(() => {
+    statistics.tasksPerUser.forEach(user => {
+      axios.get(`/api/users/${user.userId}`)
+        .then(res => {
+          setUserPictures(prev => ({
+            ...prev,
+            [user.userId]: res.data.profilePicture
+          }));
+        });
+    });
+  }, [statistics.tasksPerUser]);
+  useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -1206,7 +1218,7 @@ const handleProfileClick = () => {
   </div>
 )}
     </div>
-    {/* User Avatar Dropdown - ADD THIS */}
+    {/* User Avatar Dropdown */}
     <div className="user-avatar-wrapper" ref={menuRef}>
       <div className="user-avatar" onClick={toggleUserMenu}>
         {adminProfilePicture ? (
@@ -1220,7 +1232,6 @@ const handleProfileClick = () => {
                     {adminUsername ? adminUsername.charAt(0).toUpperCase() : "A"}
                   </div>
                 )}
-        <div className="avatar-status online"></div>
       </div>
       {showUserMenu && (
         <div className="user-dropdown">
@@ -1359,35 +1370,36 @@ const handleProfileClick = () => {
                       <span className={`online-indicator ${user.isOnline ? 'online' : 'offline'}`} title={user.isOnline ? 'Online' : 'Offline'}></span>
                     </td>
                     <td
-  className="username-cell"
-  onMouseEnter={(e) => handleUserHover(e, user)}
-  onMouseLeave={handleUserLeave}
->
-  <div className="user-info">
-  <img
-  src={getProfileImage(user.profilePicture)}
-  alt="User"
-/>
-    <span>{user.username}</span>
-  </div>
-</td>
+                      className="username-cell"
+                      onMouseEnter={(e) => handleUserHover(e, user)}
+                      onMouseLeave={handleUserLeave}
+                    >
+                      <div className="user-info">
+                      <img
+                        src={userPictures[user.userId] || "/default-avatar.png"}
+                        alt="Profile"
+                        className="avatar-image"
+                      />
+                        <span>{user.username}</span>
+                      </div>
+                    </td>
                     <td>{user.email}</td>
                     <td className="text-center">
-  {user.lastActivity ? (
-    <span
-      className={user.isOnline ? 'text-success' : 'text-muted'}
-    >
-      <span
-        className="cursor-help"
-        title={user.isOnline ? 'Active now' : `Last active: ${getTimeAgo(user.lastActivity)}`}
-      >
-        {user.isOnline ? <div className="text-success">ONLINE</div> : getTimeAgo(user.lastActivity)}
-      </span>
-    </span>
-  ) : (
-    <span className="text-muted">Never</span>
-  )}
-</td>
+                      {user.lastActivity ? (
+                        <span
+                          className={user.isOnline ? 'text-success' : 'text-muted'}
+                        >
+                          <span
+                            className="cursor-help"
+                            title={user.isOnline ? 'Active now' : `Last active: ${getTimeAgo(user.lastActivity)}`}
+                          >
+                            {user.isOnline ? <div className="text-success">ONLINE</div> : getTimeAgo(user.lastActivity)}
+                          </span>
+                        </span>
+                      ) : (
+                        <span className="text-muted">Never</span>
+                      )}
+                    </td>
                     <td className="text-center">{user.totalTasks}</td>
                     <td className="text-center">{user.inProgress}</td>
                     <td className="text-center">{user.onHold}</td>

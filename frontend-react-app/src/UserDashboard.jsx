@@ -501,7 +501,6 @@ function UserDashboard() {
                   {Username ? Username.charAt(0).toUpperCase() : "-"}
                 </div>
               )}
-                <div className="avatar-status online"></div>
               </div>
               {showUserMenu && (
                 <div className="user-dropdown">
@@ -542,7 +541,6 @@ function UserDashboard() {
                 e.target.src = "/default-avatar.png";
               }}
             />
-              <div className="avatar-status online"></div>
             </div>
             {showUserMenu && (
               <div className="user-dropdown">
