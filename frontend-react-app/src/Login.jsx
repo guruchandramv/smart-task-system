@@ -99,17 +99,23 @@ function Login() {
       console.log("Backend response:", res);
 
       // Ensure that the response is as expected
-      if (res.data && res.data.token && res.data.role) {
-        const { token, role, id, username, email, profilePicture } = res.data;
+      if (res.data && res.data.token && res.data.id && res.data.username && res.data.email) {
+        const { token, id, username, email } = res.data;
         localStorage.setItem("token", token);
-        localStorage.setItem("role", role);
         localStorage.setItem("userId", id);
         localStorage.setItem("username", username);
         localStorage.setItem("userEmail", email);
-        localStorage.setItem("profilePicture", profilePicture || "/uploads/profile_pictures/default.png");
+
+        // Fetch user data (including role) after login
+        const userRes = await axios.get(`/api/users/${id}`);
+        const role = userRes.data.role; // Assuming role is returned in the response
+
+        // Store role in localStorage for further use if needed (or use it immediately)
+        // localStorage.setItem("role", role);  // Optional if you need to store it
 
         setMessage("Login successful! Redirecting...");
 
+        // Navigate based on the role (admin or user)
         setTimeout(() => {
           if (role === "ADMIN") {
             navigate("/admin");
@@ -131,7 +137,7 @@ function Login() {
       }
       setLoading(false);
     }
-  };
+};
 
   return (
     <div className="login-container">

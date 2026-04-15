@@ -92,20 +92,15 @@ function UserDashboard() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    const role = localStorage.getItem("role");
+    // const role = localStorage.getItem("role");
     const userId = localStorage.getItem("userId");
     const username = localStorage.getItem("username");
     const userEmail = localStorage.getItem("userEmail");
 
-    setUserInfo({ id: userId, username, email: userEmail, role });
+    setUserInfo({ id: userId, username, email: userEmail });
 
     if (!token) {
       navigate("/login", { replace: true });
-      return;
-    }
-
-    if (role !== "USER") {
-      navigate("/admin", { replace: true });
       return;
     }
 
@@ -276,9 +271,9 @@ function UserDashboard() {
     //console.log("Total Task: " + totalTasks);
     const completedTasks = assignedTasks.filter(task => task.status === 'COMPLETED').length;
     //console.log("Completed Task: " + completedTasks);
-    const inProgressTasks = assignedTasks.filter(task => task.status === 'IN PROGRESS').length;
+    const inProgressTasks = assignedTasks.filter(task => task.status === 'IN_PROGRESS').length;
     //console.log("In Progress Task: " + inProgressTasks);
-    const onHoldTasks = assignedTasks.filter(task => task.status === 'ON HOLD').length;
+    const onHoldTasks = assignedTasks.filter(task => task.status === 'ON_HOLD').length;
     //console.log("On HOld Task: " + onHoldTasks);
     const pendingTasks = inProgressTasks + onHoldTasks;
 
@@ -470,10 +465,10 @@ function UserDashboard() {
 
   const getStatusBadge = (status) => {
     switch(status) {
-      case 'IN PROGRESS': return <span className="status-badge in-progress">IN PROGRESS</span>;
+      case 'IN_PROGRESS': return <span className="status-badge in-progress">IN PROGRESS</span>;
       case 'COMPLETED': return <span className="status-badge completed">COMPLETED</span>;
-      case 'ON HOLD': return <span className="status-badge on-hold">ON HOLD</span>;
-      default: return <span className="status-badge default">{status}</span>;
+      case 'ON_HOLD': return <span className="status-badge on-hold">ON HOLD</span>;
+      default: return <span className="status-badge in-progress">{status}</span>;
     }
   };
 
@@ -858,8 +853,8 @@ function UserDashboard() {
                 }}
                 className="custom-dropdown"
               >
-                <option value="IN_PROGRESS" className="status-badge-c-dd in-progress">IN PROGRESS</option>
-                <option value="ON_HOLD" className="status-badge-c-dd on-hold">ON HOLD</option>
+                <option value="IN_PROGRESS" className="status-badge-c-dd in-progress">IN_PROGRESS</option>
+                <option value="ON_HOLD" className="status-badge-c-dd on-hold">ON_HOLD</option>
                 <option value="COMPLETED" className="status-badge-c-dd completed">COMPLETED</option>
               </select>
             </div>

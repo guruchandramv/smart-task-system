@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 const ResetPassword = () => {
   const navigate = useNavigate();
-  const email = localStorage.getItem("email");
+  const email = localStorage.getItem("userEmail");
 
   const [form, setForm] = useState({
     oldPassword: "",

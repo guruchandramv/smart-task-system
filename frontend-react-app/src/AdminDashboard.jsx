@@ -1013,15 +1013,10 @@ const handleProfileClick = () => {
   }, []);
   useEffect(() => {
     const token = localStorage.getItem("token");
-    const role = localStorage.getItem("role");
+    //const role = localStorage.getItem("role");
 
     if (!token) {
       navigate("/login", { replace: true });
-      return;
-    }
-
-    if (role !== "ADMIN") {
-      navigate("/dashboard", { replace: true });
       return;
     }
 
@@ -1761,8 +1756,8 @@ const handleProfileClick = () => {
                 className="custom-dropdown"
               >
                 <option value="NEW">NEW</option>
-                <option value="IN_PROGRESS">IN PROGRESS</option>
-                <option value="ON_HOLD">ON HOLD</option>
+                <option value="IN_PROGRESS">IN_PROGRESS</option>
+                <option value="ON_HOLD">ON_HOLD</option>
                 <option value="COMPLETED">COMPLETED</option>
               </select>
             </div>
