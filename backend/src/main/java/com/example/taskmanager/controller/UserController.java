@@ -26,11 +26,11 @@ public class UserController {
     public ResponseEntity<List<UserDTO>> getAssignableUsers() {
         try {
             List<User> users = userRepository.findAll();
-            
+
             List<UserDTO> userDTOs = users.stream()
                 .map(user -> new UserDTO(user.getId(), user.getUsername(), user.getEmail()))
                 .collect(Collectors.toList());
-            
+
             return ResponseEntity.ok(userDTOs);
         } catch (Exception e) {
             e.printStackTrace();
@@ -63,7 +63,7 @@ public class UserController {
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
         try {
             Optional<User> userOptional = userRepository.findById(id);
-            
+
             if (userOptional.isPresent()) {
                 User user = userOptional.get();
                 user.setPassword(null); // Remove password before sending
@@ -90,11 +90,11 @@ public class UserController {
                 return ResponseEntity.badRequest()
                     .body(new ErrorResponse("Email already exists: " + user.getEmail()));
             }
-            
+
             // Save the user (password should be encoded by AuthController)
             User savedUser = userRepository.save(user);
             savedUser.setPassword(null); // Remove password from response
-            
+
             return ResponseEntity.status(201).body(savedUser);
         } catch (Exception e) {
             e.printStackTrace();
@@ -111,18 +111,18 @@ public class UserController {
     public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody User userDetails) {
         try {
             Optional<User> userOptional = userRepository.findById(id);
-            
+
             if (!userOptional.isPresent()) {
                 return ResponseEntity.notFound().build();
             }
-            
+
             User user = userOptional.get();
-            
+
             // Update fields
             if (userDetails.getUsername() != null) {
                 user.setUsername(userDetails.getUsername());
             }
-            
+
             if (userDetails.getEmail() != null) {
                 // Check if new email is already taken by another user
                 Optional<User> existingUser = userRepository.findByEmail(userDetails.getEmail());
@@ -132,16 +132,16 @@ public class UserController {
                 }
                 user.setEmail(userDetails.getEmail());
             }
-            
+
             if (userDetails.getRole() != null) {
                 user.setRole(userDetails.getRole());
             }
-            
+
             // Don't update password here - use AuthController for password changes
-            
+
             User updatedUser = userRepository.save(user);
             updatedUser.setPassword(null); // Remove password from response
-            
+
             return ResponseEntity.ok(updatedUser);
         } catch (Exception e) {
             e.printStackTrace();
@@ -160,7 +160,7 @@ public class UserController {
             if (!userRepository.existsById(id)) {
                 return ResponseEntity.notFound().build();
             }
-            
+
             userRepository.deleteById(id);
             return ResponseEntity.ok(new MessageResponse("User deleted successfully"));
         } catch (Exception e) {
@@ -178,23 +178,39 @@ public class UserController {
     public ResponseEntity<List<UserDTO>> searchUsers(@RequestParam String query) {
         try {
             List<User> users = userRepository.findAll();
-            
+
             // Filter users by username or email containing the query (case insensitive)
             List<UserDTO> userDTOs = users.stream()
-                .filter(user -> 
+                .filter(user ->
                     user.getUsername().toLowerCase().contains(query.toLowerCase()) ||
                     user.getEmail().toLowerCase().contains(query.toLowerCase())
                 )
                 .map(user -> new UserDTO(user.getId(), user.getUsername(), user.getEmail()))
                 .collect(Collectors.toList());
-            
+
             return ResponseEntity.ok(userDTOs);
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }
     }
-
+    // Endpoint to get the role of a user by ID
+    @GetMapping("/role/{id}")
+    public ResponseEntity<String> getUserRole(@PathVariable Long id) {
+        try {
+            Optional<User> userOptional = userRepository.findById(id);
+        
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+                return ResponseEntity.ok(user.getRole());  // Return the user's role
+            } else {
+                return ResponseEntity.notFound().build();  // User not found
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();  // Internal server error
+        }
+    }
     // ====================== DTO Classes ======================
 
     /**

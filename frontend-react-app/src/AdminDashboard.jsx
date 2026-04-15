@@ -256,6 +256,24 @@ function AdminDashboard() {
       console.error("Error fetching messages:", error);
     }
   };
+  const fetchUserRole = async (userId) => {
+    try {
+        const response = await axios.get(`/api/users/role/${userId}`);
+        const role = response.data;  // Get the user's role from the response
+
+        // Now, you can use the role (for example, to redirect based on role)
+        console.log("User role:", role);
+
+        if (role === "ADMIN") {
+            navigate("/admin");
+        } else {
+            navigate("/dashboard");
+        }
+
+    } catch (error) {
+        console.error("Error fetching user role:", error);
+    }
+  };
 
   // ============== UI HANDLERS ==============
   const handleUserHover = (event, user) => {
@@ -309,7 +327,29 @@ function AdminDashboard() {
       setErrorDetails(error.message);
     }
   };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setMessage("");
+    setLoading(true);
 
+    try {
+        const res = await axios.post('/api/auth/login', formData);
+        const { token, id, username, email } = res.data;
+        localStorage.setItem("token", token);
+        localStorage.setItem("userId", id);  // Store userId in localStorage
+        localStorage.setItem("username", username);
+        localStorage.setItem("userEmail", email);
+
+        // Fetch the role based on the userId after login
+        await fetchUserRole(id); // Fetch and navigate based on role
+
+        setMessage("Login successful! Redirecting...");
+    } catch (err) {
+        console.error("Error during login:", err);
+        setMessage("Error during login. Please try again.");
+        setLoading(false);
+    }
+  };
   // ============== STATISTICS ==============
   const calculateStatistics = () => {
     const allTasks = [...unassignedTasks, ...assignedTasks];
@@ -1672,39 +1712,70 @@ const handleProfileClick = () => {
             <h3>Assign Task: {selectedTaskForAssign?.title}</h3>
             <p>Select a user to assign this task:</p>
             {users.length === 0 ? (
-              <div className="no-users-message"><p>No users available</p><button onClick={fetchAllData} className="retry-btn">Refresh</button></div>
+              <div className="no-users-message">
+                <p>No users available</p>
+                <button onClick={fetchAllData} className="retry-btn">Refresh</button>
+              </div>
             ) : (
               <div className="user-list">
-                {users.map(user => {
-                  const userStatus = userStatuses[user.id] || {};
-                  return (
-                    <div key={user.id} className="user-item" onClick={() => confirmAssignment(user.id)}>
-                      <span className={`user-status-indicator ${userStatus.isOnline ? 'online' : 'offline'}`}></span>
-                      <span className="user-name">{user.username}</span>
-                      <span className="user-email">{user.email}</span>
-                    </div>
-                  );
-                })}
+                {/* Debug: Check the users array */}
+                {console.log("Users list before filtering:", users)}
+
+                {users
+                  .filter(user => {
+                    // Debug: Check each user's role before filtering
+                    console.log("Checking user role:", user.username, user.role);
+                    return user.role !== "ADMIN"; // Filter out admin users
+                  })
+                  .map(user => {
+                    const userStatus = userStatuses[user.id] || {};
+
+                    // Debug: Check user status for each user
+                    console.log("User status for", user.username, userStatus);
+
+                    return (
+                      <div key={user.id} className="user-item" onClick={() => confirmAssignment(user.id)}>
+                        <span className={`user-status-indicator ${userStatus.isOnline ? 'online' : 'offline'}`}></span>
+                        <span className="user-name">{user.username}</span>
+                        <span className="user-email">{user.email}</span>
+                      </div>
+                    );
+                  })}
               </div>
             )}
             <button className="cancel-btn" onClick={() => setShowAssignModal(false)}>Cancel</button>
           </div>
         </div>
       )}
-
       {showReassignModal && (
-        <div className="modal-overlay" onClick={() => setShowReassignModal(false)}>
-          <div className="modal assign-modal" onClick={e => e.stopPropagation()}>
-            <h3>Reassign Task: {selectedTaskForReassign?.title}</h3>
-            <p>Current assignee: <strong>{selectedTaskForReassign?.assignedUser?.username}</strong></p>
-            <br></br>
-            <h4>Select a new user:</h4>
-            {users.length === 0 ? (
-              <div className="no-users-message"><p>No users available</p><button onClick={fetchAllData} className="retry-btn">Refresh</button></div>
-            ) : (
-              <div className="user-list">
-                {users.map(user => {
+      <div className="modal-overlay" onClick={() => setShowReassignModal(false)}>
+        <div className="modal assign-modal" onClick={e => e.stopPropagation()}>
+          <h3>Reassign Task: {selectedTaskForReassign?.title}</h3>
+          <p>Current assignee: <strong>{selectedTaskForReassign?.assignedUser?.username}</strong></p>
+          <br />
+          <h4>Select a new user:</h4>
+          {users.length === 0 ? (
+            <div className="no-users-message">
+              <p>No users available</p>
+              <button onClick={fetchAllData} className="retry-btn">Refresh</button>
+            </div>
+          ) : (
+            <div className="user-list">
+              {/* Debug: Check the users array before filtering */}
+              {console.log("Users list before filtering:", users)}
+
+              {users
+                .filter(user => {
+                  // Debug: Check each user's role before filtering
+                  console.log("Checking user role:", user.username, user.role);
+                  return user.role !== "ADMIN"; // Filter out admin users
+                })
+                .map(user => {
                   const userStatus = userStatuses[user.id] || {};
+
+                  // Debug: Check user status for each user
+                  console.log("User status for", user.username, userStatus);
+
                   return (
                     <div key={user.id} className="user-item" onClick={() => confirmReassignment(user.id)}>
                       <span className={`user-status-indicator ${userStatus.isOnline ? 'online' : 'offline'}`}></span>
@@ -1713,12 +1784,12 @@ const handleProfileClick = () => {
                     </div>
                   );
                 })}
-              </div>
-            )}
-            <button className="cancel-btn" onClick={() => setShowReassignModal(false)}>Cancel</button>
-          </div>
+            </div>
+          )}
+          <button className="cancel-btn" onClick={() => setShowReassignModal(false)}>Cancel</button>
         </div>
-      )}
+      </div>
+    )}
 
       {showUnassignConfirm && (
         <div className="modal-overlay" onClick={() => setShowUnassignConfirm(false)}>
