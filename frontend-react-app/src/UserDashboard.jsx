@@ -801,7 +801,7 @@ function UserDashboard() {
                   <div className="task-meta">
                     <span className="task-priority">Priority: <div className="priority-badge critical">{task.priority}</div></span>
                     <span>Due:</span>
-                    <div className="view-tasks-btn">{task.deadline ? new Date(task.deadline).toLocaleDateString() : 'No deadline'}</div>
+                    <div className="view-tasks-btn">{task.deadline ? new Date(task.deadline).toLocaleDateString('en-GB') : 'No deadline'}</div>
                   </div>
                   <span className="overdue-warning">{isOverdue && ` (${daysOverdue} day${daysOverdue > 1 ? 's' : ''} overdue)`}</span>
                   {/* ✅ Progress Bar */}
@@ -843,7 +843,7 @@ function UserDashboard() {
               <label>Deadline:</label>
               <span className={isTaskOverdue(selectedTask) ? 'overdue-text' : ''}>
                 {selectedTask.deadline
-                  ? new Date(selectedTask.deadline).toLocaleDateString()
+                  ? new Date(selectedTask.deadline).toLocaleDateString('en-GB')
                   : 'No deadline'}
                 {isTaskOverdue(selectedTask) &&
                   <span className="overdue-warning">
