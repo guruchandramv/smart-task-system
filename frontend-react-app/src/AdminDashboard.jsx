@@ -574,7 +574,7 @@ function AdminDashboard() {
     if (diffMins < 1) return 'Just now';
     if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
     if (diffMins < 1440) return `${Math.floor(diffMins / 60)} hour${Math.floor(diffMins / 60) > 1 ? 's' : ''} ago`;
-    return date.toLocaleDateString();
+    return date.toLocaleDateString('en-GB');
   };
 
   // ============== TASK ACTIONS ==============
@@ -1523,7 +1523,7 @@ const handleProfileClick = () => {
                       <p className="task-description" title={task.description}>{task.description}</p>
                       <div className="task-footer">
                         <span className="task-priority">Priority: <span class="priority-badge critical">{task.priority}</span></span>
-                        <span className="task-deadline">  Due: <button class="view-tasks-btn">{task.deadline ? new Date(task.deadline).toLocaleDateString() : 'No deadline'}</button></span>
+                        <span className="task-deadline">  Due: <button class="view-tasks-btn">{task.deadline ? new Date(task.deadline).toLocaleDateString('en-GB') : 'No deadline'}</button></span>
                       </div>
                         {/* ✅ Progress Bar */}
                         <div className="task-progress-bar">
@@ -1563,7 +1563,7 @@ const handleProfileClick = () => {
                       <div className="task-assignee"><strong>Assigned to: </strong><button class="view-tasks-btn">{task.assignedUser?.username || 'Unknown'}</button></div>
                       <div className="task-footer">
                         <span className="task-priority">Priority: <span class="priority-badge critical">{task.priority}</span></span>
-                        <span className="task-deadline">  Due: <button class="view-tasks-btn">{task.deadline ? new Date(task.deadline).toLocaleDateString() : 'No deadline'}</button></span>
+                        <span className="task-deadline">  Due: <button class="view-tasks-btn">{task.deadline ? new Date(task.deadline).toLocaleDateString('en-GB') : 'No deadline'}</button></span>
                       </div>
                         {/* ✅ Progress Bar */}
                         <div className="task-progress-bar">
@@ -1658,7 +1658,7 @@ const handleProfileClick = () => {
                   <p className="user-task-description">{task.description}</p>
                   <div className="user-task-footer">
                     <span className="task-priority">Priority: <span class="priority-badge critical">{task.priority}</span></span>
-                    <span className="task-deadline">  Due: <button class="view-tasks-btn">{task.deadline ? new Date(task.deadline).toLocaleDateString() : 'No deadline'}</button></span>
+                    <span className="task-deadline">  Due: <button class="view-tasks-btn">{task.deadline ? new Date(task.deadline).toLocaleDateString('en-GB') : 'No deadline'}</button></span>
                   </div>
                 </div>
               ))}
@@ -1854,7 +1854,7 @@ const handleProfileClick = () => {
               <label>Deadline:</label>
               <button className="view-tasks-btn">
                 {selectedTaskDetails.deadline
-                  ? new Date(selectedTaskDetails.deadline).toLocaleDateString()
+                  ? new Date(selectedTaskDetails.deadline).toLocaleDateString('en-GB')
                   : "No deadline"}
               </button>
             </div>
