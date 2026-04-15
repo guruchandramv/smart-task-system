@@ -654,6 +654,7 @@ span {
   font-size: 0.9rem;
   font-weight: 600;
   width: fit-content;
+  animation: pulse 2s infinite !important;
 }
 
 .priority-badge.low {
@@ -1658,7 +1659,7 @@ span {
 
 .status-badge.in-progress {
   background:rgba(255, 250, 240,100) !important;
-  color:violet !important;
+  color: #7b1fa2  !important;
   font-size: large !important;
   font-weight: bolder !important;
 }

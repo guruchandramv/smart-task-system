@@ -107,7 +107,7 @@
 
 .status-badge.in-progress {
   background:rgba(255, 250, 240,100) !important;
-  color:violet !important;
+  color:#7b1fa2 !important;
   font-size: large !important;
   font-weight: bolder !important;
 }
@@ -124,7 +124,7 @@
 
 .status-badge-c-dd.in-progress {
   background: #1A1732 !important;
-  color: orange !important;
+  color: #7b1fa2 !important;
   font-size: medium !important;
 }
 
@@ -271,6 +271,7 @@ span {
   border-radius: 15px !important;
   font-size: 0.9rem !important;
   font-weight: 600 !important;
+  animation: pulse 2s infinite !important;
 }
 
 .priority-badge.low {
@@ -291,7 +292,6 @@ span {
 .priority-badge.critical {
   background: #f3e5f5 !important;
   color: #7b1fa2 !important;
-  animation: pulse 2s infinite !important;
 }
 
 /* View Tasks Button */
