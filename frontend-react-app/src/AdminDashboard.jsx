@@ -1281,7 +1281,7 @@ const handleProfileClick = () => {
               </div>
             </div>
             <div className="stat-card completed">
-              <div className="stat-icon">✅</div>
+              <div className="stat-icon-checkmark"></div>
               <div className="stat-content">
                 <span className="stat-label">Completed</span>
                 <span className="stat-value">{statistics.completedTasks}</span>

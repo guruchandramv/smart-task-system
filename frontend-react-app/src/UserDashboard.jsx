@@ -581,7 +581,7 @@ function UserDashboard() {
             </div>
 
             <div className="user-stat-card completed">
-              <div className="stat-icon">✅</div>
+              <div className="stat-icon-checkmark"></div>
               <div className="stat-content">
                 <span className="stat-label">Completed</span>
                 <span className="stat-value">{userStats.completedTasks}</span>
@@ -804,6 +804,16 @@ function UserDashboard() {
                     <div className="view-tasks-btn">{task.deadline ? new Date(task.deadline).toLocaleDateString() : 'No deadline'}</div>
                   </div>
                   <span className="overdue-warning">{isOverdue && ` (${daysOverdue} day${daysOverdue > 1 ? 's' : ''} overdue)`}</span>
+                  {/* ✅ Progress Bar */}
+                  <div className="task-progress-bar">
+                    <div
+                      className="task-progress-fill"
+                      style={{ width: `${task.completionPercentage || 0}%` }}
+                    ></div>
+                    <span className="progress-text">
+                      {task.completionPercentage || 0}%
+                    </span>
+                   </div>
                 </div>
               );
             })}

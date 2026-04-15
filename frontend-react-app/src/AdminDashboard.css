@@ -1366,11 +1366,6 @@ span {
   color: white;
 }
 
-.stat-icon {
-  font-size: 2.5rem;
-  margin-right: 1rem;
-}
-
 .stat-content {
   display: flex;
   flex-direction: column;
@@ -1383,7 +1378,20 @@ span {
   margin-bottom: 0.5rem !important;
   font-weight: 500 !important;
 }
-
+.stat-icon{
+  color: green !important; /* Sets the tick mark color to green */
+  font-size: 3.5rem !important;
+  margin-right: 1rem;
+  font-family: 'Arial', sans-serif !important; /* Use a default sans-serif font if necessary */
+  animation: floatIcon 3s ease-in-out infinite;
+}
+.stat-icon-checkmark {
+  width: 100px; /* Adjust width */
+  height: 100px; /* Adjust height */
+  background-image: url('./checkmark.png'); /* Path to your checkmark image */
+  background-size: contain; /* Ensures the image fits within the div */
+  background-repeat: no-repeat; /* Prevents image repetition */
+}
 /* Charts Row */
 .stats-charts-row {
   display: grid;
@@ -1739,10 +1747,6 @@ span {
 
   .stat-card {
     padding: 1rem;
-  }
-
-  .stat-icon {
-    font-size: 2rem;
   }
 
   .user-tasks-table {
@@ -2371,11 +2375,6 @@ span {
   transform: translateY(-5px);
   border-color: rgba(102, 126, 234, 0.5);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-}
-
-.stat-icon {
-  font-size: 3rem;
-  animation: floatIcon 3s ease-in-out infinite;
 }
 
 @keyframes floatIcon {
@@ -3258,12 +3257,6 @@ span {
     rgba(220, 38, 38, 0.2)
   );
   border-bottom: 2px solid #ef4444;
-}
-
-.stat-icon {
-  font-size: 3rem;
-  animation: floatIcon 3s ease-in-out infinite;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
 }
 
 .stat-content {
