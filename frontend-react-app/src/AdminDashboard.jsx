@@ -566,17 +566,6 @@ function AdminDashboard() {
     }
   };
 
-  const formatNotificationTime = (timestamp) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffMins = Math.floor((now - date) / 60000);
-
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
-    if (diffMins < 1440) return `${Math.floor(diffMins / 60)} hour${Math.floor(diffMins / 60) > 1 ? 's' : ''} ago`;
-    return date.toLocaleDateString('en-GB');
-  };
-
   // ============== TASK ACTIONS ==============
   const handleCreateTask = async (e) => {
     e.preventDefault();

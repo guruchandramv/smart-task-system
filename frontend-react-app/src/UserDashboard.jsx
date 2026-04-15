@@ -209,7 +209,6 @@ function UserDashboard() {
     }
   };
 
-  // Function to update task completion in the backend
   const updateTaskCompletion = async (taskId, percentage) => {
     try {
       await axios.put(`/api/tasks/${taskId}/update-completion`, { completionPercentage: percentage });
