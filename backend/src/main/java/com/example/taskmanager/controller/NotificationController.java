@@ -38,16 +38,10 @@ public class NotificationController {
     }
 
     // Get unread count
-    @GetMapping("/unread/count")
-    public ResponseEntity<?> getUnreadCount() {
-        try {
-            long count = notificationService.getUnreadCount();
-            return ResponseEntity.ok(Map.of("count", count));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500)
-                .body(Map.of("error", "Error fetching unread count: " + e.getMessage()));
-        }
+    @GetMapping("/unread/count/{userId}")
+    public ResponseEntity<?> getUnreadCount(@PathVariable Long userId) {
+        long count = notificationService.getUnreadCountByUser(userId);
+        return ResponseEntity.ok(Map.of("count", count));
     }
 
     // Mark notification as read

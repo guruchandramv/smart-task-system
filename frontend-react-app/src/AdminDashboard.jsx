@@ -528,7 +528,7 @@ function AdminDashboard() {
 
   const fetchUnreadCount = async () => {
     try {
-      const response = await axios.get("/api/notifications/unread/count");
+      const response = await axios.get(`/api/notifications/unread/count/${adminUserId}`);
       setUnreadCount(response.data.count);
     } catch (error) {
       console.error("Error fetching unread count:", error);
