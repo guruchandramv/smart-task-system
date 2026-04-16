@@ -153,6 +153,30 @@ function UserDashboard() {
     calculateUserStatistics();
   }, [assignedTasks]);
 
+
+  const getTimeAgo = (utcTimestamp) => {
+    if (!utcTimestamp) return 'Never';
+
+    const offsetMs = 5.5 * 60 * 60 * 1000;
+
+    const dateUTC = new Date(utcTimestamp);
+    const adjustedDate = new Date(dateUTC.getTime() - offsetMs); // ✅ subtract
+
+    const nowUTC = new Date();
+    const adjustedNow = new Date(nowUTC.getTime() - offsetMs); // ✅ subtract
+
+    const diffMs = adjustedNow.getTime() - adjustedDate.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+
+    return formatLocalTime(adjustedDate);
+  };
   const submitMessage = async (taskId) => {
     try {
       const userId = localStorage.getItem("userId");
@@ -211,6 +235,15 @@ function UserDashboard() {
 
     if (!showNotifications) {
       fetchNotifications();
+    }
+  };
+  const markAllAsRead = async () => {
+    try {
+      await axios.put("/api/notifications/read-all");
+      setNotifications(notifications.map(n => ({ ...n, status: 'READ' })));
+      setUnreadCount(0);
+    } catch (error) {
+      console.error("Error marking all as read:", error);
     }
   };
   const markAsRead = async (id) => {

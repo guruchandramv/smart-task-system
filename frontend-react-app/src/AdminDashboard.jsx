@@ -155,25 +155,27 @@ function AdminDashboard() {
     };
     return date.toLocaleString('en-IN', options);
   };
+  const getTimeAgo = (timestamp) => {
+    if (!timestamp) return 'Never';
 
-  const getTimeAgo = (utcTimestamp) => {
-    if (!utcTimestamp) return 'Never';
-    const dateUTC = new Date(utcTimestamp);
-    const dateIST = new Date(dateUTC.getTime() + 5.5 * 60 * 60 * 1000);
-    const nowUTC = new Date();
-    const nowIST = new Date(nowUTC.getTime() + 5.5 * 60 * 60 * 1000);
-    const diffMs = nowIST.getTime() - dateIST.getTime();
+    const date = new Date(timestamp); // ✅ already IST
+    const now = new Date();
+
+    const diffMs = now - date;
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
+    console.log("Notification time:", date);
+    console.log("Current time:", new Date());
+    console.log("Diff hours:", (new Date() - date) / (1000 * 60 * 60));
 
     if (diffMins < 1) return 'Just now';
     if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
     if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
     if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
-    return formatLocalTime(dateIST);
-  };
 
+    return formatLocalTime(date);
+  };
   // ============== API FUNCTIONS ==============
   const sendAdminHeartbeat = async () => {
     if (!adminUserId) return;
@@ -1174,45 +1176,45 @@ const handleProfileClick = () => {
         {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
       </button>
       {showNotifications && (
-  <div className="notification-panel">
-    <div className="notification-header">
-      <h3>Notifications</h3>
-      <div className="notification-actions">
-        {notifications
-          .filter(n => n.user?.id === adminUserId && n.status === 'UNREAD')
-          .length > 0 && (
-          <button onClick={markAllAsRead} className="mark-read-btn">
-            Mark all as read
-          </button>
-        )}
-        <button onClick={() => setShowNotifications(false)} className="close-btn">X</button>
-      </div>
-    </div>
+      <div className="notification-panel">
+        <div className="notification-header">
+          <h3>Notifications</h3>
+          <div className="notification-actions">
+            {notifications
+              .filter(n => n.user?.id === adminUserId && n.status === 'UNREAD')
+              .length > 0 && (
+              <button onClick={markAllAsRead} className="mark-read-btn">
+                Mark all as read
+              </button>
+            )}
+            <button onClick={() => setShowNotifications(false)} className="close-btn">X</button>
+          </div>
+        </div>
 
-    <div className="notification-list">
-      {notificationsLoading ? (
-        <div className="notification-loading">Loading...</div>
-        ) : notifications.length === 0 ? (
-          <div className="no-notifications">No notifications yet</div>
-        ) : (
-          notifications.map(notification => (
-            <div
-              key={notification.id}
-              className={`notification-item ${notification.status === 'UNREAD' ? 'unread' : ''}`}
-              onClick={() => markAsRead(notification.id)}
-            >
-              <div className="notification-content">
-                <p className="notification-message">{notification.message}</p>
-                <span className="notification-time">
-                  {getTimeAgo(notification.createdAt)}
-                </span>
-              </div>
-            </div>
-          ))
-       )}
-    </div>
-  </div>
-  )}
+        <div className="notification-list">
+          {notificationsLoading ? (
+            <div className="notification-loading">Loading...</div>
+            ) : notifications.length === 0 ? (
+              <div className="no-notifications">No notifications yet</div>
+            ) : (
+              notifications.map(notification => (
+                <div
+                  key={notification.id}
+                  className={`notification-item ${notification.status === 'UNREAD' ? 'unread' : ''}`}
+                  onClick={() => markAsRead(notification.id)}
+                >
+                  <div className="notification-content">
+                    <p className="notification-message">{notification.message}</p>
+                    <span className="notification-time">
+                      {getTimeAgo(notification.createdAt)}
+                    </span>
+                  </div>
+                </div>
+              ))
+           )}
+        </div>
+      </div>
+      )}
     </div>
     {/* User Avatar Dropdown */}
     <div className="user-avatar-wrapper" ref={menuRef}>
