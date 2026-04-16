@@ -158,16 +158,15 @@ function AdminDashboard() {
   const getTimeAgo = (timestamp) => {
     if (!timestamp) return 'Never';
 
-    const date = new Date(timestamp); // ✅ already IST
-    const now = new Date();
+    const date = new Date(timestamp);
+    date.setHours(date.getHours() + 5);
+    date.setMinutes(date.getMinutes() + 30);
 
+    const now = new Date();
     const diffMs = now - date;
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
-    console.log("Notification time:", date);
-    console.log("Current time:", new Date());
-    console.log("Diff hours:", (new Date() - date) / (1000 * 60 * 60));
 
     if (diffMins < 1) return 'Just now';
     if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
@@ -499,15 +498,25 @@ function AdminDashboard() {
     setNotificationsLoading(true);
     try {
       const response = await axios.get(`/api/notifications/user/${adminUserId}`);
-      const notifications = Array.isArray(response.data) ? response.data : [];
+
+      console.log("API RESPONSE:", response.data);
+
+      // ✅ Handle all possible formats safely
+      const data = response.data;
+
+      let notifications = [];
+
+      if (Array.isArray(data)) {
+        notifications = data;
+      } else if (Array.isArray(data?.data)) {
+        notifications = data.data;
+      } else {
+        console.warn("Unexpected API format:", data);
+      }
 
       setNotifications(notifications);
 
-      // ✅ Correct unread count
-      const unread = notifications.filter(
-        n => n.status === "UNREAD"
-      ).length;
-
+      const unread = notifications.filter(n => n.status === "UNREAD").length;
       setUnreadCount(unread);
 
     } catch (error) {
@@ -973,30 +982,10 @@ const handleProfileClick = () => {
   }, [filteredUnassignedTasks, isInitialLoad]);
 
   useEffect(() => {
-    const fetchNotifications = async () => {
-      setNotificationsLoading(true);
-      try {
-        const response = await axios.get(`/api/notifications/user/${adminUserId}`);
-        const notifications = Array.isArray(response.data) ? response.data : [];
-
-        setNotifications(notifications);
-
-        // ✅ Correct unread count
-        const unread = notifications.filter(
-          n => n.status === "UNREAD"
-        ).length;
-
-        setUnreadCount(unread);
-
-      } catch (error) {
-        console.error("Error fetching notifications:", error);
-      } finally {
-        setNotificationsLoading(false);
-      }
-    };
+    if (!adminUserId) return;
 
     fetchNotifications();
-}, []);
+  }, [adminUserId]);
   // Close dropdown when clicking outside
   useEffect(() => {
   const handleClickOutside = (event) => {
@@ -1092,8 +1081,7 @@ const handleProfileClick = () => {
           <div className="notification-header">
             <h3>Notifications</h3>
             <div className="notification-actions">
-              {notifications
-                .filter(n => n.user?.id === adminUserId && n.status === 'UNREAD')
+              {notifications.filter(n => n.status === 'UNREAD')
                 .length > 0 && (
                 <button onClick={markAllAsRead} className="mark-read-btn">
                   Mark all as read
@@ -1180,9 +1168,8 @@ const handleProfileClick = () => {
         <div className="notification-header">
           <h3>Notifications</h3>
           <div className="notification-actions">
-            {notifications
-              .filter(n => n.user?.id === adminUserId && n.status === 'UNREAD')
-              .length > 0 && (
+          {notifications.filter(n => n.status === 'UNREAD')
+            .length > 0 && (
               <button onClick={markAllAsRead} className="mark-read-btn">
                 Mark all as read
               </button>

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
 @Service
 public class NotificationService {
 
@@ -24,7 +25,7 @@ public class NotificationService {
         return message.replaceAll("[^\\x20-\\x7E\\n\\r\\t]", "").trim();
     }
 
-    // 🔹 COMMON METHOD (IMPORTANT - reuse everywhere)
+    // 🔥 CENTRAL METHOD
     public void createNotification(User user, String type, String message, Task task) {
         if (user == null) return;
 
@@ -36,21 +37,21 @@ public class NotificationService {
         notification.setStatus("UNREAD");
         notification.setCreatedAt(LocalDateTime.now());
 
-        notificationRepository.save(notification);
+        Notification saved = notificationRepository.save(notification);
 
-        // 🚀 OPTIONAL: Real-time push
+        // ✅ Send FULL object (not just message)
         try {
             messagingTemplate.convertAndSendToUser(
                 user.getUsername(),
                 "/queue/notifications",
-                notification.getMessage()
+                saved
             );
         } catch (Exception e) {
             System.out.println("⚠️ WebSocket push failed");
         }
     }
 
-    // 🔹 TASK CREATED → notify admin only
+    // 🔹 TASK CREATED → notify admin
     public void notifyTaskCreated(Task task, User admin) {
         createNotification(
             admin,
@@ -60,22 +61,42 @@ public class NotificationService {
         );
     }
 
-    // 🔹 TASK ASSIGNED → notify assigned user
+    // 🔹 TASK ASSIGNED → notify BOTH user & admin
     public void notifyTaskAssigned(Task task, User assignedBy, User assignedTo) {
+
+        // ✅ Notify assigned user
         createNotification(
-            assignedTo, // ✅ FIXED
+            assignedTo,
             "TASK_ASSIGNED",
             "You have been assigned task: " + task.getTitle(),
             task
         );
+
+        // ✅ Notify admin
+        createNotification(
+            assignedBy,
+            "TASK_ASSIGNED",
+            "Task '" + task.getTitle() + "' assigned to " + assignedTo.getUsername(),
+            task
+        );
     }
 
-    // 🔹 TASK UNASSIGNED → notify previous user
+    // 🔹 TASK UNASSIGNED → notify BOTH
     public void notifyTaskUnassigned(Task task, User unassignedBy, User previousUser) {
+
+        // ✅ User
         createNotification(
-            previousUser, // ✅ FIXED
+            previousUser,
             "TASK_UNASSIGNED",
             "You have been unassigned from task: " + task.getTitle(),
+            task
+        );
+
+        // ✅ Admin
+        createNotification(
+            unassignedBy,
+            "TASK_UNASSIGNED",
+            "Task '" + task.getTitle() + "' unassigned from " + previousUser.getUsername(),
             task
         );
     }
@@ -86,7 +107,7 @@ public class NotificationService {
         if (task.getAssignedUser() == null) return;
 
         createNotification(
-            task.getAssignedUser(), // ✅ FIXED
+            task.getAssignedUser(),
             "TASK_UPDATED",
             "Task '" + task.getTitle() + "' updated: " + field +
             " changed from '" + oldValue + "' to '" + newValue + "'",
@@ -96,6 +117,7 @@ public class NotificationService {
 
     // 🔹 TASK DELETED → notify assigned user
     public void notifyTaskDeleted(Task task, User deletedBy) {
+
         if (task.getAssignedUser() == null) return;
 
         createNotification(
@@ -108,6 +130,7 @@ public class NotificationService {
 
     // 🔹 TASK COMPLETED → notify creator/admin
     public void notifyTaskCompleted(Task task, User completedBy) {
+
         createNotification(
             task.getCreatedBy(),
             "TASK_COMPLETED",
@@ -116,7 +139,8 @@ public class NotificationService {
         );
     }
 
-    // 🔹 FETCH METHODS (unchanged)
+    // ================= FETCH =================
+
     public List<Notification> getByUserId(Long userId) {
         return notificationRepository.findByUser_IdOrderByCreatedAtDesc(userId);
     }
@@ -141,7 +165,8 @@ public class NotificationService {
         notificationRepository.markAllAsRead();
     }
 
-    public long getUnreadCount() {
-        return notificationRepository.countUnread();
+    // 🔥 FIXED: user-specific unread count
+    public long getUnreadCountByUser(Long userId) {
+        return notificationRepository.countByUserIdAndStatus(userId, "UNREAD");
     }
 }

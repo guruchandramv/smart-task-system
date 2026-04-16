@@ -157,7 +157,7 @@ function UserDashboard() {
   const getTimeAgo = (timestamp) => {
     if (!timestamp) return 'Never';
 
-    const date = new Date(timestamp); // ✅ already IST
+    const date = new Date(timestamp);
     date.setHours(date.getHours() + 5);
     date.setMinutes(date.getMinutes() + 30);
 
@@ -166,10 +166,7 @@ function UserDashboard() {
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
-    console.log("Notification time:", date);
-    console.log("Current time:", new Date());
-    console.log("Diff hours:", (new Date() - date) / (1000 * 60 * 60));
-
+    
     if (diffMins < 1) return 'Just now';
     if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
     if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
