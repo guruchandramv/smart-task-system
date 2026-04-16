@@ -1,5 +1,4 @@
 package com.example.taskmanager.model;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
@@ -33,7 +32,7 @@ public class Notification {
     @JsonIgnore
     private Task task;
 
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @Column(nullable = false)
     private LocalDateTime createdAt;
 
     @Column

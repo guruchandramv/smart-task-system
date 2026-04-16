@@ -154,28 +154,28 @@ function UserDashboard() {
   }, [assignedTasks]);
 
 
-  const getTimeAgo = (utcTimestamp) => {
-    if (!utcTimestamp) return 'Never';
+  const getTimeAgo = (timestamp) => {
+    if (!timestamp) return 'Never';
 
-    const offsetMs = 5.5 * 60 * 60 * 1000;
+    const date = new Date(timestamp); // ✅ already IST
+    date.setHours(date.getHours() + 5);
+    date.setMinutes(date.getMinutes() + 30);
 
-    const dateUTC = new Date(utcTimestamp);
-    const adjustedDate = new Date(dateUTC.getTime() - offsetMs); // ✅ subtract
-
-    const nowUTC = new Date();
-    const adjustedNow = new Date(nowUTC.getTime() - offsetMs); // ✅ subtract
-
-    const diffMs = adjustedNow.getTime() - adjustedDate.getTime();
+    const now = new Date();
+    const diffMs = now - date;
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
+    console.log("Notification time:", date);
+    console.log("Current time:", new Date());
+    console.log("Diff hours:", (new Date() - date) / (1000 * 60 * 60));
 
     if (diffMins < 1) return 'Just now';
     if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
     if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
     if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
 
-    return formatLocalTime(adjustedDate);
+    return formatLocalTime(date);
   };
   const submitMessage = async (taskId) => {
     try {
