@@ -6,11 +6,6 @@
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.dashboard-header h1 {
-  margin: 0;
-  color: #333;
-}
-
 .tasks-container {
   padding: 2rem;
 }
@@ -162,7 +157,179 @@
   /* Fallback for older browsers */
   max-height: calc(1.4em * 3); /* line-height * number of lines */
 }
+/* ============================= */
+/* 🔔 Notification Container */
+/* ============================= */
+.notification-container {
+  position: relative;
+  margin-right: 1rem;
+}
 
+/* ============================= */
+/* 🔔 Notification Bell */
+/* ============================= */
+.notification-bell {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  position: relative;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification-bell:hover {
+  background: rgba(102, 126, 234, 0.3);
+  transform: scale(1.1);
+}
+
+.notification-bell.has-unread {
+  animation: bellShake 0.5s ease-in-out;
+}
+
+/* ============================= */
+/* 🔴 Notification Badge */
+/* ============================= */
+.notification-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: linear-gradient(135deg, #f43f5e 0%, #ec489a 100%);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: bold;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border: 2px solid #0f0c29;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* ============================= */
+/* 📦 Notification Panel */
+/* ============================= */
+.notification-panel {
+  position: absolute;
+  top: 60px;
+  right: 0;
+  width: 380px;
+  max-height: 500px;
+  background: rgba(15, 12, 41, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  border: 1px solid rgba(102, 126, 234, 0.3);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideDown 0.3s ease-out;
+}
+
+/* ============================= */
+/* 📌 Header */
+/* ============================= */
+.notification-header {
+  padding: 1rem;
+  background: linear-gradient(
+    135deg,
+    rgba(102, 126, 234, 0.2),
+    rgba(118, 75, 162, 0.2)
+  );
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.notification-header h3 {
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.notification-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* ============================= */
+/* 📜 Notification List */
+/* ============================= */
+.notification-list {
+  overflow-y: auto;
+  max-height: 400px;
+}
+
+/* ============================= */
+/* 🧾 Notification Item */
+/* ============================= */
+.notification-item {
+  padding: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.notification-item:hover {
+  background: rgba(102, 126, 234, 0.1);
+}
+
+.notification-item.unread {
+  background: rgba(102, 126, 234, 0.15);
+  border-left: 3px solid #667eea;
+}
+
+/* ============================= */
+/* 📝 Content */
+/* ============================= */
+.notification-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.notification-message {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9rem;
+  margin-bottom: 0.3rem;
+  line-height: 1.4;
+}
+
+.notification-time {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.75rem;
+}
+
+/* ============================= */
+/* ⏳ States */
+/* ============================= */
+.notification-loading,
+.no-notifications {
+  padding: 2rem;
+  text-align: center;
+  color: #aaa;
+}
+
+/* ============================= */
+/* 📱 Responsive */
+/* ============================= */
+@media (max-width: 768px) {
+  .notification-panel {
+    width: 300px;
+    right: -40px;
+  }
+}
 .task-meta {
   display: flex;
   justify-content: space-between;
@@ -1322,20 +1489,6 @@ span {
   }
 }
 
-/* Dashboard Header */
-.dashboard-header {
-  background: white;
-  backdrop-filter: blur(20px);
-  padding: 1rem 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  border-bottom: 1px solid rgba(102, 126, 234, 0.3);
-}
-
 .welcome-text {
   color: green !important;
   font-weight: 500;
@@ -1980,7 +2133,11 @@ span {
   border-radius: 8px;
   cursor: pointer;
 }
-
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
 /* Responsive Design */
 @media (max-width: 768px) {
   .dashboard-header {
@@ -2005,18 +2162,25 @@ span {
     padding: 1rem;
   }
 }
+
+/* Header layout */
 .dashboard-header {
-  background: rgba(15, 12, 41, 0.85);
-  backdrop-filter: blur(20px);
-  padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  border-bottom: 1px solid rgba(102, 126, 234, 0.3);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Right side group */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem; /* spacing between bell and profile */
+}
+
+/* Optional: tighten alignment */
+.notification-container {
+  display: flex;
+  align-items: center;
 }
 
 .dashboard-header h1 {

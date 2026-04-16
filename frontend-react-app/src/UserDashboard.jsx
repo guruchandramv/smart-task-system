@@ -8,6 +8,7 @@ axios.defaults.headers.common['Content-Type'] = 'application/json';
 
 function UserDashboard() {
   const navigate = useNavigate();
+  const userId = localStorage.getItem("userId");
   const [assignedTasks, setAssignedTasks] = useState([]);
   const [filteredTasks, setFilteredTasks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,7 +23,10 @@ function UserDashboard() {
   const [completionPercentage, setCompletionPercentage] = useState(0);
   const [UserProfilePicture, setUserProfilePicture] = useState("");
   const [Username, setUsername] = useState("");
-
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notificationsLoading, setNotificationsLoading] = useState(false);
 
   // State for user dropdown menu
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -64,7 +68,8 @@ function UserDashboard() {
 
   // USE EFFECTS
   useEffect(() => {
-    const userId = localStorage.getItem("userId");
+    {console.log("userId: " + userId);}
+    // userId = localStorage.getItem("userId");
     axios.get(`/api/users/${userId}`)
       .then(res => {
         setUsername(res.data.username);
@@ -76,6 +81,7 @@ function UserDashboard() {
       setCompletionPercentage(selectedTask.completionPercentage);
     }
   }, [selectedTask]);
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -130,6 +136,13 @@ function UserDashboard() {
     };
   }, [navigate]);
 
+  //Fetch Notifications
+  useEffect(() => {
+    if (userId) {
+      fetchNotifications();
+    }
+  }, [userId]);
+
   // Apply filters and sorting whenever tasks or filters change
   useEffect(() => {
     applyFiltersAndSorting();
@@ -168,7 +181,45 @@ function UserDashboard() {
       console.error("Error fetching messages:", error);
     }
   };
+  const fetchNotifications = async () => {
+    if (!userId) return;
 
+    setNotificationsLoading(true);
+    try {
+      const response = await axios.get(
+        `/api/notifications/user/${userId}`
+      );
+
+      const notifications = Array.isArray(response.data) ? response.data : [];
+
+      setNotifications(notifications);
+
+      const unread = notifications.filter(
+        n => n.status === "UNREAD"
+      ).length;
+
+      setUnreadCount(unread);
+
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    } finally {
+      setNotificationsLoading(false);
+    }
+  };
+  const toggleNotifications = () => {
+    setShowNotifications(!showNotifications);
+
+    if (!showNotifications) {
+      fetchNotifications();
+    }
+  };
+  const markAsRead = async (id) => {
+    await fetch(`/api/notifications/${id}/read`, {
+      method: "PUT"
+    });
+
+    fetchUserNotifications(); // refresh
+  };
   const formatDateTime = (dateString) => {
     const date = new Date(dateString);
     date.setHours(date.getHours() + 5);
@@ -481,35 +532,101 @@ function UserDashboard() {
       <div className="user-dashboard">
         <header className="dashboard-header">
           <h1>MY TASKS</h1>
-          <div className="user-info">
-            <div className="user-avatar-wrapper" ref={menuRef}>
-              <div className="user-avatar" onClick={toggleUserMenu}>
-              {UserProfilePicture ? (
-                <img
-                  src={UserProfilePicture}
-                  alt="Profile"
-                  className="avatar-image"
-                />
-              ) : (
-                <div className="avatar-fallback">
-                  {Username ? Username.charAt(0).toUpperCase() : "-"}
+          {/* RIGHT SIDE */}
+          <div className="header-controls">
+              {/* 🔔 Notification */}
+              <div className="notification-container">
+  <button
+    className={`notification-bell ${unreadCount > 0 ? 'has-unread' : ''}`}
+    onClick={toggleNotifications}
+  >
+    🔔
+    {unreadCount > 0 && (
+      <span className="notification-badge">{unreadCount}</span>
+    )}
+  </button>
+
+  {showNotifications && (
+    <div className="notification-panel">
+      <div className="notification-header">
+        <h3>My Notifications</h3>
+
+        <div className="notification-actions">
+            {unreadCount > 0 && (
+              <button onClick={markAllAsRead} className="mark-read-btn">
+                Mark all as read
+              </button>
+            )}
+
+            <button
+              onClick={() => setShowNotifications(false)}
+              className="close-btn"
+            >
+              X
+            </button>
+          </div>
+        </div>
+
+        <div className="notification-list">
+          {notificationsLoading ? (
+            <div className="notification-loading">Loading...</div>
+          ) : notifications.length === 0 ? (
+            <div className="no-notifications">No notifications yet</div>
+          ) : (
+            notifications.map(notification => (
+              <div
+                key={notification.id}
+                className={`notification-item ${
+                  notification.status === 'UNREAD' ? 'unread' : ''
+                }`}
+                onClick={() => markAsRead(notification.id)}
+              >
+                <div className="notification-content">
+                  <p className="notification-message">
+                    {notification.message}
+                  </p>
+                  <span className="notification-time">
+                    {getTimeAgo(notification.createdAt)}
+                  </span>
                 </div>
-              )}
               </div>
-              {showUserMenu && (
-                <div className="user-dropdown">
-                  <div className="user-dropdown-item" onClick={handleProfileClick}>
-                    <span className="dropdown-icon">👤</span>
-                    <span>My Profile</span>
+            ))
+          )}
+        </div>
+      </div>
+    )}
+  </div>
+
+              {/* 👤 Profile */}
+              <div className="user-info">
+                <div className="user-avatar-wrapper" ref={menuRef}>
+                  <div className="user-avatar" onClick={toggleUserMenu}>
+                    {UserProfilePicture ? (
+                      <img src={UserProfilePicture} alt="Profile" className="avatar-image" />
+                    ) : (
+                      <div className="avatar-fallback">
+                        {Username ? Username.charAt(0).toUpperCase() : "-"}
+                      </div>
+                    )}
                   </div>
-                  <div className="user-dropdown-divider"></div>
-                  <div className="user-dropdown-item logout-item" onClick={handleLogout}>
-                    <span className="dropdown-icon">🚪</span>
-                    <span>Logout</span>
-                  </div>
+
+                  {showUserMenu && (
+                    <div className="user-dropdown">
+                      <div className="user-dropdown-item" onClick={handleProfileClick}>
+                        <span className="dropdown-icon">👤</span>
+                        <span>My Profile</span>
+                      </div>
+
+                      <div className="user-dropdown-divider"></div>
+
+                      <div className="user-dropdown-item logout-item" onClick={handleLogout}>
+                        <span className="dropdown-icon">🚪</span>
+                        <span>Logout</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </div>
           </div>
         </header>
         <div className="loading-container">
@@ -524,6 +641,68 @@ function UserDashboard() {
     <div className="user-dashboard">
       <header className="dashboard-header">
         <h1>My Tasks</h1>
+        <div className="header-controls">
+        <div className="notification-container">
+          <button
+            className={`notification-bell ${unreadCount > 0 ? 'has-unread' : ''}`}
+            onClick={toggleNotifications}
+          >
+            🔔
+            {unreadCount > 0 && (
+              <span className="notification-badge">{unreadCount}</span>
+            )}
+          </button>
+
+          {showNotifications && (
+            <div className="notification-panel">
+              <div className="notification-header">
+                <h3>My Notifications</h3>
+
+                <div className="notification-actions">
+                  {unreadCount > 0 && (
+                    <button onClick={markAllAsRead} className="mark-read-btn">
+                      Mark all as read
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => setShowNotifications(false)}
+                    className="close-btn"
+                  >
+                    X
+                  </button>
+                </div>
+              </div>
+
+              <div className="notification-list">
+                {notificationsLoading ? (
+                  <div className="notification-loading">Loading...</div>
+                ) : notifications.length === 0 ? (
+                  <div className="no-notifications">No notifications yet</div>
+                ) : (
+                  notifications.map(notification => (
+                    <div
+                      key={notification.id}
+                      className={`notification-item ${
+                        notification.status === 'UNREAD' ? 'unread' : ''
+                      }`}
+                      onClick={() => markAsRead(notification.id)}
+                    >
+                      <div className="notification-content">
+                        <p className="notification-message">
+                          {notification.message}
+                        </p>
+                        <span className="notification-time">
+                          {getTimeAgo(notification.createdAt)}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+        </div>
         <div className="user-info">
           <div className="user-avatar-wrapper" ref={menuRef}>
             <div className="user-avatar" onClick={toggleUserMenu}>
@@ -550,6 +729,7 @@ function UserDashboard() {
               </div>
             )}
           </div>
+        </div>
         </div>
       </header>
 

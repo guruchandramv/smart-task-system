@@ -154,16 +154,18 @@
   }
 
   .reset-password-btn {
-    padding: 6px 12px;
-    font-size: 14px;
-    border-radius: 6px;
-    border: none;
-    background: #ef4444;
-    color: white;
-    cursor: pointer;
-    transition: 0.3s ease;
+    position: absolute !important;
+    padding: 6px 12px !important;
+    font-size: 14px !important;
+    border-radius: 6px !important;
+    border: none !important;
+    background: #ef4444 !important;
+    color: white !important;
+    cursor: pointer !important;
+    transition: 0.3s ease !important;
+    right: 1450px !important;
   }
 
   .reset-password-btn:hover {
-    background: #dc2626;
+    background: #dc2626 !important;
   }

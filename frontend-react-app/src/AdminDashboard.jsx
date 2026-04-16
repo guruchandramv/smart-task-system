@@ -12,15 +12,6 @@ axios.defaults.withCredentials = true;
 function AdminDashboard() {
   const navigate = useNavigate();
   const canvasRef = useRef(null);
-  const getProfileImage = (profilePicture) => {
-    const base = axios.defaults.baseURL.replace(/\/+$/, ""); // remove trailing slash
-    const path = profilePicture
-      ? profilePicture.replace(/^\/+/, "") // remove leading slash
-      : "uploads/profile_pictures/default.png";
-
-    return `${base}/${path}`;
-  };
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
 
   // ============== STATE DECLARATIONS ==============
   const [unassignedTasks, setUnassignedTasks] = useState([]);
@@ -978,6 +969,7 @@ const handleProfileClick = () => {
       setIsInitialLoad(false); // ✅ stop future runs
     }
   }, [filteredUnassignedTasks, isInitialLoad]);
+
   useEffect(() => {
     const fetchNotifications = async () => {
       setNotificationsLoading(true);
@@ -1094,45 +1086,45 @@ const handleProfileClick = () => {
         {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
       </button>
       {showNotifications && (
-  <div className="notification-panel">
-    <div className="notification-header">
-      <h3>Notifications</h3>
-      <div className="notification-actions">
-        {notifications
-          .filter(n => n.user?.id === adminUserId && n.status === 'UNREAD')
-          .length > 0 && (
-          <button onClick={markAllAsRead} className="mark-read-btn">
-            Mark all as read
-          </button>
-        )}
-        <button onClick={() => setShowNotifications(false)} className="close-btn">X</button>
-      </div>
-    </div>
+        <div className="notification-panel">
+          <div className="notification-header">
+            <h3>Notifications</h3>
+            <div className="notification-actions">
+              {notifications
+                .filter(n => n.user?.id === adminUserId && n.status === 'UNREAD')
+                .length > 0 && (
+                <button onClick={markAllAsRead} className="mark-read-btn">
+                  Mark all as read
+                </button>
+              )}
+              <button onClick={() => setShowNotifications(false)} className="close-btn">X</button>
+            </div>
+          </div>
 
-    <div className="notification-list">
-  {notificationsLoading ? (
-    <div className="notification-loading">Loading...</div>
-  ) : notifications.length === 0 ? (
-    <div className="no-notifications">No notifications yet</div>
-  ) : (
-    notifications.map(notification => (
-      <div
-        key={notification.id}
-        className={`notification-item ${notification.status === 'UNREAD' ? 'unread' : ''}`}
-        onClick={() => markAsRead(notification.id)}
-      >
-        <div className="notification-content">
-          <p className="notification-message">{notification.message}</p>
-          <span className="notification-time">
-            {getTimeAgo(notification.createdAt)}
-          </span>
-        </div>
+          <div className="notification-list">
+        {notificationsLoading ? (
+          <div className="notification-loading">Loading...</div>
+        ) : notifications.length === 0 ? (
+          <div className="no-notifications">No notifications yet</div>
+        ) : (
+          notifications.map(notification => (
+            <div
+              key={notification.id}
+              className={`notification-item ${notification.status === 'UNREAD' ? 'unread' : ''}`}
+              onClick={() => markAsRead(notification.id)}
+            >
+              <div className="notification-content">
+                <p className="notification-message">{notification.message}</p>
+                <span className="notification-time">
+                  {getTimeAgo(notification.createdAt)}
+                </span>
+              </div>
+            </div>
+          ))
+        )}
       </div>
-    ))
-  )}
-</div>
-  </div>
-)}
+        </div>
+      )}
     </div>
     {/* User Avatar Dropdown */}
     <div className="user-avatar-wrapper" ref={menuRef}>
@@ -1171,9 +1163,9 @@ const handleProfileClick = () => {
     <div className="admin-dashboard">
       <canvas ref={canvasRef} className="particles-bg"></canvas>
       <header className="dashboard-header">
-  <h1>Admin Dashboard</h1>
-  <div className="header-controls">
-  <div className="notification-container">
+      <h1>Admin Dashboard</h1>
+      <div className="header-controls">
+      <div className="notification-container">
       <button
         className={`notification-bell ${unreadCount > 0 ? 'has-unread' : ''}`}
         onClick={toggleNotifications}
@@ -1198,29 +1190,29 @@ const handleProfileClick = () => {
     </div>
 
     <div className="notification-list">
-  {notificationsLoading ? (
-    <div className="notification-loading">Loading...</div>
-  ) : notifications.length === 0 ? (
-    <div className="no-notifications">No notifications yet</div>
-  ) : (
-    notifications.map(notification => (
-      <div
-        key={notification.id}
-        className={`notification-item ${notification.status === 'UNREAD' ? 'unread' : ''}`}
-        onClick={() => markAsRead(notification.id)}
-      >
-        <div className="notification-content">
-          <p className="notification-message">{notification.message}</p>
-          <span className="notification-time">
-            {getTimeAgo(notification.createdAt)}
-          </span>
-        </div>
-      </div>
-    ))
-  )}
-</div>
+      {notificationsLoading ? (
+        <div className="notification-loading">Loading...</div>
+        ) : notifications.length === 0 ? (
+          <div className="no-notifications">No notifications yet</div>
+        ) : (
+          notifications.map(notification => (
+            <div
+              key={notification.id}
+              className={`notification-item ${notification.status === 'UNREAD' ? 'unread' : ''}`}
+              onClick={() => markAsRead(notification.id)}
+            >
+              <div className="notification-content">
+                <p className="notification-message">{notification.message}</p>
+                <span className="notification-time">
+                  {getTimeAgo(notification.createdAt)}
+                </span>
+              </div>
+            </div>
+          ))
+       )}
+    </div>
   </div>
-)}
+  )}
     </div>
     {/* User Avatar Dropdown */}
     <div className="user-avatar-wrapper" ref={menuRef}>
@@ -1570,66 +1562,64 @@ const handleProfileClick = () => {
               )}
             </div>
           )}
+          </div>
         </div>
-</div>
       </div>
       {showCreateTask && (
-  <div
-    onClick={() => setShowCreateTask(false)}
-    style={{
-      position: "fixed",
-      top: 0,
-      left: 0,
-      width: "100%",
-      height: "100%",
-      zIndex: 9999
-    }}
-  >
-    <div
-      onClick={(e) => e.stopPropagation()}
-      style={{
-        position: "absolute",
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)"
-      }}
-    >
-      <div className="create-task-panel">
+      <div
+        onClick={() => setShowCreateTask(false)}
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          zIndex: 9999
+        }}
+      >
+        <div
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)"
+          }}
+        >
         {
-			<div className="create-task-panel">
-          <h2>Create New Task</h2>
-          <form onSubmit={handleCreateTask} className="task-form">
-            <div className="form-group">
-              <label>Title:</label>
-              <input type="text" value={newTask.title} onChange={(e) => setNewTask({...newTask, title: e.target.value})} required placeholder="Enter task title" />
+	    		<div className="create-task-panel">
+              <h2>Create New Task</h2>
+              <form onSubmit={handleCreateTask} className="task-form">
+                <div className="form-group">
+                  <label>Title:</label>
+                  <input type="text" value={newTask.title} onChange={(e) => setNewTask({...newTask, title: e.target.value})} required placeholder="Enter task title" />
+                </div>
+                <div className="form-group">
+                  <label>Description:</label>
+                  <textarea value={newTask.description} onChange={(e) => setNewTask({...newTask, description: e.target.value})} required rows="4" placeholder="Enter task description" />
+                </div>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Priority:</label>
+                    <select value={newTask.priority} onChange={(e) => setNewTask({...newTask, priority: e.target.value})}>
+                      <option value="LOW">Low</option>
+                      <option value="MEDIUM">Medium</option>
+                      <option value="HIGH">High</option>
+                      <option value="CRITICAL">Critical</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Deadline:</label>
+                    <input type="date" value={newTask.deadline} onChange={(e) => setNewTask({...newTask, deadline: e.target.value})} required />
+                  </div>
+                </div>
+                <button type="submit" className="create-btn" disabled={loading}>{loading ? "Creating..." : "Create Task"}</button>
+              </form>
             </div>
-            <div className="form-group">
-              <label>Description:</label>
-              <textarea value={newTask.description} onChange={(e) => setNewTask({...newTask, description: e.target.value})} required rows="4" placeholder="Enter task description" />
-            </div>
-            <div className="form-row">
-              <div className="form-group">
-                <label>Priority:</label>
-                <select value={newTask.priority} onChange={(e) => setNewTask({...newTask, priority: e.target.value})}>
-                  <option value="LOW">Low</option>
-                  <option value="MEDIUM">Medium</option>
-                  <option value="HIGH">High</option>
-                  <option value="CRITICAL">Critical</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label>Deadline:</label>
-                <input type="date" value={newTask.deadline} onChange={(e) => setNewTask({...newTask, deadline: e.target.value})} required />
-              </div>
-            </div>
-            <button type="submit" className="create-btn" disabled={loading}>{loading ? "Creating..." : "Create Task"}</button>
-          </form>
+	    	}
         </div>
-		}
       </div>
-    </div>
-  </div>
-)}
+      )}
       {showUserTasksModal && selectedUser && (
         <div className="modal-overlay" onClick={() => setShowUserTasksModal(false)}>
           <div className="modal user-tasks-modal" onClick={e => e.stopPropagation()}>
@@ -1642,7 +1632,7 @@ const handleProfileClick = () => {
                 <div key={task.id} className="user-task-item">
                   <div className="user-task-header">
                     <h4>{task.title}</h4>
-                    <span className={`task-status-badge ${task.status.toLowerCase()}`}>{task.status}</span>
+                    <span className="priority-badge status">{task.status}</span>
                   </div>
                   <p className="user-task-description">{task.description}</p>
                   <div className="user-task-footer">
@@ -1670,6 +1660,7 @@ const handleProfileClick = () => {
               <div className="menu-item seperator" onClick={() => handleUnassignTask(contextMenu.task)}>Unassign Task</div>
               <div className="menu-item seperator" onClick={() => handleEditTask(contextMenu.task)}>Edit Task</div>
               <div className="menu-item delete" onClick={() => handleDeleteTask(contextMenu.task)}>Delete Task</div>
+              <div className="menu-item seperator">Generate Reports</div>
             </>
           )}
         </div>
@@ -1907,33 +1898,33 @@ const handleProfileClick = () => {
         </div>
       )}
       {showMessageHistory && (
-      <div className="modal-overlay" onClick={() => setShowMessageHistory(false)}>
-        <div className="modal task-details-modal" onClick={e => e.stopPropagation()}>
+        <div className="modal-overlay" onClick={() => setShowMessageHistory(false)}>
+          <div className="modal task-details-modal" onClick={e => e.stopPropagation()}>
 
-          <div className="modal-header">
-            <h2>Message History</h2>
-            <button className="close-btn" onClick={() => setShowMessageHistory(false)}>X</button>
-          </div>
-          <hr></hr><br></br>
-          <div style={{ maxHeight: "300px", overflowY: "auto" }}>
-            {messages.length === 0 ? (
-              <p>No messages available.</p>
-            ) : (
-              messages.map((msg) => (
-                <p key={msg.id} className="message-row">
-                  <span className="msg-header">
-                    [{formatDateTime(msg.createdAt)}] [{msg.username}]:
-                  </span>{" "}
-                  <span className="msg-text">
-                    {msg.message}
-                  </span>
-                </p>
-              ))
-            )}
+            <div className="modal-header">
+              <h2>Message History</h2>
+              <button className="close-btn" onClick={() => setShowMessageHistory(false)}>X</button>
+            </div>
+            <hr></hr><br></br>
+            <div style={{ maxHeight: "300px", overflowY: "auto" }}>
+              {messages.length === 0 ? (
+                <p>No messages available.</p>
+              ) : (
+                messages.map((msg) => (
+                  <p key={msg.id} className="message-row">
+                    <span className="msg-header">
+                      [{formatDateTime(msg.createdAt)}] [{msg.username}]:
+                    </span>{" "}
+                    <span className="msg-text">
+                      {msg.message}
+                    </span>
+                  </p>
+                ))
+              )}
+            </div>
           </div>
         </div>
-      </div>
-    )}
+      )}
     </div>
   );
 }

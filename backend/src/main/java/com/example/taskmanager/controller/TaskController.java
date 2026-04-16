@@ -541,14 +541,13 @@ public class TaskController {
             }
 
             Task task = taskOptional.get();
-            String taskTitle = task.getTitle();
             User deletedBy = task.getCreatedBy();
 
             taskRepository.deleteById(taskId);
             //System.out.println("✅ Task deleted successfully");
 
             // 🔔 CREATE NOTIFICATION
-            notificationService.notifyTaskDeleted(taskTitle, deletedBy);
+            notificationService.notifyTaskDeleted(task, deletedBy);
             messagingTemplate.convertAndSend("/topic/tasks", task);
             return ResponseEntity.ok(Map.of(
                 "message", "Task deleted successfully",
