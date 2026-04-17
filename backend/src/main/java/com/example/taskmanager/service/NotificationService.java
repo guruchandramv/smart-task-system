@@ -120,7 +120,7 @@ public class NotificationService {
         if (task.getAssignedUser() == null) return;
 
         // 🔥 Formatter (12-hour format)
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("DD-MMM-YYYY");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("DD-MM-YYYY");
 
         // 🔥 Convert values if they are datetime strings
         oldValue = formatIfDateTime(oldValue, formatter);
