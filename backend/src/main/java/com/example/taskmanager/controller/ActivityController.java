@@ -79,7 +79,7 @@ public class ActivityController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
-
+   
     // ----------------- All Users Status -----------------
     @GetMapping("/all-status")
     public ResponseEntity<?> getAllUsersStatus() {

@@ -4,6 +4,8 @@ import axios from './axiosConfig.js';
 import "./AdminDashboard.css";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 // Configure axios defaults
 axios.defaults.headers.common['Content-Type'] = 'application/json';
@@ -20,9 +22,11 @@ function AdminDashboard() {
   const [filteredAssignedTasks, setFilteredAssignedTasks] = useState([]);
   const [users, setUsers] = useState([]);
   const [UsersRole, setUsersRole] = useState([]);  // Store users with roles
+  const [pdfMessages, setPdfMessages] = useState([]);
 
   const [showCreateTask, setShowCreateTask] = useState(false);
   const [userStatuses, setUserStatuses] = useState({});
+  const taskDetailsRef = useRef();
 
   const [statistics, setStatistics] = useState({
     totalTasks: 0,
@@ -175,6 +179,39 @@ function AdminDashboard() {
 
     return formatLocalTime(date);
   };
+  const getTimeAgoIST = (timestamp) => {
+    if (!timestamp) return 'Never';
+
+    const date = new Date(timestamp);
+
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+
+    return formatLocalTime(date);
+  };
+  const formatLastActivity = (isoString) => {
+    if (!isoString) return "N/A";
+
+    const date = new Date(isoString);
+
+    return date.toLocaleString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true
+    });
+  };
   // ============== API FUNCTIONS ==============
   const sendAdminHeartbeat = async () => {
     if (!adminUserId) return;
@@ -271,6 +308,55 @@ function AdminDashboard() {
     setLoading(false);
   };
 
+  const generateReport = async () => {
+    try {
+      const response = await axios.get(`/api/tasks/${selectedTaskDetails.id}/messages`);
+      setPdfMessages(response.data || []);
+
+      setTimeout(async () => {
+        const element = document.getElementById("pdf-content");
+        const canvas = await html2canvas(element, {
+          scale: 2,
+          backgroundColor: "#0f0c29"
+        });
+
+        const imgData = canvas.toDataURL("image/png");
+
+        const pdf = new jsPDF("p", "mm", "a4");
+
+        const pageWidth = 210;
+        const pageHeight = 297;
+
+        const margin = 10;
+        const usableWidth = pageWidth - margin * 2;
+
+        const imgHeight = (canvas.height * usableWidth) / canvas.width;
+
+        let heightLeft = imgHeight;
+        let position = 0;
+
+        // First page
+        pdf.addImage(imgData, "PNG", margin, position + 10, usableWidth, imgHeight);
+        heightLeft -= pageHeight;
+
+        //pages
+        while (heightLeft > 0) {
+          position = heightLeft - imgHeight;
+
+          pdf.addPage();
+          pdf.addImage(imgData, "PNG", margin, position + 10, usableWidth, imgHeight);
+
+          heightLeft -= pageHeight;
+        }
+
+        pdf.save(`Task_Report_${selectedTaskDetails.id}.pdf`);
+
+      }, 300); // wait for render
+
+    } catch (error) {
+      console.error(error);
+    }
+  };
   // ============== UI HANDLERS ==============
   const handleUserHover = (event, user) => {
     if (!user || !user.username || !user.lastActivity) return;
@@ -1087,7 +1173,7 @@ const handleProfileClick = () => {
                   Mark all as read
                 </button>
               )}
-              <button onClick={() => setShowNotifications(false)} className="close-btn">X</button>
+              <button onClick={() => setShowNotifications(false)} className="close-btn">x</button>
             </div>
           </div>
 
@@ -1174,7 +1260,7 @@ const handleProfileClick = () => {
                 Mark all as read
               </button>
             )}
-            <button onClick={() => setShowNotifications(false)} className="close-btn">X</button>
+            <button onClick={() => setShowNotifications(false)} className="close-btn">x</button>
           </div>
         </div>
 
@@ -1253,11 +1339,6 @@ const handleProfileClick = () => {
       )}
 
       {successMessage && <div className="success-message">✅ {successMessage}</div>}
-      <div className="create-task-toggle">
-  <button onClick={() => setShowCreateTask(true)} className="open-task-btn">
-    ➕ Create Task
-  </button>
-</div>
       {showStatistics && (
         <div className="statistics-dashboard">
           <h2>Dashboard Overview</h2>
@@ -1376,9 +1457,9 @@ const handleProfileClick = () => {
                         >
                           <span
                             className="cursor-help"
-                            title={user.isOnline ? 'Active now' : `Last active: ${getTimeAgo(user.lastActivity)}`}
+                            title={user.isOnline ? 'Active now' : `Last active: ${formatLastActivity(user.lastActivity)}`}
                           >
-                            {user.isOnline ? <div className="text-success">ONLINE</div> : getTimeAgo(user.lastActivity)}
+                            {user.isOnline ? <div className="text-success">ONLINE</div> : getTimeAgoIST(user.lastActivity)}
                           </span>
                         </span>
                       ) : (
@@ -1551,6 +1632,11 @@ const handleProfileClick = () => {
               )}
             </div>
           )}
+            <div className="create-task-toggle">
+              <button onClick={() => setShowCreateTask(true)} className="open-task-btn">
+                ➕ Create Task
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -1614,7 +1700,7 @@ const handleProfileClick = () => {
           <div className="modal user-tasks-modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h3>Tasks for <button class="view-tasks-btn">{selectedUser.username}</button></h3>
-              <button onClick={() => setShowUserTasksModal(false)} className="close-btn">X</button>
+              <button onClick={() => setShowUserTasksModal(false)} className="close-btn">x</button>
             </div>
             <div className="user-tasks-list">
               {userTasks.length === 0 ? <p className="no-tasks-message">No tasks assigned to this user</p> : userTasks.map(task => (
@@ -1649,7 +1735,6 @@ const handleProfileClick = () => {
               <div className="menu-item seperator" onClick={() => handleUnassignTask(contextMenu.task)}>Unassign Task</div>
               <div className="menu-item seperator" onClick={() => handleEditTask(contextMenu.task)}>Edit Task</div>
               <div className="menu-item delete" onClick={() => handleDeleteTask(contextMenu.task)}>Delete Task</div>
-              <div className="menu-item seperator">Generate Reports</div>
             </>
           )}
         </div>
@@ -1739,7 +1824,7 @@ const handleProfileClick = () => {
         <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
           <div className="modal edit-modal" onClick={e => e.stopPropagation()}>
             <h3>Edit Task</h3>
-            <button className="close-btn-edit" onClick={() => setShowEditModal(false)}>X</button>
+            <button className="close-btn-edit" onClick={() => setShowEditModal(false)}>x</button>
             <div className="form-group"><div className="assign-modal"><h4>Title:</h4></div><input type="text" value={editingTask.title} onChange={(e) => setEditingTask({...editingTask, title: e.target.value})} /></div>
             <br></br>
             <div className="form-group"><div className="assign-modal"><h4>Description:</h4></div><textarea value={editingTask.description} onChange={(e) => setEditingTask({...editingTask, description: e.target.value})} rows="3" /></div>
@@ -1786,6 +1871,7 @@ const handleProfileClick = () => {
           onClick={() => setShowTaskDetails(false)}
         >
           <div
+            ref={taskDetailsRef}
             className="modal task-details-modal"
             onClick={(e) => e.stopPropagation()}
           >
@@ -1801,11 +1887,9 @@ const handleProfileClick = () => {
                 ✕
               </button>
             </div>
-
             <hr />
-
             {/* Description */}
-            <div className="detail-row">
+            <div className="detail-row-desc">
               <label>Description:</label>
               <h4>{selectedTaskDetails.description || "No description"}</h4>
             </div>
@@ -1831,7 +1915,7 @@ const handleProfileClick = () => {
             {/* Status */}
             <div className="detail-row">
               <label>Status:</label>
-              <button className="view-tasks-btn">
+              <button className="priority-badge status">
                 {getStatusBadge(selectedTaskDetails.status)}
               </button>
             </div>
@@ -1844,7 +1928,7 @@ const handleProfileClick = () => {
                   <button className="view-tasks-btn">
                     {selectedTaskDetails.assignedUser?.username || "Unknown"}
                   </button>
-                  <span>@</span>
+                  <span>ON </span>
                   <button className="view-tasks-btn">
                     {selectedTaskDetails.assignedAt
                       ? formatDateTime(selectedTaskDetails.assignedAt)
@@ -1872,7 +1956,8 @@ const handleProfileClick = () => {
             </div>
 
             {/* Message History */}
-            <div style={{ marginTop: "15px" }}>
+            <div id="pdf-messages"
+            style={{ marginTop: "15px" }}>
               <button
                 className="msg-std-btn"
                 onClick={() => {
@@ -1883,16 +1968,85 @@ const handleProfileClick = () => {
                 SHOW MESSAGE HISTORY
               </button>
             </div>
+            <div className="report-icon" onClick={generateReport} role="button" title="GENERATE REPORT"></div>
           </div>
         </div>
       )}
+      {/*HIDDEN DIV FOR REPORT GENERATION*/}
+      <div
+        id="pdf-content"
+        style={{
+          position: "absolute",
+          top: "-9999px",
+          left: "-9999px",
+          width: "800px",
+          background: "#0f0c29",
+          color: "#ffffff",
+          padding: "25px",
+          fontFamily: "Arial, sans-serif",
+        }}
+      >
+        {/* ✅ TITLE */}
+        <h2 style={{ textAlign: "center", marginBottom: "20px" }}>
+          Task Report
+        </h2>
+
+        {/* ✅ TASK DETAILS CARD */}
+        <div style={{
+          border: "1px solid #ccc",
+          borderRadius: "10px",
+          padding: "15px",
+          marginBottom: "20px"
+        }}>
+          <h3>{selectedTaskDetails?.title}</h3>
+
+          <p><strong>Description:</strong> {selectedTaskDetails?.description || "N/A"}</p>
+          <p><strong>Priority:</strong> {selectedTaskDetails?.priority}</p>
+          <p><strong>Status:</strong> {selectedTaskDetails?.status}</p>
+          <p><strong>Deadline:</strong> {
+            selectedTaskDetails?.deadline
+              ? new Date(selectedTaskDetails.deadline).toLocaleDateString("en-GB")
+              : "N/A"
+          }</p>
+
+          <p><strong>Assigned To:</strong> {selectedTaskDetails?.assignedUser?.username || "N/A"}</p>
+          <p><strong>Assigned On:</strong>{selectedTaskDetails?.assignedAt
+                      ? formatDateTime(selectedTaskDetails?.assignedAt) : "N/A"}</p>
+          <p><strong>Progress:</strong> {selectedTaskDetails?.completionPercentage || 0}%</p>
+        </div>
+        <div style={{
+          fontWeight: "bold",
+          fontSize: "larger",
+          marginBottom: "10px",
+          paddingBottom: "5px"
+        }}>
+          MESSAGE HISTORY
+        </div>
+        {/* ✅ MESSAGE HISTORY */}
+        <div id="pdf-messages">
+          {pdfMessages.length === 0 ? (
+            <p>No messages available.</p>
+          ) : (
+            pdfMessages.map((msg, index) => (
+              <div key={msg.id || index} style={{ padding: "6px 0" }}>
+                <div style={{ color: "#fff" }}>
+                  [{formatDateTime(msg.createdAt)}] [{msg.username}]
+                </div>
+                <div style={{ color: "#fff" }}>
+                  {msg.message}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
       {showMessageHistory && (
         <div className="modal-overlay" onClick={() => setShowMessageHistory(false)}>
           <div className="modal task-details-modal" onClick={e => e.stopPropagation()}>
 
             <div className="modal-header">
               <h2>Message History</h2>
-              <button className="close-btn" onClick={() => setShowMessageHistory(false)}>X</button>
+              <button className="close-btn" onClick={() => setShowMessageHistory(false)}>x</button>
             </div>
             <hr></hr><br></br>
             <div style={{ maxHeight: "300px", overflowY: "auto" }}>

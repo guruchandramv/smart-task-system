@@ -170,9 +170,9 @@
 }
 
 .form-group label {
-  color: #ffffff;        /* pure white */
-  font-size: 0.95rem;    /* slightly bigger */
-  font-weight: 600;      /* thicker */
+  color: #ffffff; /* pure white */
+  font-size: 0.95rem; /* slightly bigger */
+  font-weight: 600; /* thicker */
   letter-spacing: 0.3px; /* cleaner look */
 }
 .form-group input,
@@ -181,10 +181,10 @@
   padding: 0.9rem;
   border: 1px solid rgba(255, 255, 255, 0.3); /* more visible */
   border-radius: 12px;
-  font-size: 1rem;        /* bigger text */
-  font-weight: 500;       /* slightly bold */
+  font-size: 1rem; /* bigger text */
+  font-weight: 500; /* slightly bold */
   background: rgba(255, 255, 255, 0); /* brighter bg */
-  color: #ffffff;         /* solid white */
+  color: #ffffff; /* solid white */
 }
 
 .form-group input:focus,
@@ -614,10 +614,44 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 /* Detail Rows */
+.detail-row-desc {
+  margin: 1.2rem 0;
+  display: flex;
+  flex-direction: column !important;
+  gap: 0.3rem;
+}
+
+.detail-row-desc label,
+span {
+  font-weight: 600;
+  color: white;
+  font-size: 1.09rem;
+}
+
+.detail-row-desc p {
+  margin: 0;
+  background-color: #0f0c29;
+  color: white;
+  line-height: 1.5;
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+.detail-row-desc h4 {
+  margin: 0;
+  background-color: #0f0c29;
+  color: rgb(255, 0, 200) !important;
+  font-size: 18.4px;
+  line-height: 1.5;
+  padding: 0rem;
+  border-radius: 4px;
+}
+.detail-row-desc button {
+  width: max-content !important;
+}
 .detail-row {
   margin: 1.2rem 0;
   display: flex;
-  flex-direction: column;
+  flex-direction: row !important;
   gap: 0.3rem;
 }
 
@@ -770,8 +804,9 @@ span {
   position: relative !important;
   padding: 0.5rem !important;
   background: green !important;
-  color: ivory;
   font-size: large !important;
+  color: ivory;
+  border-radius: 10px !important;
   width: fit-content !important;
   right: -20% !important;
 }
@@ -1347,6 +1382,7 @@ span {
   border-radius: 10px;
   padding: 1.5rem;
   margin: 1rem 2rem;
+  width: fit-content !important;
 }
 .stats-grid {
   display: grid;
@@ -1401,19 +1437,29 @@ span {
   margin-bottom: 0.5rem !important;
   font-weight: 500 !important;
 }
-.stat-icon{
+.stat-icon {
   color: green !important; /* Sets the tick mark color to green */
   font-size: 3.5rem !important;
   margin-right: 1rem;
-  font-family: 'Arial', sans-serif !important; /* Use a default sans-serif font if necessary */
+  font-family: "Arial", sans-serif !important; /* Use a default sans-serif font if necessary */
   animation: floatIcon 3s ease-in-out infinite;
 }
 .stat-icon-checkmark {
   width: 100px; /* Adjust width */
   height: 100px; /* Adjust height */
-  background-image: url('./checkmark.png'); /* Path to your checkmark image */
+  background-image: url("./checkmark.png"); /* Path to your checkmark image */
   background-size: contain; /* Ensures the image fits within the div */
   background-repeat: no-repeat; /* Prevents image repetition */
+}
+
+.report-icon {
+  position: relative !important;
+  width: 75px; /* Adjust width */
+  height: 80px; /* Adjust height */
+  background-image: url("./report.png"); /* Path to your checkmark image */
+  background-size: contain; /* Ensures the image fits within the div */
+  background-repeat: no-repeat; /* Prevents image repetition */
+  right: -380px !important;
 }
 /* Charts Row */
 .stats-charts-row {
@@ -1680,8 +1726,8 @@ span {
 }
 
 .status-badge.in-progress {
-  background:rgba(255, 250, 240,100) !important;
-  color: #7b1fa2  !important;
+  background: rgba(255, 250, 240, 100) !important;
+  color: #7b1fa2 !important;
   font-size: large !important;
   font-weight: bolder !important;
 }
@@ -1695,7 +1741,6 @@ span {
   background: #e8f5e9;
   color: #388e3c;
 }
-
 
 .task-status-badge {
   padding: 0.2rem 0.5rem;
@@ -2827,7 +2872,17 @@ span {
   cursor: pointer;
   text-decoration: underline;
 }
-
+.pdf-messages p {
+  color: black !important;
+  flex: 1 !important;
+  margin: 0 !important;
+  font-weight: bold !important;
+  border-bottom: 0px solid #f0f0f0 !important;
+  padding-bottom: 0px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
 /* Modal Styles */
 .modal-overlay {
   position: fixed;
@@ -2836,7 +2891,6 @@ span {
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(10px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -3619,12 +3673,14 @@ span {
 /* Button styling */
 .open-task-btn {
   padding: 10px 18px;
-  font-size: 16px;
-  background: #667eea;
-  color: white;
+  font-size: xx-large !important;
+  background: darkorchid;
+  color: white !important;
   border: none;
   border-radius: 6px;
   cursor: pointer;
+  width: 1000px !important;
+  height: 60px !important;
 }
 
 .open-task-btn:hover {

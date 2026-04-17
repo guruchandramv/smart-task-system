@@ -5,6 +5,7 @@ import com.example.taskmanager.model.Task;
 import com.example.taskmanager.model.User;
 import com.example.taskmanager.repository.NotificationRepository;
 
+import java.time.format.DateTimeFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -100,11 +101,30 @@ public class NotificationService {
             task
         );
     }
+    private String formatIfDateTime(String value, DateTimeFormatter formatter) {
+        try {
+            if (value == null) return "N/A";
 
+            // Try parsing ISO format
+            return java.time.LocalDateTime.parse(value)
+                    .format(formatter);
+
+        } catch (Exception e) {
+            // If not a datetime → return as is
+            return value;
+        }
+    }
     // 🔹 TASK UPDATED → notify assigned user
     public void notifyTaskUpdated(Task task, User updatedBy, String field, String oldValue, String newValue) {
 
         if (task.getAssignedUser() == null) return;
+
+        // 🔥 Formatter (12-hour format)
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a");
+
+        // 🔥 Convert values if they are datetime strings
+        oldValue = formatIfDateTime(oldValue, formatter);
+        newValue = formatIfDateTime(newValue, formatter);
 
         createNotification(
             task.getAssignedUser(),
