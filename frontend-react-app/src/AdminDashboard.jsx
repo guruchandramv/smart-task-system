@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from './axiosConfig.js';
+import axios, { API_URL } from './axiosConfig.js';
 import "./AdminDashboard.css";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
@@ -232,10 +232,9 @@ function AdminDashboard() {
   };
 
   const checkBackendStatus = async () => {
-    const MAX_WAIT_MS = 90000;   // 90 s total — Railway cold start can take ~60 s
+    const MAX_WAIT_MS = 60000;   // 60s total — Railway cold start can take ~60 s
     const POLL_INTERVAL = 5000;  // probe every 5 s
     const TIMEOUT_PER_REQ = 9000;
-    const RAILWAY_URL = "https://smart-task-system-production-f5d8.up.railway.app";
 
     setWakeupStatus("waking");
     setBackendStatus("checking");
@@ -257,7 +256,7 @@ function AdminDashboard() {
         // Use /health (returns JSON {status:"UP"}) with NO credentials so CORS
         // preflight never blocks the cold-start ping. Absolute URL bypasses
         // axios baseURL so even a mis-configured instance works.
-        await axios.get(`${RAILWAY_URL}/health`, {
+        await axios.get(`${API_URL}/health`, {
           timeout: TIMEOUT_PER_REQ,
           withCredentials: false,   // no preflight credential dance
           headers: {},              // no custom headers → no preflight at all
