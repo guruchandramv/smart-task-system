@@ -154,25 +154,29 @@ function UserDashboard() {
   }, [assignedTasks]);
 
 
+
   const getTimeAgo = (timestamp) => {
     if (!timestamp) return 'Never';
 
-    const date = new Date(timestamp);
-    date.setHours(date.getHours() + 5);
-    date.setMinutes(date.getMinutes() + 30);
+    // Convert MySQL timestamp format → ISO format
+    const isoTimestamp = timestamp.replace(' ', 'T');
+
+    // Treat as UTC
+    const date = new Date(isoTimestamp + 'Z');
 
     const now = new Date();
     const diffMs = now - date;
+
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
-    
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
-    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
 
-    return formatLocalTime(date);
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} minutes ago`;
+    if (diffHours < 24) return `${diffHours} hours ago`;
+    if (diffDays < 7) return `${diffDays} days ago`;
+
+    return date.toLocaleString('en-IN'); // 🇮🇳 IST format
   };
   const submitMessage = async (taskId) => {
     try {
