@@ -300,7 +300,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   position: relative;
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  width: min-content !important;
+  width: auto !important;
 }
 
 .task-card::before {
@@ -1610,7 +1610,7 @@ span {
   background: #262350;
   color: #333;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.99rem;
 }
 
 .user-tasks-table td {
@@ -3738,4 +3738,284 @@ span {
   color: rgb(255, 0, 200) !important; /* High visibility */
 
   pointer-events: none;
+}
+
+/* ================================================
+   SMART TASK SYSTEM — CHARTS (added April 2026)
+   ================================================ */
+
+.charts-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin: 24px 0 0;
+}
+
+.chart-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 20px 18px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.chart-card:hover {
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.15), 0 8px 32px rgba(0, 0, 0, 0.25);
+}
+
+.chart-title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(148, 163, 184, 0.9);
+  margin: 0;
+  align-self: flex-start;
+}
+
+.chart-canvas-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.chart-canvas-wrap canvas {
+  display: block;
+  max-width: 100%;
+}
+
+/* ---- Donut legend ---- */
+.chart-legend {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legend-label {
+  font-size: 12px;
+  color: rgba(148, 163, 184, 0.85);
+  flex: 1;
+}
+
+.legend-val {
+  font-size: 12px;
+  font-weight: 600;
+  color: #e2e8f0;
+  min-width: 20px;
+  text-align: right;
+}
+
+/* ---- Gauge stats ---- */
+.gauge-stats {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  gap: 8px;
+}
+
+.gauge-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.gauge-stat-val {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.gauge-stat-label {
+  font-size: 10px;
+  color: rgba(148, 163, 184, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 1200px) {
+  .charts-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 700px) {
+  .charts-grid-4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ================================================
+   WAKEUP / COLD-START UI  (added April 2026)
+   ================================================ */
+
+/* ---- Full-screen wakeup screen ---- */
+.wakeup-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 40px 24px;
+  text-align: center;
+  gap: 16px;
+  animation: wakeup-fade-in 0.5s ease;
+}
+
+@keyframes wakeup-fade-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.wakeup-icon {
+  font-size: 52px;
+  animation: wakeup-bounce 1.6s ease-in-out infinite;
+}
+
+@keyframes wakeup-bounce {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-10px); }
+}
+
+.wakeup-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin: 0;
+}
+
+.wakeup-subtitle {
+  font-size: 14px;
+  color: #94a3b8;
+  line-height: 1.7;
+  max-width: 360px;
+  margin: 0;
+}
+
+/* ---- Progress bar ---- */
+.wakeup-bar-track {
+  width: min(360px, 90%);
+  height: 6px;
+  background: rgba(148, 163, 184, 0.15);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.wakeup-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #6366f1, #10b981);
+  transition: width 1s linear;
+}
+
+.wakeup-timer {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0;
+  min-height: 20px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Animated dots ---- */
+.wakeup-dots {
+  display: flex;
+  gap: 7px;
+  margin-top: 4px;
+}
+
+.wakeup-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #6366f1;
+  animation: wakeup-dot 1.2s ease-in-out infinite;
+}
+
+.wakeup-dots span:nth-child(2) { animation-delay: 0.2s; background: #818cf8; }
+.wakeup-dots span:nth-child(3) { animation-delay: 0.4s; background: #10b981; }
+
+@keyframes wakeup-dot {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40%            { transform: scale(1);   opacity: 1; }
+}
+
+/* ---- Failed banner ---- */
+.wakeup-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 16px 24px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: 1px solid;
+  font-size: 14px;
+  animation: wakeup-fade-in 0.3s ease;
+}
+
+.wakeup-banner--failed {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+}
+
+.wakeup-banner-icon {
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.wakeup-banner-body {
+  flex: 1;
+}
+
+.wakeup-banner-body strong {
+  display: block;
+  color: #fecaca;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.wakeup-banner-body p {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.wakeup-retry-btn {
+  flex-shrink: 0;
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  background: rgba(239, 68, 68, 0.12);
+  color: #fca5a5;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+  white-space: nowrap;
+}
+
+.wakeup-retry-btn:hover {
+  background: rgba(239, 68, 68, 0.22);
+  border-color: rgba(239, 68, 68, 0.6);
 }

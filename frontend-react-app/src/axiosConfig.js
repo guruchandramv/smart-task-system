@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = "https://smart-task-system-production-8b1e.up.railway.app";
+const API_URL = "https://smart-task-system-production-f5d8.up.railway.app";
 
 const axiosInstance = axios.create({
   baseURL: API_URL,

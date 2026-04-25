@@ -37,16 +37,24 @@ public class SecurityConfig {
         org.springframework.web.cors.CorsConfiguration configuration =
                 new org.springframework.web.cors.CorsConfiguration();
 
-        configuration.setAllowedOrigins(java.util.Arrays.asList("http://localhost:3000","https://smart-task-system-frontend.netlify.app" ));  // Frontend domain
-        
-        configuration.setAllowedMethods(java.util.Arrays.asList("GET", "POST", "PUT", "DELETE"));  // Allowed methods
-        configuration.setAllowedHeaders(java.util.Arrays.asList("*"));  // Allow all headers
-        configuration.setAllowCredentials(true);  // Allow credentials (cookies)
+        // allowedOriginPatterns supports wildcards and works with allowCredentials=true
+        configuration.setAllowedOriginPatterns(java.util.Arrays.asList(
+            "http://localhost:3000",
+            "http://localhost:*",
+            "https://smart-task-system-frontend.netlify.app",
+            "https://*.netlify.app",
+            "https://smart-task-system-production-f5d8.up.railway.app"
+        ));
+
+        configuration.setAllowedMethods(java.util.Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        configuration.setAllowedHeaders(java.util.Arrays.asList("*"));
+        configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L); // cache preflight for 1 hour
 
         org.springframework.web.cors.UrlBasedCorsConfigurationSource source =
                 new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
-        
-        source.registerCorsConfiguration("/**", configuration);  // Apply CORS to all routes
+
+        source.registerCorsConfiguration("/**", configuration);
 
         return source;
     }

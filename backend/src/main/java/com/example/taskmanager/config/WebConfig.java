@@ -12,10 +12,17 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:3000", "https://smart-task-system-frontend.netlify.app")
-                .allowedMethods("*")
+                .allowedOriginPatterns(
+                    "http://localhost:3000",
+                    "http://localhost:*",
+                    "https://smart-task-system-frontend.netlify.app",
+                    "https://*.netlify.app",
+                    "https://smart-task-system-production-f5d8.up.railway.app"
+                )
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
                 .allowedHeaders("*")
-                .allowCredentials(true);
+                .allowCredentials(true)
+                .maxAge(3600);
     }
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {

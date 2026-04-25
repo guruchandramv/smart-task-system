@@ -24,7 +24,7 @@
   cursor: pointer;
   transition: all 0.3s;
   border-left: 4px solid #ccc;
-  width: fit-content !important;
+  width: auto !important;
 }
 
 .task-card:hover {

@@ -15,6 +15,12 @@ function AdminDashboard() {
   const navigate = useNavigate();
   const canvasRef = useRef(null);
 
+  // ============== CHART REFS ==============
+  const donutCanvasRef = useRef(null);
+  const priorityCanvasRef = useRef(null);
+  const workloadCanvasRef = useRef(null);
+  const gaugeCanvasRef = useRef(null);
+
   // ============== STATE DECLARATIONS ==============
   const [unassignedTasks, setUnassignedTasks] = useState([]);
   const [assignedTasks, setAssignedTasks] = useState([]);
@@ -55,6 +61,8 @@ function AdminDashboard() {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [activeTab, setActiveTab] = useState("unassigned");
   const [backendStatus, setBackendStatus] = useState("checking");
+  const [wakeupStatus, setWakeupStatus] = useState("idle"); // idle | waking | online | failed
+  const [wakeupCountdown, setWakeupCountdown] = useState(0);
   const [showStatistics, setShowStatistics] = useState(true);
 
   const [hoveredUser, setHoveredUser] = useState(null);
@@ -224,18 +232,59 @@ function AdminDashboard() {
   };
 
   const checkBackendStatus = async () => {
-    try {
-      const response = await axios.get("/", { timeout: 5000 });
-      setBackendStatus("online");
-      fetchAllData();
-      fetchUnreadCount();
-      fetchAllUserStatuses();
-    } catch (error) {
-      setBackendStatus("offline");
-      setError("Cannot connect to backend server");
-      setErrorDetails(`Make sure backend is running`);
-      setLoading(false);
+    const MAX_WAIT_MS = 90000;   // 90 s total — Railway cold start can take ~60 s
+    const POLL_INTERVAL = 5000;  // probe every 5 s
+    const TIMEOUT_PER_REQ = 9000;
+    const RAILWAY_URL = "https://smart-task-system-production-f5d8.up.railway.app";
+
+    setWakeupStatus("waking");
+    setBackendStatus("checking");
+    setError("");
+
+    const started = Date.now();
+
+    // Countdown ticker — updates every second so the user sees it decrement
+    const tickInterval = setInterval(() => {
+      const elapsed = Date.now() - started;
+      const remaining = Math.max(0, Math.ceil((MAX_WAIT_MS - elapsed) / 1000));
+      setWakeupCountdown(remaining);
+    }, 1000);
+
+    const cleanup = () => clearInterval(tickInterval);
+
+    while (Date.now() - started < MAX_WAIT_MS) {
+      try {
+        // Use /health (returns JSON {status:"UP"}) with NO credentials so CORS
+        // preflight never blocks the cold-start ping. Absolute URL bypasses
+        // axios baseURL so even a mis-configured instance works.
+        await axios.get(`${RAILWAY_URL}/health`, {
+          timeout: TIMEOUT_PER_REQ,
+          withCredentials: false,   // no preflight credential dance
+          headers: {},              // no custom headers → no preflight at all
+        });
+        // ✅ Server is awake
+        cleanup();
+        setWakeupStatus("online");
+        setBackendStatus("online");
+        setWakeupCountdown(0);
+        fetchAllData();
+        fetchUnreadCount();
+        fetchAllUserStatuses();
+        return;
+      } catch (err) {
+        // Still waking — wait then retry
+        await new Promise(res => setTimeout(res, POLL_INTERVAL));
+      }
     }
+
+    // ❌ Gave up after MAX_WAIT_MS
+    cleanup();
+    setWakeupStatus("failed");
+    setBackendStatus("offline");
+    setWakeupCountdown(0);
+    setError("Backend did not respond after 90 seconds");
+    setErrorDetails("Railway may be deploying. Wait a minute then press Retry.");
+    setLoading(false);
   };
   const fetchAllData = async () => {
     setLoading(true);
@@ -1123,6 +1172,287 @@ const handleProfileClick = () => {
     calculateStatistics();
   }, [unassignedTasks, assignedTasks, users, userStatuses]);
 
+  // ============== CHART: STATUS DONUT ==============
+  useEffect(() => {
+    const canvas = donutCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    const size = 220;
+    canvas.width = size * dpr;
+    canvas.height = size * dpr;
+    canvas.style.width = size + 'px';
+    canvas.style.height = size + 'px';
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, size, size);
+
+    const cx = size / 2, cy = size / 2, outerR = 88, innerR = 52;
+    const statusColors = { NEW: '#6366f1', IN_PROGRESS: '#f59e0b', ON_HOLD: '#64748b', COMPLETED: '#10b981' };
+    const statusLabels = { NEW: 'New', IN_PROGRESS: 'In Progress', ON_HOLD: 'On Hold', COMPLETED: 'Completed' };
+    const data = statistics.tasksByStatus;
+    const total = Object.values(data).reduce((a, b) => a + b, 0);
+
+    if (total === 0) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, outerR, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(148,163,184,0.2)';
+      ctx.lineWidth = outerR - innerR;
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(148,163,184,0.5)';
+      ctx.font = '13px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('No data', cx, cy + 5);
+      return;
+    }
+
+    let startAngle = -Math.PI / 2;
+    const slices = Object.entries(data);
+    slices.forEach(([key, val]) => {
+      if (val === 0) return;
+      const slice = (val / total) * Math.PI * 2;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, outerR, startAngle, startAngle + slice);
+      ctx.closePath();
+      ctx.fillStyle = statusColors[key] || '#94a3b8';
+      ctx.fill();
+      startAngle += slice;
+    });
+
+    // Donut hole
+    ctx.beginPath();
+    ctx.arc(cx, cy, innerR, 0, Math.PI * 2);
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--chart-bg') || '#1e293b';
+    ctx.fill();
+
+    // Center label
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = 'bold 22px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(total, cx, cy - 8);
+    ctx.font = '11px sans-serif';
+    ctx.fillText('tasks', cx, cy + 10);
+
+    // Gap lines between slices
+    startAngle = -Math.PI / 2;
+    slices.forEach(([key, val]) => {
+      if (val === 0) return;
+      const slice = (val / total) * Math.PI * 2;
+      ctx.beginPath();
+      ctx.moveTo(cx + innerR * Math.cos(startAngle), cy + innerR * Math.sin(startAngle));
+      ctx.lineTo(cx + outerR * Math.cos(startAngle), cy + outerR * Math.sin(startAngle));
+      ctx.strokeStyle = 'rgba(0,0,0,0.25)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      startAngle += slice;
+    });
+  }, [statistics.tasksByStatus]);
+
+  // ============== CHART: PRIORITY HORIZONTAL BAR ==============
+  useEffect(() => {
+    const canvas = priorityCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    const W = 320, H = 180;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, W, H);
+
+    const priorities = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'];
+    const colors = { CRITICAL: '#ef4444', HIGH: '#f97316', MEDIUM: '#f59e0b', LOW: '#22c55e' };
+    const data = statistics.tasksByPriority;
+    const maxVal = Math.max(...priorities.map(p => data[p] || 0), 1);
+    const barH = 28, gap = 14, leftPad = 74, rightPad = 44, topPad = 14;
+
+    priorities.forEach((priority, i) => {
+      const val = data[priority] || 0;
+      const barW = ((W - leftPad - rightPad) * val) / maxVal;
+      const y = topPad + i * (barH + gap);
+
+      // Label
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '12px sans-serif';
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(priority.charAt(0) + priority.slice(1).toLowerCase(), leftPad - 8, y + barH / 2);
+
+      // Track
+      ctx.fillStyle = 'rgba(148,163,184,0.12)';
+      ctx.beginPath();
+      ctx.roundRect(leftPad, y, W - leftPad - rightPad, barH, 6);
+      ctx.fill();
+
+      // Bar
+      if (val > 0) {
+        ctx.fillStyle = colors[priority];
+        ctx.beginPath();
+        ctx.roundRect(leftPad, y, barW, barH, 6);
+        ctx.fill();
+      }
+
+      // Value
+      ctx.fillStyle = val > 0 ? '#f1f5f9' : '#64748b';
+      ctx.font = 'bold 12px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(val, leftPad + barW + 6, y + barH / 2);
+    });
+  }, [statistics.tasksByPriority]);
+
+  // ============== CHART: WORKLOAD BAR (per user) ==============
+  useEffect(() => {
+    const canvas = workloadCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    const users = statistics.tasksPerUser.slice(0, 6);
+    const W = 320, H = 180;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, W, H);
+
+    if (users.length === 0) {
+      ctx.fillStyle = '#64748b';
+      ctx.font = '13px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('No user data', W / 2, H / 2);
+      return;
+    }
+
+    const maxVal = Math.max(...users.map(u => u.totalTasks), 1);
+    const bottomPad = 36, topPad = 14, leftPad = 14, rightPad = 14;
+    const chartH = H - topPad - bottomPad;
+    const barW = Math.floor((W - leftPad - rightPad) / users.length) - 8;
+    const groupW = (W - leftPad - rightPad) / users.length;
+
+    users.forEach((user, i) => {
+      const x = leftPad + i * groupW + (groupW - barW) / 2;
+      const segments = [
+        { val: user.inProgress, color: '#f59e0b' },
+        { val: user.onHold, color: '#64748b' },
+        { val: user.completed, color: '#10b981' },
+      ];
+
+      let stackY = topPad + chartH;
+      const totalUserTasks = user.totalTasks || 0;
+
+      segments.forEach(seg => {
+        if (seg.val <= 0) return;
+        const segH = (seg.val / maxVal) * chartH;
+        stackY -= segH;
+        ctx.fillStyle = seg.color;
+        ctx.beginPath();
+        ctx.roundRect(x, stackY, barW, segH, stackY === topPad + chartH - segH ? [0, 0, 4, 4] : 0);
+        ctx.fill();
+      });
+
+      // Username truncated
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '11px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      const name = user.username.length > 7 ? user.username.slice(0, 6) + '…' : user.username;
+      ctx.fillText(name, x + barW / 2, H - bottomPad + 6);
+
+      // Total count
+      if (totalUserTasks > 0) {
+        ctx.fillStyle = '#e2e8f0';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textBaseline = 'bottom';
+        ctx.fillText(totalUserTasks, x + barW / 2, stackY - 2);
+      }
+    });
+
+    // Legend
+    const legend = [{ label: 'In Progress', color: '#f59e0b' }, { label: 'On Hold', color: '#64748b' }, { label: 'Completed', color: '#10b981' }];
+    legend.forEach((item, i) => {
+      const lx = leftPad + i * 104;
+      ctx.fillStyle = item.color;
+      ctx.fillRect(lx, H - 14, 10, 10);
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(item.label, lx + 14, H - 9);
+    });
+  }, [statistics.tasksPerUser]);
+
+  // ============== CHART: COMPLETION GAUGE ==============
+  useEffect(() => {
+    const canvas = gaugeCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    const W = 220, H = 140;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, W, H);
+
+    const total = statistics.totalTasks || 0;
+    const completed = statistics.completedTasks || 0;
+    const pct = total === 0 ? 0 : completed / total;
+
+    const cx = W / 2, cy = 115, radius = 88;
+    const startAngle = Math.PI, endAngle = Math.PI * 2;
+
+    // Track arc
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, startAngle, endAngle);
+    ctx.strokeStyle = 'rgba(148,163,184,0.15)';
+    ctx.lineWidth = 18;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+
+    // Value arc
+    if (pct > 0) {
+      const valueEnd = startAngle + pct * Math.PI;
+      const gradient = ctx.createLinearGradient(cx - radius, cy, cx + radius, cy);
+      gradient.addColorStop(0, '#6366f1');
+      gradient.addColorStop(1, '#10b981');
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, startAngle, valueEnd);
+      ctx.strokeStyle = gradient;
+      ctx.lineWidth = 18;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+    }
+
+    // Percentage text
+    ctx.fillStyle = '#f1f5f9';
+    ctx.font = 'bold 28px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(Math.round(pct * 100) + '%', cx, cy - 16);
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '12px sans-serif';
+    ctx.fillText('completion rate', cx, cy + 8);
+
+    // Min/Max labels
+    ctx.fillStyle = '#64748b';
+    ctx.font = '11px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('0%', cx - radius - 4, cy + 20);
+    ctx.textAlign = 'right';
+    ctx.fillText('100%', cx + radius + 4, cy + 20);
+
+    // Sub label
+    ctx.fillStyle = '#64748b';
+    ctx.font = '11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(completed + ' of ' + total + ' tasks done', cx, cy + 26);
+  }, [statistics.totalTasks, statistics.completedTasks]);
+
   useEffect(() => {
     const handleClickOutside = () => closeContextMenu();
     document.addEventListener("click", handleClickOutside);
@@ -1228,9 +1558,27 @@ const handleProfileClick = () => {
     </div>
   </div>
 </header>
-        <div className="loading-container">
-          <div className="spinner"></div>
-          <p>Connecting to backend server...</p>
+        <div className="wakeup-container">
+          <div className="wakeup-icon">🚀</div>
+          <h2 className="wakeup-title">Starting backend server…</h2>
+          <p className="wakeup-subtitle">
+            Railway free tier spins down after inactivity.<br />
+            Waking it up — this takes up to 60 seconds.
+          </p>
+          <div className="wakeup-bar-track">
+            <div
+              className="wakeup-bar-fill"
+              style={{ width: `${Math.max(4, 100 - (wakeupCountdown / 90) * 100)}%` }}
+            ></div>
+          </div>
+          <p className="wakeup-timer">
+            {wakeupCountdown > 0
+              ? `Retrying automatically… ${wakeupCountdown}s`
+              : "Connecting…"}
+          </p>
+          <div className="wakeup-dots">
+            <span></span><span></span><span></span>
+          </div>
         </div>
       </div>
     );
@@ -1320,11 +1668,16 @@ const handleProfileClick = () => {
     </div>
   </div>
 </header>
-      {backendStatus === "offline" && (
-        <div className="error-banner">
-          <strong>⚠️ Backend Server Offline</strong>
-          <p>Please start the backend server</p>
-          <button onClick={checkBackendStatus} className="retry-btn">Retry Connection</button>
+      {backendStatus === "offline" && wakeupStatus === "failed" && (
+        <div className="wakeup-banner wakeup-banner--failed">
+          <div className="wakeup-banner-icon">⚠️</div>
+          <div className="wakeup-banner-body">
+            <strong>Backend did not respond</strong>
+            <p>Railway may still be deploying. Wait 30 seconds then retry.</p>
+          </div>
+          <button onClick={checkBackendStatus} className="wakeup-retry-btn">
+            🔄 Retry
+          </button>
         </div>
       )}
 
@@ -1374,35 +1727,69 @@ const handleProfileClick = () => {
             </div>
           </div>
 
-          <div className="stats-charts-row">
-            <div className="chart-card">
-              <h3>Tasks by Priority</h3>
-              <div className="priority-bars">
-                {Object.entries(statistics.tasksByPriority).map(([priority, count]) => (
-                  <div key={priority} className="priority-bar-item">
-                    <span className="priority-label">{priority}</span>
-                    <div className="bar-container">
-                      <div className={`bar ${priority.toLowerCase()}-bar`} style={{ width: `${(count / (statistics.totalTasks || 1)) * 100}%` }}>
-                        {count}
-                      </div>
-                    </div>
+          {/* ============ CHARTS ROW ============ */}
+          <div className="stats-charts-row charts-grid-4">
+
+            {/* 1. STATUS DONUT */}
+            <div className="chart-card chart-card-donut">
+              <h3 className="chart-title">Task Status</h3>
+              <div className="chart-canvas-wrap">
+                <canvas ref={donutCanvasRef}></canvas>
+              </div>
+              <div className="chart-legend">
+                {[
+                  { key: 'NEW', label: 'New', color: '#6366f1' },
+                  { key: 'IN_PROGRESS', label: 'In Progress', color: '#f59e0b' },
+                  { key: 'ON_HOLD', label: 'On Hold', color: '#64748b' },
+                  { key: 'COMPLETED', label: 'Completed', color: '#10b981' },
+                ].map(item => (
+                  <div key={item.key} className="legend-item">
+                    <span className="legend-dot" style={{ background: item.color }}></span>
+                    <span className="legend-label">{item.label}</span>
+                    <span className="legend-val">{statistics.tasksByStatus[item.key] || 0}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="chart-card">
-              <h3>Tasks by Status</h3>
-              <div className="status-chart">
-                {Object.entries(statistics.tasksByStatus).map(([status, count]) => (
-                  <div key={status} className="status-item">
-                    <span className={`status-dot ${status.toLowerCase().replace('_', '-')}`}></span>
-                    <span className="status-label">{status.replace('_', ' ')}</span>
-                    <span className="status-count">{count}</span>
-                  </div>
-                ))}
+            {/* 2. PRIORITY HORIZONTAL BAR */}
+            <div className="chart-card chart-card-priority">
+              <h3 className="chart-title">Tasks by Priority</h3>
+              <div className="chart-canvas-wrap">
+                <canvas ref={priorityCanvasRef}></canvas>
               </div>
             </div>
+
+            {/* 3. WORKLOAD STACKED BAR */}
+            <div className="chart-card chart-card-workload">
+              <h3 className="chart-title">User Workload</h3>
+              <div className="chart-canvas-wrap">
+                <canvas ref={workloadCanvasRef}></canvas>
+              </div>
+            </div>
+
+            {/* 4. COMPLETION GAUGE */}
+            <div className="chart-card chart-card-gauge">
+              <h3 className="chart-title">Overall Progress</h3>
+              <div className="chart-canvas-wrap">
+                <canvas ref={gaugeCanvasRef}></canvas>
+              </div>
+              <div className="gauge-stats">
+                <div className="gauge-stat">
+                  <span className="gauge-stat-val" style={{ color: '#10b981' }}>{statistics.completedTasks}</span>
+                  <span className="gauge-stat-label">Done</span>
+                </div>
+                <div className="gauge-stat">
+                  <span className="gauge-stat-val" style={{ color: '#f59e0b' }}>{statistics.pendingTasks}</span>
+                  <span className="gauge-stat-label">Pending</span>
+                </div>
+                <div className="gauge-stat">
+                  <span className="gauge-stat-val" style={{ color: '#ef4444' }}>{statistics.overdueTasks}</span>
+                  <span className="gauge-stat-label">Overdue</span>
+                </div>
+              </div>
+            </div>
+
           </div>
 
           {/* REMOVED POLLING AS IT IS REPLACED BY WEBSOCKET REALTIME UPDATING
@@ -1512,9 +1899,9 @@ const handleProfileClick = () => {
                 <label>Search:</label>
                 <input type="text" name="search" value={filters.search} onChange={handleFilterChange} placeholder="Search by title or description" className="search-input" />
               </div>
-              <div className="filter-group">
+              <div className="form-group">
                 <label>Status:</label>
-                <select name="status" value={filters.status} onChange={handleFilterChange}>
+                <select className="custom-dropdown" value={filters.status} onChange={handleFilterChange}>
                   <option value="">All Status</option>
                   <option value="NEW">New</option>
                   <option value="IN_PROGRESS">In Progress</option>
@@ -1522,9 +1909,9 @@ const handleProfileClick = () => {
                   <option value="COMPLETED">Completed</option>
                 </select>
               </div>
-              <div className="filter-group">
+              <div className="form-group">
                 <label>Priority:</label>
-                <select name="priority" value={filters.priority} onChange={handleFilterChange}>
+                <select className="custom-dropdown" value={filters.priority} onChange={handleFilterChange}>
                   <option value="">All Priorities</option>
                   <option value="LOW">Low</option>
                   <option value="MEDIUM">Medium</option>
@@ -1676,7 +2063,7 @@ const handleProfileClick = () => {
                 <div className="form-row">
                   <div className="form-group">
                     <label>Priority:</label>
-                    <select value={newTask.priority} onChange={(e) => setNewTask({...newTask, priority: e.target.value})}>
+                    <select  className="custom-dropdown" value={newTask.priority} onChange={(e) => setNewTask({...newTask, priority: e.target.value})}>
                       <option value="LOW">Low</option>
                       <option value="MEDIUM">Medium</option>
                       <option value="HIGH">High</option>
