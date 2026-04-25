@@ -1,5 +1,5 @@
 # Environment & Secrets ###
-application-local.properties # Ignore local secrets
+!application-local.properties # Ignore local secrets
 
 # Ignore environment files
 .env
