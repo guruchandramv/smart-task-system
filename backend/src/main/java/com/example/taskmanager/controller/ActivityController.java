@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/activity")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = {"http://localhost:3000","https://smart-task-system-frontend.netlify.app"})
 public class ActivityController {
 
     @Autowired
@@ -79,7 +79,7 @@ public class ActivityController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
-   
+
     // ----------------- All Users Status -----------------
     @GetMapping("/all-status")
     public ResponseEntity<?> getAllUsersStatus() {

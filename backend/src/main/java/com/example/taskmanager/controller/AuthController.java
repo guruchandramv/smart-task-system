@@ -14,7 +14,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = {"http://localhost:3000","https://smart-task-system-frontend.netlify.app"})
 public class AuthController {
     @Autowired
     private UserRepository userRepository;
@@ -80,20 +80,20 @@ public class AuthController {
         String email = data.get("email");
         String oldPassword = data.get("oldPassword");
         String newPassword = data.get("newPassword");
-    
+
         User user = userRepository.findByEmail(email).orElse(null);
-    
+
         if (user == null) {
             return ResponseEntity.badRequest().body("User not found");
         }
-    
+
         if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
             return ResponseEntity.status(401).body("Incorrect old password");
         }
-    
+
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
-    
+
         return ResponseEntity.ok("Password updated successfully");
     }
 }

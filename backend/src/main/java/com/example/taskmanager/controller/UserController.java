@@ -11,7 +11,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users")  // Changed from "/api" to "/api/users" for better REST practice
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = {"http://localhost:3000","https://smart-task-system-frontend.netlify.app"})
 public class UserController {
 
     @Autowired
@@ -199,7 +199,7 @@ public class UserController {
     public ResponseEntity<String> getUserRole(@PathVariable Long id) {
         try {
             Optional<User> userOptional = userRepository.findById(id);
-        
+
             if (userOptional.isPresent()) {
                 User user = userOptional.get();
                 return ResponseEntity.ok(user.getRole());  // Return the user's role

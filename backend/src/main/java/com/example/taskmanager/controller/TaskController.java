@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/tasks")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = {"http://localhost:3000","https://smart-task-system-frontend.netlify.app"})
 public class TaskController {
     @Autowired
     private NotificationService notificationService;
