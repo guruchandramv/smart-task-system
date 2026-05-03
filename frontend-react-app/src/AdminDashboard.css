@@ -1469,18 +1469,6 @@ span {
   margin-bottom: 2rem;
 }
 
-.chart-card {
-  background: #f8f9fa;
-  border-radius: 8px;
-  padding: 1.5rem;
-}
-
-.chart-card h3 {
-  margin: 0 0 1rem 0;
-  color: #333;
-  font-size: 1.1rem;
-}
-
 /* Priority Bars */
 .priority-bars {
   display: flex;
@@ -1583,44 +1571,6 @@ span {
 .status-item .status-count {
   font-weight: bold;
   color: #666;
-}
-
-/* Tasks Per User Table */
-.user-tasks-table {
-  background: #262350;
-  border-radius: 8px;
-  padding: 1.5rem;
-  overflow-x: auto;
-}
-
-.user-tasks-table h3 {
-  margin: 0 0 1rem 0;
-  color: #333;
-  font-size: 1.1rem;
-}
-
-.user-tasks-table table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.user-tasks-table th {
-  text-align: left;
-  padding: 0.8rem;
-  background: #262350;
-  color: #333;
-  font-weight: 600;
-  font-size: 0.99rem;
-}
-
-.user-tasks-table td {
-  padding: 0.8rem;
-  border-bottom: 1px solid #e0e0e0;
-  color: #666;
-}
-
-.user-tasks-table tr:hover td {
-  background: #262350;
 }
 
 .text-center {
@@ -1800,7 +1750,47 @@ span {
 .toggle-stats-btn:hover {
   opacity: 0.9;
 }
+.user-tasks-table {
+  background: rgba(25, 20, 45, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 24px;
+  padding: 1.5rem;
+  overflow-x: auto;
+  border: 1px solid rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+.user-tasks-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.user-tasks-table h3 {
+  color: white;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+.user-tasks-table th {
+  text-align: justify !important;
+  padding: 1.35rem;
+  background: #262350;
+  color: whitesmoke;
+  font-weight: 600;
+  font-size: 1.15rem;
+}
+.user-tasks-table td {
+  padding: 0.8rem;
+  color: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid rgba(102, 126, 234, 0.1);
+}
 
+.user-tasks-table tr:hover td {
+  background: rgba(102, 126, 234, 0.1);
+}
+.user-tasks-table th:last-child,
+.user-tasks-table td:last-child {
+  text-align: center !important;
+}
 /* Responsive */
 @media (max-width: 1024px) {
   .stats-charts-row {
@@ -2084,6 +2074,7 @@ span {
 .user-tasks-table td:nth-child(4) {
   font-size: 0.9rem;
 }
+
 .inactive-badge {
   font-size: 0.7rem;
   color: #999;
@@ -2350,27 +2341,6 @@ span {
   margin-bottom: 2rem;
 }
 
-.chart-card {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border-radius: 24px;
-  padding: 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
-}
-
-.chart-card:hover {
-  border-color: rgba(102, 126, 234, 0.5);
-  transform: translateY(-2px);
-}
-
-.chart-card h3 {
-  color: white;
-  font-size: 1.2rem;
-  margin-bottom: 1.5rem;
-  font-weight: 600;
-}
-
 /* Priority Bars */
 .priority-bars {
   display: flex;
@@ -2509,48 +2479,6 @@ span {
   50% {
     opacity: 0.5;
   }
-}
-
-/* User Tasks Table */
-.user-tasks-table {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border-radius: 24px;
-  padding: 1.5rem;
-  overflow-x: auto;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.user-tasks-table h3 {
-  color: white;
-  font-size: 1.2rem;
-  margin-bottom: 1rem;
-  font-weight: 600;
-}
-
-.user-tasks-table table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.user-tasks-table th {
-  text-align: left;
-  padding: 1rem;
-  color: rgba(255, 255, 255, 0.7);
-  font-weight: 600;
-  font-size: 0.85rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.user-tasks-table td {
-  padding: 1rem;
-  color: rgba(255, 255, 255, 0.9);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  transition: all 0.3s ease;
-}
-
-.user-tasks-table tr:hover td {
-  background: rgba(102, 126, 234, 0.1);
 }
 
 /* Online Indicator */
@@ -3188,30 +3116,6 @@ span {
   margin-bottom: 2rem;
 }
 
-.chart-card {
-  background: rgba(25, 20, 45, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 24px;
-  padding: 1.5rem;
-  border: 1px solid rgba(102, 126, 234, 0.3);
-  transition: all 0.3s ease;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-}
-
-.chart-card:hover {
-  border-color: rgba(102, 126, 234, 0.8);
-  transform: translateY(-2px);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
-}
-
-.chart-card h3 {
-  color: white;
-  font-size: 1.2rem;
-  margin-bottom: 1.5rem;
-  font-weight: 600;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-}
-
 /* Priority Bars */
 .priority-bars {
   display: flex;
@@ -3484,41 +3388,6 @@ span {
   color: rgba(255, 255, 255, 0.4);
 }
 
-/* User Tasks Table */
-.user-tasks-table {
-  background: rgba(25, 20, 45, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 24px;
-  padding: 1.5rem;
-  overflow-x: auto;
-  border: 1px solid rgba(102, 126, 234, 0.3);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.user-tasks-table h3 {
-  color: white;
-  font-size: 1.2rem;
-  margin-bottom: 1rem;
-  font-weight: 600;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-.user-tasks-table th {
-  color: rgba(255, 255, 255, 0.9);
-  font-weight: 600;
-  font-size: 0.85rem;
-  border-bottom: 1px solid rgba(102, 126, 234, 0.3);
-}
-
-.user-tasks-table td {
-  color: rgba(255, 255, 255, 0.9);
-  border-bottom: 1px solid rgba(102, 126, 234, 0.1);
-}
-
-.user-tasks-table tr:hover td {
-  background: rgba(102, 126, 234, 0.1);
-}
-
 .text-muted {
   color: rgba(255, 255, 255, 0.6) !important;
 }
@@ -3763,17 +3632,12 @@ span {
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.chart-card:hover {
-  border-color: rgba(99, 102, 241, 0.4);
-  box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.15), 0 8px 32px rgba(0, 0, 0, 0.25);
-}
-
 .chart-title {
-  font-size: 13px;
+  font-size: 25px;
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: rgba(148, 163, 184, 0.9);
+  color: whitesmoke !important;
   margin: 0;
   align-self: flex-start;
 }
@@ -3812,13 +3676,13 @@ span {
 }
 
 .legend-label {
-  font-size: 12px;
+  font-size: 18px;
   color: rgba(148, 163, 184, 0.85);
   flex: 1;
 }
 
 .legend-val {
-  font-size: 12px;
+  font-size: 24px;
   font-weight: 600;
   color: #e2e8f0;
   min-width: 20px;
@@ -3841,13 +3705,13 @@ span {
 }
 
 .gauge-stat-val {
-  font-size: 18px;
+  font-size: 24px;
   font-weight: 700;
   line-height: 1;
 }
 
 .gauge-stat-label {
-  font-size: 10px;
+  font-size: 18px;
   color: rgba(148, 163, 184, 0.7);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -3884,8 +3748,14 @@ span {
 }
 
 @keyframes wakeup-fade-in {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .wakeup-icon {
@@ -3894,8 +3764,13 @@ span {
 }
 
 @keyframes wakeup-bounce {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(-10px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 .wakeup-title {
@@ -3952,12 +3827,26 @@ span {
   animation: wakeup-dot 1.2s ease-in-out infinite;
 }
 
-.wakeup-dots span:nth-child(2) { animation-delay: 0.2s; background: #818cf8; }
-.wakeup-dots span:nth-child(3) { animation-delay: 0.4s; background: #10b981; }
+.wakeup-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+  background: #818cf8;
+}
+.wakeup-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+  background: #10b981;
+}
 
 @keyframes wakeup-dot {
-  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
-  40%            { transform: scale(1);   opacity: 1; }
+  0%,
+  80%,
+  100% {
+    transform: scale(0.6);
+    opacity: 0.4;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* ---- Failed banner ---- */

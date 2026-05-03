@@ -167,7 +167,7 @@ function AdminDashboard() {
     };
     return date.toLocaleString('en-IN', options);
   };
-  
+
   const getTimeAgo = (timestamp) => {
     if (!timestamp) return 'Never';
 
@@ -1191,7 +1191,6 @@ const handleProfileClick = () => {
 
     const cx = size / 2, cy = size / 2, outerR = 88, innerR = 52;
     const statusColors = { NEW: '#6366f1', IN_PROGRESS: '#f59e0b', ON_HOLD: '#64748b', COMPLETED: '#10b981' };
-    const statusLabels = { NEW: 'New', IN_PROGRESS: 'In Progress', ON_HOLD: 'On Hold', COMPLETED: 'Completed' };
     const data = statistics.tasksByStatus;
     const total = Object.values(data).reduce((a, b) => a + b, 0);
 
@@ -1202,7 +1201,7 @@ const handleProfileClick = () => {
       ctx.lineWidth = outerR - innerR;
       ctx.stroke();
       ctx.fillStyle = 'rgba(148,163,184,0.5)';
-      ctx.font = '13px sans-serif';
+      ctx.font = '13px Arial';
       ctx.textAlign = 'center';
       ctx.fillText('No data', cx, cy + 5);
       return;
@@ -1229,12 +1228,12 @@ const handleProfileClick = () => {
     ctx.fill();
 
     // Center label
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = 'bold 22px sans-serif';
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 30px Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(total, cx, cy - 8);
-    ctx.font = '11px sans-serif';
+    ctx.font = '24px Arial';
     ctx.fillText('tasks', cx, cy + 10);
 
     // Gap lines between slices
@@ -1258,7 +1257,7 @@ const handleProfileClick = () => {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     const dpr = window.devicePixelRatio || 1;
-    const W = 320, H = 180;
+    const W = 360, H = 180;
     canvas.width = W * dpr;
     canvas.height = H * dpr;
     canvas.style.width = W + 'px';
@@ -1266,8 +1265,8 @@ const handleProfileClick = () => {
     ctx.scale(dpr, dpr);
     ctx.clearRect(0, 0, W, H);
 
-    const priorities = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'];
-    const colors = { CRITICAL: '#ef4444', HIGH: '#f97316', MEDIUM: '#f59e0b', LOW: '#22c55e' };
+    const priorities = ['LOW','MEDIUM','HIGH','CRITICAL'];
+    const colors = { LOW: '#22c55e',MEDIUM: '#f59e0b',HIGH: '#f97316',CRITICAL: '#ef4444' };
     const data = statistics.tasksByPriority;
     const maxVal = Math.max(...priorities.map(p => data[p] || 0), 1);
     const barH = 28, gap = 14, leftPad = 74, rightPad = 44, topPad = 14;
@@ -1278,8 +1277,8 @@ const handleProfileClick = () => {
       const y = topPad + i * (barH + gap);
 
       // Label
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = '12px sans-serif';
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '19px Arial';
       ctx.textAlign = 'right';
       ctx.textBaseline = 'middle';
       ctx.fillText(priority.charAt(0) + priority.slice(1).toLowerCase(), leftPad - 8, y + barH / 2);
@@ -1299,21 +1298,43 @@ const handleProfileClick = () => {
       }
 
       // Value
-      ctx.fillStyle = val > 0 ? '#f1f5f9' : '#64748b';
-      ctx.font = 'bold 12px sans-serif';
+      ctx.fillStyle = '#f1f5f9';
+      ctx.font = 'bold 22px Arial';
+      ctx.textBaseline = 'middle';
+      const textX = val > 0 ? leftPad + barW + 6  : W - rightPad + 6;
       ctx.textAlign = 'left';
-      ctx.fillText(val, leftPad + barW + 6, y + barH / 2);
+      ctx.fillText(val, textX, y + barH / 2);
     });
   }, [statistics.tasksByPriority]);
 
   // ============== CHART: WORKLOAD BAR (per user) ==============
+  function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+    const words = text.split(' ');
+    let line = '';
+
+    for (let n = 0; n < words.length; n++) {
+      const testLine = line + words[n] + ' ';
+      const width = ctx.measureText(testLine).width;
+
+      if (width > maxWidth && n > 0) {
+        ctx.fillText(line, x, y);
+        line = words[n] + ' ';
+        y += lineHeight;
+      } else {
+        line = testLine;
+      }
+    }
+    ctx.fillText(line, x, y);
+  }
   useEffect(() => {
     const canvas = workloadCanvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     const dpr = window.devicePixelRatio || 1;
-    const users = statistics.tasksPerUser.slice(0, 6);
-    const W = 320, H = 180;
+    // console.log("users:", statistics.tasksPerUser);
+    // console.log("adminUserId:", adminUserId, typeof adminUserId);
+    const users = statistics.tasksPerUser.filter(u => String(u.userId) !== String(adminUserId)).slice(0, 6);
+    const W = 420, H = 280;
     canvas.width = W * dpr;
     canvas.height = H * dpr;
     canvas.style.width = W + 'px';
@@ -1322,16 +1343,16 @@ const handleProfileClick = () => {
     ctx.clearRect(0, 0, W, H);
 
     if (users.length === 0) {
-      ctx.fillStyle = '#64748b';
-      ctx.font = '13px sans-serif';
+      ctx.fillStyle = '#FF0000';
+      ctx.font = '22px Arial';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText('No user data', W / 2, H / 2);
+      ctx.fillText('NO USER FOUND!', W / 2, H / 2);
       return;
     }
 
     const maxVal = Math.max(...users.map(u => u.totalTasks), 1);
-    const bottomPad = 36, topPad = 14, leftPad = 14, rightPad = 14;
+    const bottomPad = 90, topPad = 14, leftPad = 14, rightPad = 54;
     const chartH = H - topPad - bottomPad;
     const barW = Math.floor((W - leftPad - rightPad) / users.length) - 8;
     const groupW = (W - leftPad - rightPad) / users.length;
@@ -1358,33 +1379,43 @@ const handleProfileClick = () => {
       });
 
       // Username truncated
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = '11px sans-serif';
+      ctx.fillStyle = '#CF9FFF';
+      ctx.font = '22px Arial';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
       const name = user.username.length > 7 ? user.username.slice(0, 6) + '…' : user.username;
-      ctx.fillText(name, x + barW / 2, H - bottomPad + 6);
+      // ctx.fillText(name, x + barW / 2, H - bottomPad + 6);
+      ctx.fillText(name, x + barW / 2, H - bottomPad + 10);
 
       // Total count
       if (totalUserTasks > 0) {
-        ctx.fillStyle = '#e2e8f0';
-        ctx.font = 'bold 11px sans-serif';
+        ctx.fillStyle = '#FF0000';
+        ctx.font = 'bold 22px Arial';
         ctx.textBaseline = 'bottom';
         ctx.fillText(totalUserTasks, x + barW / 2, stackY - 2);
       }
     });
 
     // Legend
-    const legend = [{ label: 'In Progress', color: '#f59e0b' }, { label: 'On Hold', color: '#64748b' }, { label: 'Completed', color: '#10b981' }];
-    legend.forEach((item, i) => {
-      const lx = leftPad + i * 104;
+    const legend = [{ label: 'In Progress', color: '#f59e0b' }, { label: 'On Hold', color: '#FC0000' }, { label: 'Completed', color: '#10b981' }];
+    const legendY = H - 30;
+    let currentX = leftPad;
+    ctx.font = '20px Arial';
+    legend.forEach((item) => {
+      const textWidth = ctx.measureText(item.label).width;
+
+      // Box
       ctx.fillStyle = item.color;
-      ctx.fillRect(lx, H - 14, 10, 10);
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = '10px sans-serif';
+      ctx.fillRect(currentX, legendY, 14, 14);
+
+      // Text
+      ctx.fillStyle = item.color;
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
-      ctx.fillText(item.label, lx + 14, H - 9);
+      // ctx.fillText(item.label, currentX + 20, legendY + 7);
+      wrapText(ctx, item.label, currentX + 20, legendY + 7, 80, 16);
+      // Move X dynamically (box + gap + text + spacing)
+      currentX += 20 + textWidth + 24;
     });
   }, [statistics.tasksPerUser]);
 
@@ -1432,28 +1463,28 @@ const handleProfileClick = () => {
     }
 
     // Percentage text
-    ctx.fillStyle = '#f1f5f9';
-    ctx.font = 'bold 28px sans-serif';
+    ctx.fillStyle = '#00ff00';
+    ctx.font = 'bold 28px Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(Math.round(pct * 100) + '%', cx, cy - 16);
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = '12px sans-serif';
+    ctx.fillStyle = '#00ff00';
+    ctx.font = '22px Arial';
     ctx.fillText('completion rate', cx, cy + 8);
 
-    // Min/Max labels
-    ctx.fillStyle = '#64748b';
-    ctx.font = '11px sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText('0%', cx - radius - 4, cy + 20);
-    ctx.textAlign = 'right';
-    ctx.fillText('100%', cx + radius + 4, cy + 20);
+    // // Min/Max labels
+    // ctx.fillStyle = '#64748b';
+    // ctx.font = '22px Arial';
+    // ctx.textAlign = 'left';
+    // ctx.fillText('0%', cx - radius - 4, cy + 20);
+    // ctx.textAlign = 'right';
+    // ctx.fillText('100%', cx + radius + 4, cy + 20);
 
     // Sub label
-    ctx.fillStyle = '#64748b';
-    ctx.font = '11px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(completed + ' of ' + total + ' tasks done', cx, cy + 26);
+    // ctx.fillStyle = '#64748b';
+    // ctx.font = '22px Arial';
+    // ctx.textAlign = 'center';
+    // ctx.fillText(completed + ' of ' + total + ' tasks done', cx, cy + 26);
   }, [statistics.totalTasks, statistics.completedTasks]);
 
   useEffect(() => {
@@ -1707,13 +1738,6 @@ const handleProfileClick = () => {
                 <span className="stat-value">{statistics.totalTasks}</span>
               </div>
             </div>
-            <div className="stat-card completed">
-              <div className="stat-icon-checkmark"></div>
-              <div className="stat-content">
-                <span className="stat-label">Completed</span>
-                <span className="stat-value">{statistics.completedTasks}</span>
-              </div>
-            </div>
             <div className="stat-card pending">
               <div className="stat-icon">⏳</div>
               <div className="stat-content">
@@ -1726,6 +1750,13 @@ const handleProfileClick = () => {
               <div className="stat-content">
                 <span className="stat-label">Overdue</span>
                 <span className="stat-value">{statistics.overdueTasks}</span>
+              </div>
+            </div>
+            <div className="stat-card completed">
+              <div className="stat-icon-checkmark"></div>
+              <div className="stat-content">
+                <span className="stat-label">Completed</span>
+                <span className="stat-value">{statistics.completedTasks}</span>
               </div>
             </div>
           </div>
@@ -1743,18 +1774,20 @@ const handleProfileClick = () => {
                 {[
                   { key: 'NEW', label: 'New', color: '#6366f1' },
                   { key: 'IN_PROGRESS', label: 'In Progress', color: '#f59e0b' },
-                  { key: 'ON_HOLD', label: 'On Hold', color: '#64748b' },
+                  { key: 'ON_HOLD', label: 'On Hold', color: '#fa0000' },
                   { key: 'COMPLETED', label: 'Completed', color: '#10b981' },
-                ].map(item => (
-                  <div key={item.key} className="legend-item">
-                    <span className="legend-dot" style={{ background: item.color }}></span>
-                    <span className="legend-label">{item.label}</span>
-                    <span className="legend-val">{statistics.tasksByStatus[item.key] || 0}</span>
-                  </div>
-                ))}
+                ].map(item => {
+                  const value = statistics.tasksByStatus[item.key] || 0;
+                  return (
+                    <div key={item.key} className="legend-item">
+                      <span className="legend-dot" style={{ color: item.color }}></span>
+                      <span className="legend-label" style={{ color: item.color }}>{item.label}</span>
+                      <span className="legend-val" style={{ color: item.color }}>{value}</span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
-
             {/* 2. PRIORITY HORIZONTAL BAR */}
             <div className="chart-card chart-card-priority">
               <h3 className="chart-title">Tasks by Priority</h3>
@@ -1940,8 +1973,8 @@ const handleProfileClick = () => {
           </div>
 
           <div className="tabs">
-            <button className={`tab ${activeTab === 'unassigned' ? 'active' : ''}`} onClick={() => setActiveTab('unassigned')}>Unassigned Tasks ({filteredUnassignedTasks.length})</button>
-            <button className={`tab ${activeTab === 'assigned' ? 'active' : ''}`} onClick={() => setActiveTab('assigned')}>Assigned Tasks ({filteredAssignedTasks.length})</button>
+            <button className={`tab ${activeTab === 'unassigned' ? 'active' : ''}`} onClick={() => setActiveTab('unassigned')}>UNASSIGNED TASKS ({filteredUnassignedTasks.length})</button>
+            <button className={`tab ${activeTab === 'assigned' ? 'active' : ''}`} onClick={() => setActiveTab('assigned')}>ASSIGNED TASKS ({filteredAssignedTasks.length})</button>
           </div>
 
           {activeTab === 'unassigned' && (
