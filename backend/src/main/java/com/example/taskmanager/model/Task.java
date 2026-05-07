@@ -9,7 +9,6 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 @Entity
 @Table(name = "TASKS", schema = "scott")
 public class Task {
-
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "task_seq_gen")
     @SequenceGenerator(name = "task_seq_gen", sequenceName = "TASK_SEQ", allocationSize = 1)
@@ -66,7 +65,7 @@ public class Task {
             status = "NEW";
         }
         if (completionPercentage == 0) {
-            completionPercentage = 0; // Default to 0% if not set
+            completionPercentage = 0;
         }
     }
 

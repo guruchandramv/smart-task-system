@@ -1789,7 +1789,7 @@ span {
 }
 .user-tasks-table th:last-child,
 .user-tasks-table td:last-child {
-  text-align: center !important;
+  text-align: center !important ;
 }
 /* Responsive */
 @media (max-width: 1024px) {

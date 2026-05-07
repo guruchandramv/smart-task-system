@@ -1,9 +1,6 @@
 package com.example.taskmanager.model;
-
 import javax.persistence.*;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import java.time.LocalDateTime;
 
 @Entity
@@ -36,56 +33,30 @@ public class TaskMessage {
     private LocalDateTime createdAt;
 
     @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-    }
+    protected void onCreate() { createdAt = LocalDateTime.now(); }
 
     // Getters & Setters
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public void setId(Long id) { this.id = id; }
 
-    public Task getTask() {
-        return task;
-    }
+    public Task getTask() { return task; }
 
-    public void setTask(Task task) {
-        this.task = task;
-    }
+    public void setTask(Task task) { this.task = task; }
 
-    public User getUser() {
-        return user;
-    }
+    public User getUser() { return user; }
 
-    public void setUser(User user) {
-        this.user = user;
-    }
+    public void setUser(User user) { this.user = user; }
 
-    public Integer getMessageNumber() {
-        return messageNumber;
-    }
+    public Integer getMessageNumber() { return messageNumber; }
 
-    public void setMessageNumber(Integer messageNumber) {
-        this.messageNumber = messageNumber;
-    }
+    public void setMessageNumber(Integer messageNumber) { this.messageNumber = messageNumber; }
 
-    public String getMessage() {
-        return message;
-    }
+    public String getMessage() { return message; }
 
-    public void setMessage(String message) {
-        this.message = message;
-    }
+    public void setMessage(String message) { this.message = message; }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
+    public LocalDateTime getCreatedAt() { return createdAt; }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

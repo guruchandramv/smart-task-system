@@ -15,7 +15,7 @@ public class TaskMessageDTO {
         this.id = msg.getId();
         this.message = msg.getMessage();
         this.messageNumber = msg.getMessageNumber();
-        this.username = msg.getUser().getUsername(); // ✅ only what you need
+        this.username = msg.getUser().getUsername();
         this.createdAt = msg.getCreatedAt();
     }
 

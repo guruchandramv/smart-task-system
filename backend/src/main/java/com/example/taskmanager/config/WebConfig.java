@@ -13,11 +13,10 @@ public class WebConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
                 .allowedOriginPatterns(
-                    "http://localhost:3000",
                     "http://localhost:*",
-                    "https://smart-task-system-frontend.netlify.app",
+                    "https://*.onrender.com",
                     "https://*.netlify.app",
-                    "https://smart-task-system-production-f5d8.up.railway.app"
+                    "https://*.railway.app"
                 )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
                 .allowedHeaders("*")

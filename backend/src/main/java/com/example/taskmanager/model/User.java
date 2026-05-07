@@ -48,12 +48,8 @@ public class User {
 
     @PrePersist
     protected void onCreate() {
-        if (lastLogin == null) {
-            lastLogin = LocalDateTime.now();
-        }
-        if (lastActivity == null) {
-            lastActivity = LocalDateTime.now();
-        }
+        if (lastLogin == null) { lastLogin = LocalDateTime.now(); }
+        if (lastActivity == null) { lastActivity = LocalDateTime.now(); }
     }
 
     public Long getId() { return id; }

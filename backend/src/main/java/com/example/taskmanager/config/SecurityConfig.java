@@ -39,11 +39,10 @@ public class SecurityConfig {
 
         // allowedOriginPatterns supports wildcards and works with allowCredentials=true
         configuration.setAllowedOriginPatterns(java.util.Arrays.asList(
-            "http://localhost:3000",
-            "http://localhost:*",
-            "https://smart-task-system-frontend.netlify.app",
-            "https://*.netlify.app",
-            "https://smart-task-system-production-f5d8.up.railway.app"
+              "http://localhost:*",
+                    "https://*.onrender.com",
+                    "https://*.netlify.app",
+                    "https://*.railway.app"
         ));
 
         configuration.setAllowedMethods(java.util.Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));

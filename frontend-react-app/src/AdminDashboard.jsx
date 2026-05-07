@@ -236,7 +236,7 @@ function AdminDashboard() {
   };
 
   const checkBackendStatus = async () => {
-    const MAX_WAIT_MS = 60000;   // 60s total — Railway cold start can take ~60 s
+    const MAX_WAIT_MS = 20000;   // 20s total — Railway cold start can take ~60 s
     const POLL_INTERVAL = 5000;  // probe every 5 s
     const TIMEOUT_PER_REQ = 9000;
 
@@ -1597,7 +1597,7 @@ const handleProfileClick = () => {
           <h2 className="wakeup-title">Starting backend server…</h2>
           <p className="wakeup-subtitle">
             Railway free tier spins down after inactivity.<br />
-            Waking it up — this takes up to 60 seconds.
+            Waking it up — this takes up to 30 seconds.
           </p>
           <div className="wakeup-bar-track">
             <div

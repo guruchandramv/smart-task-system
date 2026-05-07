@@ -9,7 +9,7 @@ public class TaskDTO {
     private String status;
     private String priority;
     private String deadline;
-    private UserDTO assignedUser; // Use your existing UserDTO
+    private UserDTO assignedUser;
 
     public TaskDTO(Task task) {
         this.id = task.getId();
@@ -28,7 +28,6 @@ public class TaskDTO {
                 : null;
     }
 
-    // Getters and setters...
     public Long getId() { return id; }
     public String getTitle() { return title; }
     public String getDescription() { return description; }

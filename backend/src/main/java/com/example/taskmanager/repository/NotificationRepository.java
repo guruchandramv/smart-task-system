@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
-
     // Find all notifications for admin (all users)
     List<Notification> findAllByOrderByCreatedAtDesc();
 

@@ -20,7 +20,7 @@ public class Notification {
     private String message;
 
     @Column(nullable = false)
-    private String status; // UNREAD, READ
+    private String status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USER_ID")
