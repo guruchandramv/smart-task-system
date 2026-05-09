@@ -195,19 +195,40 @@ function AdminDashboard() {
     if (!timestamp) return 'Never';
 
     const date = new Date(timestamp);
-
     const now = new Date();
+
     const diffMs = now - date;
+
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
+    const diffWeeks = Math.floor(diffDays / 7);
+    const diffMonths = Math.floor(diffDays / 30);
+    const diffYears = Math.floor(diffDays / 365);
 
     if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
-    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
 
-    return formatLocalTime(date);
+    if (diffMins < 60) {
+      return `${diffMins} minute${diffMins !== 1 ? 's' : ''} ago`;
+    }
+
+    if (diffHours < 24) {
+      return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+    }
+
+    if (diffDays < 7) {
+      return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+    }
+
+    if (diffWeeks < 5) {
+      return `${diffWeeks} week${diffWeeks !== 1 ? 's' : ''} ago`;
+    }
+
+    if (diffMonths < 12) {
+      return `${diffMonths} month${diffMonths !== 1 ? 's' : ''} ago`;
+    }
+
+    return `${diffYears} year${diffYears !== 1 ? 's' : ''} ago`;
   };
   const formatLastActivity = (isoString) => {
     if (!isoString) return "N/A";
